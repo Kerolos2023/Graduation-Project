@@ -44,15 +44,26 @@ export default function ResetPasswordPage() {
                 newPassword: formData.newPassword,
             };
 
-            const response = await axiosInstance.post('/Auth/reset-password', payload);
+            const response = await axiosInstance.put('/Auth/reset-password', payload);
 
             if (response.status === 200) {
                 alert('Password reset successful!');
                 router.push('/auth/login');
             }
         } catch (err: any) {
+            const errorData = err.response?.data;
+            if (errorData?.errors) {
+                const validationErrors = Object.values(errorData.errors).flat();
+                if (validationErrors.length > 0) {
+                    setError(validationErrors.join(', '));
+                    return;
+                }
+            }
+
             setError(
-                err.response?.data?.message || 'Failed to reset password. Please try again.'
+                errorData?.title ||
+                errorData?.message ||
+                'Failed to reset password. Please try again.'
             );
         } finally {
             setIsLoading(false);
