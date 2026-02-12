@@ -155,6 +155,9 @@ function Loginpag() {
                     </div>
 
                 </div>
+                <div className="text-center mt-8">
+                    <p className="text-xs text-[#A4A7AE] font-medium">© 2026 Universe</p>
+                </div>
             </div>
         </div>
     )
