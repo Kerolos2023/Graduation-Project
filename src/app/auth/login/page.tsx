@@ -143,8 +143,8 @@ function Loginpag() {
                     </form>
 
                     <div className="mt-6 flex justify-center gap-4 text-sm">
-                        <Link href="/auth/forgot-password" className="text-gray-500 hover:text-black">
-                            Forgot Password
+                        <Link href="/auth/forget-password" className="text-gray-500 hover:text-black">
+                            Forget Password
                         </Link>
                         <Link href="/contact-us" className="text-gray-400 hover:text-black">
                             Contact Us
