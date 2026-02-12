@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[#F9F9FA] flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="flex flex-col items-center mb-8">
                     <Image
@@ -100,16 +100,16 @@ export default function ResetPasswordPage() {
                                 width={24}
                                 height={24}
                             />
-                            <h1 className="text-2xl font-bold text-gray-900">Reset password</h1>
+                            <h1 className="text-2xl font-bold text-[#090909]">Reset password</h1>
                         </div>
-                        <p className="text-sm text-gray-500 leading-relaxed">
+                        <p className="text-sm text-[#A4A7AE] leading-relaxed">
                             Use 8 or more characters with a mix of letters, numbers & symbols.
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                            <label htmlFor="newPassword" className="block text-sm font-medium text-[#090909] mb-1.5">
                                 Password
                             </label>
                             <input
@@ -118,14 +118,14 @@ export default function ResetPasswordPage() {
                                 name="newPassword"
                                 value={formData.newPassword}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2463F0]/20 focus:border-[#2463F0] transition-all placeholder:text-[#A4A7AE]"
                                 placeholder="••••••••"
                                 disabled={isLoading}
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="repeatPassword" className="block text-sm font-semibold text-gray-900 mb-1.5">
+                            <label htmlFor="repeatPassword" className="block text-sm font-medium text-[#090909] mb-1.5">
                                 Repeat Password
                             </label>
                             <input
@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
                                 name="repeatPassword"
                                 value={formData.repeatPassword}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2463F0]/20 focus:border-[#2463F0] transition-all placeholder:text-[#A4A7AE]"
                                 placeholder="••••••••"
                                 disabled={isLoading}
                             />
@@ -149,7 +149,7 @@ export default function ResetPasswordPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-2"
+                            className="w-full bg-[#2463F0] hover:bg-[#2463F0]/90 text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md mt-2"
                         >
                             {isLoading ? 'Submitting...' : 'Submit'}
                         </button>
@@ -157,7 +157,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="text-center mt-8">
-                    <p className="text-xs text-gray-400 font-medium">© 2026 Universe</p>
+                    <p className="text-xs text-[#A4A7AE] font-medium">© 2026 Universe</p>
                 </div>
             </div>
         </div>
