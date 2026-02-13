@@ -38,7 +38,7 @@ const formSchema = z.object({
 export default function ForgetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { setEmail } = useAuth();
+  const { setEmail, setUserName } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,8 +56,9 @@ export default function ForgetPasswordPage() {
 
       if (response.status === 200 || response.status === 201) {
         setEmail(values.email);
+        setUserName(values.userName);
         alert("Reset link sent successfully!");
-        router.replace("/login");
+        router.replace("/auth/verification-password");
       }
     } catch (error: any) {
 
@@ -145,7 +146,7 @@ export default function ForgetPasswordPage() {
         <CardFooter className="flex flex-col space-y-5 pb-10">
           <div className="flex gap-6 text-[13px] font-semibold text-neutral-400">
             <Link
-              href="/login"
+              href="/auth/login"
               className="hover:text-blue-600 transition-colors"
             >
               Sign In
