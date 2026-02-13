@@ -128,7 +128,7 @@ export default function ForgetPasswordPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-[#2463F0] hover:bg-blue-700 text-lg font-semibold rounded-xl"
+                className="w-full h-12 cursor-pointer bg-[#2463F0] hover:bg-blue-700 text-lg font-semibold rounded-xl"
               >
                 {isLoading ? (
                   <>
@@ -147,12 +147,12 @@ export default function ForgetPasswordPage() {
           <div className="flex gap-6 text-[13px] font-semibold text-neutral-400">
             <Link
               href="/auth/login"
-              className="hover:text-blue-600 transition-colors"
+              className="hover:text-neutral-950 transition-colors"
             >
               Sign In
             </Link>
-            <button className="font-normal hover:text-blue-600 transition-colors">Contact Us</button>
-            <button className="font-normal hover:text-blue-600 transition-colors">Terms of Use</button>
+            <button className="font-normal cursor-pointer hover:text-neutral-950 transition-colors">Contact Us</button>
+            <button className="font-normal cursor-pointer hover:text-neutral-950 transition-colors">Terms of Use</button>
           </div>
         </CardFooter>
       </Card>
