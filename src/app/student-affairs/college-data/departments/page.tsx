@@ -193,7 +193,7 @@ export default function DepartmentsPage() {
                 <div className="hidden md:flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl">
                     <div className="flex items-center gap-4 flex-1">
                         <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
-                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Anything</span>
+                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Code (Shortcut)</span>
                     </div>
                 </div>
 

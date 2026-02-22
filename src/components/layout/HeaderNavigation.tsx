@@ -16,7 +16,6 @@ export const HeaderNavigation = () => {
         { label: "College Data", active: isCollegeData, href: "/student-affairs/college-data/courses" },
         { label: "Students", active: isStudents, href: "#" },
         { label: "Committees & Examinations", active: isCommittees, href: "#" },
-        { label: "Committees & Examinations", active: false, href: "#" }, // Duplicated visually in the image exactly
     ];
 
     return (
