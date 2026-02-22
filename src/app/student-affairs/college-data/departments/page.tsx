@@ -190,10 +190,15 @@ export default function DepartmentsPage() {
                 </div>
 
                 {/* Table Header pseudo-row from the design */}
-                <div className="hidden md:flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl">
-                    <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl gap-4">
+                    <div className="flex items-center gap-4 flex-1 w-full">
                         <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
                         <span className="text-[13px] font-bold text-gray-800 w-1/3">Code (Shortcut)</span>
+                    </div>
+                    {/* Placeholder to match the space taken by action buttons in rows */}
+                    <div className="flex items-center justify-end gap-2 invisible">
+                        <button className="p-1.5 w-[30px] h-[30px]" />
+                        <button className="p-1.5 w-[30px] h-[30px]" />
                     </div>
                 </div>
 
@@ -213,10 +218,10 @@ export default function DepartmentsPage() {
                         const code = dept.code || dept.Code || 'Unknown';
 
                         return (
-                            <div key={id || idx} className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
-                                    <span className="text-[14px] font-bold text-gray-900 w-full sm:w-1/3 truncate">{name}</span>
-                                    <span className="text-[14px] font-bold text-gray-500 sm:text-gray-900 w-full sm:w-1/3 truncate">{code}</span>
+                            <div key={id || idx} className="flex flex-row items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-1 sm:gap-4 relative">
+                                <div className="flex flex-row items-center gap-1 sm:gap-4 flex-1 w-full">
+                                    <span className="text-[14px] text-gray-900 w-1/3 truncate">{name}</span>
+                                    <span className="text-[14px] text-gray-500 sm:text-gray-900 w-1/3 truncate">{code}</span>
                                 </div>
 
                                 <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">

@@ -139,21 +139,42 @@ export default function CoursesPage() {
             // Mapping back if you store arabic fields in DB:
             nameAr: course.nameAr || '',
             descriptionAr: course.descriptionAr || '',
+            preRequisiteIds: [], // reset first
         }));
 
-        try {
-            // Fetch PreRequisites (now changed to courses endpoint per request)
-            const response = await axiosInstance.get(`${API_BASE}/${targetId}/courses?PageNumber=1&PageSize=1000`);
-            const prereqs = response.data?.data || response.data?.items || response.data || [];
+        // Scroll smoothly to top when editing starts
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Expected prereqs either an array of objects ({id: '...', name: '...'}) or array of IDs.
-            const ids = Array.isArray(prereqs)
-                ? prereqs.map((p: any) => typeof p === 'string' ? p : p.id || p.Id)
+        try {
+            // Fetch Course by ID to get its complete details (including PreRequisites)
+            const response = await axiosInstance.get(`${API_BASE}/${targetId}`);
+            const resData = response.data;
+            const courseData = resData?.data || resData?.Data || resData || {};
+
+            // Handle various possible backend naming conventions for prerequisites
+            const prereqs = courseData.preRequisites || courseData.PreRequisites ||
+                courseData.preRequisiteIds || courseData.PreRequisiteIds ||
+                courseData.prerequisites || courseData.Prerequisites || [];
+
+            // Extract IDs properly whether the backend returns strings or objects
+            let ids = Array.isArray(prereqs)
+                ? prereqs.map((p: any) => {
+                    if (typeof p === 'string') return p;
+                    if (typeof p === 'object' && p !== null) return p.id || p.Id || p.courseId || p.CourseId || p.preRequisiteId || p.PreRequisiteId || p.value || p.Value;
+                    return null;
+                }).filter(Boolean)
                 : [];
 
-            setFormData(prev => ({ ...prev, preRequisiteIds: ids.filter(Boolean) }));
+            // Normalize case to match allCoursesOpts exactly since MultiSelect `.includes` is case-sensitive
+            // e.g. "019C..." vs "019c..."
+            ids = ids.map(id => {
+                const match = allCoursesOpts.find(opt => opt.value.toLowerCase() === id.toLowerCase());
+                return match ? match.value : id;
+            });
+
+            setFormData(prev => ({ ...prev, preRequisiteIds: ids }));
         } catch (err) {
-            console.error("Error fetching pre-requisites:", err);
+            console.error("Error fetching course details:", err);
         }
     };
 
@@ -255,6 +276,19 @@ export default function CoursesPage() {
                     </div>
                 </div>
 
+                {/* Table Header pseudo-row */}
+                <div className="flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl gap-4">
+                    <div className="flex items-center gap-1 sm:gap-4 flex-1 w-full">
+                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
+                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Code</span>
+                    </div>
+                    {/* Placeholder to match the space taken by action buttons in rows */}
+                    <div className="flex items-center justify-end gap-3 invisible">
+                        <button className="p-1.5 w-[30px] h-[30px]" />
+                        <button className="p-1.5 w-[30px] h-[30px]" />
+                    </div>
+                </div>
+
                 {/* Table List Items */}
                 <div className="flex flex-col gap-3 mb-6">
                     {isLoading && <div className="text-center p-4 text-gray-500 text-sm">Loading...</div>}
@@ -271,13 +305,13 @@ export default function CoursesPage() {
                         const code = course.code || course.Code || 'Unknown';
 
                         return (
-                            <div key={id || idx} className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors bg-white shadow-[0_1px_2px_rgba(0,0,0,0.01)] group gap-3 sm:gap-4 relative">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
-                                    <span className="text-[15px] font-semibold text-gray-900 w-full sm:w-1/3 truncate">{name}</span>
-                                    <span className="text-[14px] text-gray-500 w-full sm:w-1/3 truncate">{code}</span>
+                            <div key={id || idx} className="flex flex-row items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors bg-white shadow-[0_1px_2px_rgba(0,0,0,0.01)] group gap-1 sm:gap-4 relative">
+                                <div className="flex flex-row items-center gap-1 sm:gap-4 flex-1 w-full">
+                                    <span className="text-[15px] text-gray-900 w-1/3 truncate">{name}</span>
+                                    <span className="text-[14px] text-gray-900 w-1/3 truncate">{code}</span>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
+                                <div className="flex items-center justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => handleEditClick(course)}
                                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"

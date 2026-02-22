@@ -40,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.post('/Auth/revoke-refresh-token');
+            await axiosInstance.delete('/Auth/revoke-refresh-token');
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
