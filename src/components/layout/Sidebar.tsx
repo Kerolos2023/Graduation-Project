@@ -13,10 +13,11 @@ interface NavItemProps {
     label: string;
     href: string;
     isActive?: boolean;
+    onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, href, isActive }) => (
-    <Link href={href}>
+const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, href, isActive, onClick }) => (
+    <Link href={href} onClick={onClick}>
         <div className={cn(
             "flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-colors group mx-3",
             isActive ? "bg-white text-gray-900 shadow-sm border border-gray-100" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
@@ -29,7 +30,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, href, isActive }) 
     </Link>
 );
 
-export const Sidebar = () => {
+interface SidebarProps {
+    onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const pathname = usePathname();
     const router = useRouter();
 
@@ -74,12 +79,14 @@ export const Sidebar = () => {
                     label="Courses"
                     href="/student-affairs/college-data/courses"
                     isActive={pathname?.includes('/courses')}
+                    onClick={onClose}
                 />
                 <NavItem
                     icon={Building2}
                     label="Departments"
                     href="/student-affairs/college-data/departments"
                     isActive={pathname?.includes('/departments')}
+                    onClick={onClose}
                 />
             </nav>
 

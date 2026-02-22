@@ -271,13 +271,13 @@ export default function CoursesPage() {
                         const code = course.code || course.Code || 'Unknown';
 
                         return (
-                            <div key={id || idx} className="flex items-center w-full px-5 py-3.5 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors bg-white shadow-[0_1px_2px_rgba(0,0,0,0.01)] group">
-                                <div className="flex items-center gap-4 flex-1">
-                                    <span className="text-[15px] font-semibold text-gray-900 w-1/3 truncate">{name}</span>
-                                    <span className="text-[14px] text-gray-500 w-1/3 truncate">{code}</span>
+                            <div key={id || idx} className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors bg-white shadow-[0_1px_2px_rgba(0,0,0,0.01)] group gap-3 sm:gap-4 relative">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
+                                    <span className="text-[15px] font-semibold text-gray-900 w-full sm:w-1/3 truncate">{name}</span>
+                                    <span className="text-[14px] text-gray-500 w-full sm:w-1/3 truncate">{code}</span>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
                                     <button
                                         onClick={() => handleEditClick(course)}
                                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"

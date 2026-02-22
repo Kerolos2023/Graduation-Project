@@ -213,13 +213,13 @@ export default function DepartmentsPage() {
                         const code = dept.code || dept.Code || 'Unknown';
 
                         return (
-                            <div key={id || idx} className="flex flex-col md:flex-row md:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-4">
-                                <div className="flex items-center gap-4 flex-1">
-                                    <span className="text-[14px] font-bold text-gray-900 w-1/3 truncate">{name}</span>
-                                    <span className="text-[14px] font-bold text-gray-900 w-1/3 truncate">{code}</span>
+                            <div key={id || idx} className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
+                                    <span className="text-[14px] font-bold text-gray-900 w-full sm:w-1/3 truncate">{name}</span>
+                                    <span className="text-[14px] font-bold text-gray-500 sm:text-gray-900 w-full sm:w-1/3 truncate">{code}</span>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
                                     <button
                                         onClick={() => handleEditClick(dept)}
                                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
