@@ -135,7 +135,7 @@ function Loginpag() {
                         </button>
 
                         {errorMessage && (
-                            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 mt-2 cursor-pointer">
                                 {errorMessage}
                             </div>
                         )}
