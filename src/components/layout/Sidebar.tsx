@@ -5,6 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { BookOpen, Building2, Settings, LogOut } from 'lucide-react';
+import { PiBuildingOfficeLight } from "react-icons/pi";
+import { FaUniversity } from "react-icons/fa";
+import { LuClipboardType } from "react-icons/lu";
+
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
 
@@ -40,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.delete('/Auth/revoke-refresh-token');
+            await axiosInstance.post('/Auth/revoke-refresh-token');
         } catch (error) {
             console.error("Logout error:", error);
         } finally {
@@ -86,6 +90,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     label="Departments"
                     href="/student-affairs/college-data/departments"
                     isActive={pathname?.includes('/departments')}
+                    onClick={onClose}
+                />
+                <NavItem
+                    icon={PiBuildingOfficeLight}
+                    label="Buildings"
+                    href="/student-affairs/college-data/buildings"
+                    isActive={pathname?.includes('/buildings')}
+                    onClick={onClose}
+                />
+                <NavItem
+                    icon={FaUniversity}
+                    label="Rooms"
+                    href="/student-affairs/college-data/rooms"
+                    isActive={pathname?.includes('/rooms')}
+                    onClick={onClose}
+                />
+                <NavItem
+                    icon={LuClipboardType}
+                    label="Room Types"
+                    href="/student-affairs/college-data/roomtype"
+                    isActive={pathname?.includes('/roomtype')}
                     onClick={onClose}
                 />
             </nav>
