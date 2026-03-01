@@ -85,8 +85,22 @@ export default function DepartmentsPage() {
             }
             resetForm();
             fetchTableData();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error saving department:", err);
+            let errorMessage = "An error occurred while saving.";
+            if (err.response?.data) {
+                const data = err.response.data;
+                if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                    errorMessage = data.errors.join("\n");
+                } else if (data.message) {
+                    errorMessage = data.message;
+                } else if (data.title) {
+                    errorMessage = data.title;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            alert(errorMessage);
         }
     };
 
@@ -224,7 +238,7 @@ export default function DepartmentsPage() {
                                     <span className="text-[14px] text-gray-500 sm:text-gray-900 w-1/3 truncate">{code}</span>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
+                                <div className="flex items-center justify-end gap-2 absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
                                     <button
                                         onClick={() => handleEditClick(dept)}
                                         className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"

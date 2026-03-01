@@ -119,9 +119,22 @@ export default function CoursesPage() {
             resetForm();
             fetchTableData();
             fetchDropdownData(); // Re-fetch dependencies if new added
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error saving course:", err);
-            // Depending on setup, you might show a toast here
+            let errorMessage = "An error occurred while saving.";
+            if (err.response?.data) {
+                const data = err.response.data;
+                if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                    errorMessage = data.errors.join("\n");
+                } else if (data.message) {
+                    errorMessage = data.message;
+                } else if (data.title) {
+                    errorMessage = data.title;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            alert(errorMessage);
         }
     };
 
@@ -311,18 +324,18 @@ export default function CoursesPage() {
                                     <span className="text-[14px] text-gray-900 w-1/3 truncate">{code}</span>
                                 </div>
 
-                                <div className="flex items-center justify-end gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-end gap-3">
                                     <button
                                         onClick={() => handleEditClick(course)}
-                                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
                                     >
-                                        <Pencil className="w-[18px] h-[18px]" />
+                                        <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteClick(course.id || course.Id)}
-                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
                                     >
-                                        <Trash2 className="w-[18px] h-[18px]" />
+                                        <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                     </button>
                                 </div>
                             </div>
