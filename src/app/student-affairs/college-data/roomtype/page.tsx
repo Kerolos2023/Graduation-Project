@@ -18,47 +18,26 @@ export default function RoomTypePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "" });
 
-  const [buildings, setBuildings] = useState<any[]>([]);
-  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
-
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${
         searchValue ? `&SearchValue=${searchValue}` : ""
       }`;
+
       const response = await axiosInstance.get(url);
-
-      const roomTypes = response.data?.items || [];
-      const typesWithBuildingName = roomTypes.map((type: any) => {
-        const building = buildings.find((b) => b.id === type.buildingId);
-        return { ...type, buildingName: building?.name || "-" };
-      });
-
-      setTypes(typesWithBuildingName);
+      setTypes(response.data?.items || []);
       setTotalPages(response.data?.totalPages || 1);
     } catch (err) {
       console.error("Error fetching Room Types:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [pageNumber, pageSize, searchValue, buildings]);
+  }, [pageNumber, pageSize, searchValue]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const res = await axiosInstance.get("/Building/all");
-        setBuildings(res.data?.items || []);
-      } catch (err) {
-        console.error("Error fetching buildings:", err);
-      }
-    };
-    fetchBuildings();
-  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ name: e.target.value });
@@ -67,24 +46,21 @@ export default function RoomTypePage() {
   const resetForm = () => {
     setEditingId(null);
     setFormData({ name: "" });
-    setSelectedBuildingId(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !selectedBuildingId) {
-      alert("Please enter a name and select a building.");
+    if (!formData.name.trim()) {
+      alert("Please enter a name.");
       return;
     }
 
     try {
-      const url = `${API_BASE}?buildingId=${selectedBuildingId}`;
-
       if (editingId) {
-        await axiosInstance.put(`${url}/${editingId}`, { name: formData.name });
+        await axiosInstance.put(`${API_BASE}/${editingId}`, formData);
       } else {
-        await axiosInstance.post(url, { name: formData.name });
+        await axiosInstance.post(API_BASE, formData);
       }
 
       resetForm();
@@ -98,7 +74,6 @@ export default function RoomTypePage() {
   const handleEdit = (type: any) => {
     setEditingId(type.id);
     setFormData({ name: type.name });
-    setSelectedBuildingId(type.buildingId || null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -116,6 +91,7 @@ export default function RoomTypePage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8 print:p-0">
+      
       {/* Form */}
       <div className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0] print:hidden">
         <h1 className="text-xl font-bold text-gray-900 mb-6">
@@ -123,40 +99,17 @@ export default function RoomTypePage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Select Building */}
-            <div className="flex-1 flex flex-col gap-1.5">
-              <label className="text-[13px] font-bold text-gray-900 ml-1">
-                Building
-              </label>
-              <select
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
-                value={selectedBuildingId || ""}
-                onChange={(e) => setSelectedBuildingId(e.target.value)}
-                required
-              >
-                <option value="" disabled>Select a building</option>
-                {buildings.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Room Name */}
-            <div className="flex-1 flex flex-col gap-1.5">
-              <label className="text-[13px] font-bold text-gray-900 ml-1">
-                Room Name
-              </label>
-              <input
-                type="text"
-                placeholder="Ex: Lab"
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
-                value={formData.name}
-                onChange={handleInputChange}
-              />
-            </div>
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-[13px] font-bold text-gray-900 ml-1">
+              Room Name
+            </label>
+            <input
+              type="text"
+              placeholder="Ex: Lab"
+              className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
+              value={formData.name}
+              onChange={handleInputChange}
+            />
           </div>
 
           <button
@@ -208,14 +161,15 @@ export default function RoomTypePage() {
             <thead>
               <tr className="text-left border-b border-gray-200 text-gray-600">
                 <th className="py-3 px-4 font-semibold">Room Name</th>
-                <th className="py-3 px-4 font-semibold">Building</th>
-                <th className="py-3 px-4 font-semibold text-right print:hidden">Actions</th>
+                <th className="py-3 px-4 font-semibold text-right print:hidden">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={3} className="text-center py-6 text-gray-500">
+                  <td colSpan={2} className="text-center py-6 text-gray-500">
                     Loading...
                   </td>
                 </tr>
@@ -223,7 +177,7 @@ export default function RoomTypePage() {
 
               {!isLoading && types.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="text-center py-6 text-gray-400">
+                  <td colSpan={2} className="text-center py-6 text-gray-400">
                     No types found.
                   </td>
                 </tr>
@@ -232,8 +186,9 @@ export default function RoomTypePage() {
               {!isLoading &&
                 types.map((type) => (
                   <tr key={type.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-semibold text-gray-900">{type.name}</td>
-                    <td className="py-4 px-4 text-gray-700">{type.buildingName}</td>
+                    <td className="py-4 px-4 font-semibold text-gray-900">
+                      {type.name}
+                    </td>
                     <td className="py-4 px-4 text-right print:hidden">
                       <div className="flex justify-end gap-2">
                         <button

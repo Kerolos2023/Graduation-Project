@@ -100,19 +100,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     onClick={onClose}
                 />
                 <NavItem
-                    icon={FaUniversity}
-                    label="Rooms"
-                    href="/student-affairs/college-data/rooms"
-                    isActive={pathname?.includes('/rooms')}
-                    onClick={onClose}
-                />
-                <NavItem
                     icon={LuClipboardType}
                     label="Room Types"
                     href="/student-affairs/college-data/roomtype"
                     isActive={pathname?.includes('/roomtype')}
                     onClick={onClose}
                 />
+                <NavItem
+                    icon={FaUniversity}
+                    label="Rooms"
+                    href="/student-affairs/college-data/rooms"
+                    isActive={pathname?.includes('/rooms')}
+                    onClick={onClose}
+                />
+                
             </nav>
 
             {/* Footer Settings & User Profile */}
