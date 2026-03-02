@@ -1,7 +1,7 @@
 import axiosInstance from "@/lib/axios";
 
-const LEVEL_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e"; 
- 
+const LEVEL_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
 export interface GradeSetting {
   id?: string;
@@ -12,18 +12,18 @@ export interface GradeSetting {
 }
 
 export const gradeService = {
-   getAll: () =>
-    axiosInstance.get(`/Grade/${LEVEL_ID}-all`),
+  getAll: (params?: any) =>
+    axiosInstance.get(`/Grade/${LEVEL_ID}-all`, { params }),
 
-   getById: (id: string) =>
+  getById: (id: string) =>
     axiosInstance.get(`/Grade/${id}`),
 
-   create: (data: GradeSetting) =>
+  create: (data: GradeSetting) =>
     axiosInstance.post(`/Grade/${LEVEL_ID}-create`, data),
 
-   update: (id: string, data: GradeSetting) =>
+  update: (id: string, data: GradeSetting) =>
     axiosInstance.put(`/Grade/${id}`, data),
 
-   delete: (id: string) =>
+  delete: (id: string) =>
     axiosInstance.delete(`/Grade/${id}`),
 };

@@ -38,7 +38,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     }, []);
 
     const filteredOptions = useMemo(() => {
-        return options.filter(opt => opt.label.toLowerCase().includes(search.toLowerCase()));
+        return options.filter(opt => (opt.label || '').toLowerCase().includes(search.toLowerCase()));
     }, [options, search]);
 
     const toggleOption = (value: string) => {
