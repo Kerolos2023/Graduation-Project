@@ -1,11 +1,12 @@
- 
+
 
 
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { gradeService, GradeSetting } from "@/services/gradeServices";
+import { Pagination } from '@/components/ui/pagination';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +23,10 @@ import { toast } from "sonner";
 
 export default function GradesPage() {
   const [grades, setGrades] = useState<GradeSetting[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize] = useState(10);
+  const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFetchLoading, setIsFetchLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -34,19 +39,27 @@ export default function GradesPage() {
     maxScore: 0,
   });
 
-   const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsFetchLoading(true);
     try {
-      const response = await gradeService.getAll();
-      setGrades(response.data?.items || []);
+      const response = await gradeService.getAll({
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+        ...(searchValue ? { SearchValue: searchValue } : {})
+      });
+      const resData = response.data?.data || response.data?.items || response.data || [];
+      const resTotalPages = response.data?.totalPages || response.data?.meta?.totalPages || 1;
+
+      setGrades(Array.isArray(resData) ? resData : []);
+      setTotalPages(resTotalPages);
     } catch {
       toast.error("Failed to fetch grades");
     } finally {
       setIsFetchLoading(false);
     }
-  };
+  }, [pageNumber, pageSize, searchValue]);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const hasOverlap = (min: number, max: number) => {
     return grades.some((g) => {
@@ -74,22 +87,22 @@ export default function GradesPage() {
         await gradeService.create(formData);
         toast.success("Added successfully");
       }
-      
+
       await loadData();
       resetForm();
     } catch (error: any) {
-  console.log("STATUS:", error.response?.status);
-  console.log("FULL ERROR:", error.response?.data);
+      console.log("STATUS:", error.response?.status);
+      console.log("FULL ERROR:", error.response?.data);
 
-  if (error.response?.status === 409) {
-    await loadData(); 
-  }
+      if (error.response?.status === 409) {
+        await loadData();
+      }
 
-  toast.error(
-    error.response?.data?.title ||
-    error.response?.data?.message ||
-    "Conflict happened"
-  );
+      toast.error(
+        error.response?.data?.title ||
+        error.response?.data?.message ||
+        "Conflict happened"
+      );
     } finally {
       setLoading(false);
     }
@@ -120,7 +133,7 @@ export default function GradesPage() {
 
   return (
     <div className="space-y-6">
-       <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
+      <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
         <CardContent className="p-8">
           <h2 className="text-xl font-bold mb-6 text-[#0A0D12]">Grades</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -170,8 +183,8 @@ export default function GradesPage() {
               />
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading}
               className="w-full cursor-pointer bg-[#2563EB] hover:bg-blue-700 h-12 rounded-xl text-white font-bold transition-all"
             >
@@ -181,18 +194,26 @@ export default function GradesPage() {
         </CardContent>
       </Card>
 
-       <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px] overflow-hidden">
+      <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px] overflow-hidden">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-[#0A0D12]">Grades</h2>
               <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">100 Room</span>
             </div>
-            
+
             <div className="flex items-center gap-3 w-full md:w-auto">
               <div className="relative flex-1 md:w-64">
                 <Search className=" cursor-pointer absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
-                <Input placeholder="Search" className="pl-10 h-11 border-[#E2E8F0] rounded-xl" />
+                <Input
+                  placeholder="Search"
+                  value={searchValue}
+                  onChange={(e) => {
+                    setSearchValue(e.target.value);
+                    setPageNumber(1);
+                  }}
+                  className="pl-10 h-11 border-[#E2E8F0] rounded-xl"
+                />
               </div>
               <Button variant="outline" className="h-11 cursor-pointer border-[#E2E8F0] text-[#2563EB] gap-2 rounded-xl px-5">
                 <Printer className="h-4 w-4 " /> Print
@@ -238,7 +259,13 @@ export default function GradesPage() {
           </div>
 
           {/* Pagination Component */}
-         
+          <div className="flex justify-center pt-4">
+            <Pagination
+              currentPage={pageNumber}
+              totalPages={totalPages}
+              onPageChange={setPageNumber}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -247,4 +274,3 @@ export default function GradesPage() {
 
 
 
- 

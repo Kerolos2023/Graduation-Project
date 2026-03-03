@@ -31,7 +31,7 @@ function Loginpag() {
             const response = await axiosInstance.post('/Auth/login', payload);
 
             if (response.status === 200) {
-                router.replace('/dashboard');
+                router.replace('/student-affairs/college-data/courses');
             }
 
         } catch (error: any) {
@@ -129,7 +129,7 @@ function Loginpag() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-4 rounded-xl transition-all disabled:opacity-50"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-4 rounded-xl transition-all disabled:opacity-50 cursor-pointer"
                         >
                             {loading ? 'Signing In...' : 'Sign In'}
                         </button>

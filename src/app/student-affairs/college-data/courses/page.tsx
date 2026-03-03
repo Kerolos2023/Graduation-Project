@@ -64,7 +64,7 @@ export default function CoursesPage() {
 
             const resData = response.data?.data || response.data?.items || response.data || [];
             if (Array.isArray(resData)) {
-                setAllCoursesOpts(resData.map((c: any) => ({ label: c.name || c.Name, value: c.id || c.Id })));
+                setAllCoursesOpts(resData.map((c: any) => ({ label: c.name || c.Name || 'Unnamed Course', value: c.id || c.Id })));
             }
         } catch (err) {
             console.error("Error fetching all courses for dropdown:", err);
