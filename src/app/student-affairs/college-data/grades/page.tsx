@@ -140,7 +140,7 @@ export default function GradesPage() {
                 <Input
                   type="number"
                   placeholder="Placeholder"
-                  className="bg-white border-[#E9EAEB] h-12 rounded-xl"
+                  className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600"
                   value={formData.minScore}
                   onChange={(e) => setFormData({ ...formData, minScore: Number(e.target.value) })}
                   required
@@ -151,7 +151,7 @@ export default function GradesPage() {
                 <Input
                   type="number"
                   placeholder="Placeholder"
-                  className="bg-white border-[#E9EAEB] h-12 rounded-xl"
+                  className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600"
                   value={formData.maxScore}
                   onChange={(e) => setFormData({ ...formData, maxScore: Number(e.target.value) })}
                   required
@@ -163,7 +163,7 @@ export default function GradesPage() {
               <label className="text-sm font-medium text-[#1A1C1E]">Equivalent Grade</label>
               <Input
                 placeholder="Placeholder"
-                className="bg-white border-[#E9EAEB] h-12 rounded-xl"
+                className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600 "
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
