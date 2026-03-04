@@ -120,6 +120,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     isActive={pathname?.includes('/grades')}
                     onClick={onClose}
                 />
+                <NavItem
+                    icon={FaUniversity}
+                    label="Levels"
+                    href="/student-affairs/college-data/levels"
+                    isActive={pathname?.includes('/levels')}
+                    onClick={onClose}
+                />
                 
             </nav>
 
