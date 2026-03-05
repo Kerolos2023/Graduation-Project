@@ -206,8 +206,7 @@ export default function GradesPage() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-[#0A0D12]">Grades</h2>
-              {/* التعديل هنا لعرض العدد الحقيقي */}
-              <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">
+               <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">
                 {grades.length} {grades.length === 1 ? 'Grade' : 'Grades'}
               </span>
             </div>
