@@ -21,9 +21,8 @@ export default function RoomTypePage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${
-        searchValue ? `&SearchValue=${searchValue}` : ""
-      }`;
+      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
+        }`;
 
       const response = await axiosInstance.get(url);
       setTypes(response.data?.items || []);
@@ -91,7 +90,7 @@ export default function RoomTypePage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8 print:p-0">
-      
+
       {/* Form */}
       <div className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0] print:hidden">
         <h1 className="text-xl font-bold text-gray-900 mb-6">
@@ -211,13 +210,15 @@ export default function RoomTypePage() {
           </table>
         </div>
 
-        <div className="flex justify-center pt-6 print:hidden">
-          <Pagination
-            currentPage={pageNumber}
-            totalPages={totalPages}
-            onPageChange={setPageNumber}
-          />
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-2">
+            <Pagination
+              currentPage={pageNumber}
+              totalPages={totalPages}
+              onPageChange={setPageNumber}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

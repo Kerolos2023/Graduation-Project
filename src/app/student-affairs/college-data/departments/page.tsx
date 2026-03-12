@@ -5,21 +5,17 @@ import { Search, Printer, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { Pagination } from '@/components/ui/pagination';
 
-// Constants
 const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
-const API_BASE = `/college/${COLLEGE_ID}/department`;
+const API_BASE = `/colleges/${COLLEGE_ID}/academic-programs`;
 
 export default function DepartmentsPage() {
-    // State for Table/Pagination
     const [departments, setDepartments] = useState<any[]>([]);
-    // We can show total dynamically if the API provides it, setting a placeholder "100" like the image for now if missing
     const [totalPages, setTotalPages] = useState(1);
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // State for Form
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -51,7 +47,6 @@ export default function DepartmentsPage() {
         fetchTableData();
     }, [fetchTableData]);
 
-    // --- Handlers ---
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -258,13 +253,15 @@ export default function DepartmentsPage() {
                 </div>
 
                 {/* Pagination Wrapper */}
-                <div className="flex justify-center pt-2">
-                    <Pagination
-                        currentPage={pageNumber}
-                        totalPages={totalPages}
-                        onPageChange={setPageNumber}
-                    />
-                </div>
+                {totalPages > 1 && (
+                    <div className="flex justify-center mt-2">
+                        <Pagination
+                            currentPage={pageNumber}
+                            totalPages={totalPages}
+                            onPageChange={setPageNumber}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );
