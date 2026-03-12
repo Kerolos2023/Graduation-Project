@@ -14,7 +14,7 @@ export const HeaderNavigation = () => {
 
     const navLinks = [
         { label: "College Data", active: isCollegeData, href: "/student-affairs/college-data/courses" },
-        { label: "Students", active: isStudents, href: "#" },
+        { label: "Students", active: isStudents, href: "/student-affairs/students" },
         { label: "Committees & Examinations", active: isCommittees, href: "#" },
     ];
 
