@@ -1,7 +1,3 @@
-
-
-
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -18,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trash2, Pencil, Loader, Search, Printer, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, Pencil, Loader, Search, Printer, MoreVertical, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function GradesPage() {
@@ -91,13 +87,9 @@ export default function GradesPage() {
       await loadData();
       resetForm();
     } catch (error: any) {
-      console.log("STATUS:", error.response?.status);
-      console.log("FULL ERROR:", error.response?.data);
-
       if (error.response?.status === 409) {
         await loadData();
       }
-
       toast.error(
         error.response?.data?.title ||
         error.response?.data?.message ||
@@ -135,7 +127,22 @@ export default function GradesPage() {
     <div className="space-y-6">
       <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
         <CardContent className="p-8">
-          <h2 className="text-xl font-bold mb-6 text-[#0A0D12]">Grades</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-[#0A0D12]">
+              {isEditing ? "Update Grade" : "Adding Grade"}
+            </h2>
+            {isEditing && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={resetForm} 
+                className="text-red-500 hover:text-red-600 hover:bg-red-50"
+              >
+                <X size={16} className="mr-1" /> Cancel Edit
+              </Button>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
@@ -199,7 +206,9 @@ export default function GradesPage() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-[#0A0D12]">Grades</h2>
-              <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">100 Room</span>
+               <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">
+                {grades.length} {grades.length === 1 ? 'Grade' : 'Grades'}
+              </span>
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -258,7 +267,6 @@ export default function GradesPage() {
             </Table>
           </div>
 
-          {/* Pagination Component */}
           <div className="flex justify-center pt-4">
             <Pagination
               currentPage={pageNumber}
@@ -271,6 +279,3 @@ export default function GradesPage() {
     </div>
   );
 }
-
-
-
