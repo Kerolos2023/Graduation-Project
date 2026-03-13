@@ -33,9 +33,8 @@ export default function RoomsPage() {
   const fetchRooms = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${ROOM_API}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${
-        searchValue ? `&SearchValue=${searchValue}` : ""
-      }`;
+      const url = `${ROOM_API}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
+        }`;
       const res = await axiosInstance.get(url);
       setRooms(res.data?.items || []);
       setTotalPages(res.data?.totalPages || 1);
@@ -157,83 +156,83 @@ export default function RoomsPage() {
         </h1>
 
         <form onSubmit={handleSubmit}>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    {/* First row: Name, Capacity, Room Number */}
-    <div>
-      <label className="text-[13px] font-bold text-gray-900 ml-1">Name</label>
-      <input
-        name="name"
-        value={formData.name}
-        onChange={handleInputChange}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-      />
-    </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {/* First row: Name, Capacity, Room Number */}
+            <div>
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Name</label>
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
 
-    <div>
-      <label className="text-[13px] font-bold text-gray-900 ml-1">Capacity</label>
-      <input
-        name="capacity"
-        type="number"
-        value={formData.capacity}
-        onChange={handleInputChange}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-      />
-    </div>
+            <div>
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Capacity</label>
+              <input
+                name="capacity"
+                type="number"
+                value={formData.capacity}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
 
-    <div>
-      <label className="text-[13px] font-bold text-gray-900 ml-1">Room Number</label>
-      <input
-        name="roomNumber"
-        value={formData.roomNumber}
-        onChange={handleInputChange}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-      />
-    </div>
-  </div>
+            <div>
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Room Number</label>
+              <input
+                name="roomNumber"
+                value={formData.roomNumber}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
+          </div>
 
-  {/* Second row: Room Type, Building */}
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <div>
-      <label className="text-[13px] font-bold text-gray-900 ml-1">Room Type</label>
-      <select
-        name="roomTypeId"
-        value={formData.roomTypeId}
-        onChange={handleInputChange}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-      >
-        <option value="">Select Room Type</option>
-        {roomTypes.map((type) => (
-          <option key={type.id} value={type.id}>
-            {type.name}
-          </option>
-        ))}
-      </select>
-    </div>
+          {/* Second row: Room Type, Building */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Room Type</label>
+              <select
+                name="roomTypeId"
+                value={formData.roomTypeId}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                <option value="">Select Room Type</option>
+                {roomTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-    <div>
-      <label className="text-[13px] font-bold text-gray-900 ml-1">Building</label>
-      <select
-        value={selectedBuildingId}
-        onChange={(e) => setSelectedBuildingId(e.target.value)}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-      >
-        <option value="">Select Building</option>
-        {buildings.map((b) => (
-          <option key={b.id} value={b.id}>
-            {b.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
+            <div>
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Building</label>
+              <select
+                value={selectedBuildingId}
+                onChange={(e) => setSelectedBuildingId(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              >
+                <option value="">Select Building</option>
+                {buildings.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-  <button
-    type="submit"
-    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-[12px]"
-  >
-    {editingId ? "Update" : "Add"}
-  </button>
-</form>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-[12px]"
+          >
+            {editingId ? "Update" : "Add"}
+          </button>
+        </form>
       </div>
 
       {/* ================= SEARCH & TABLE ================= */}
@@ -324,13 +323,15 @@ export default function RoomsPage() {
           </table>
         </div>
 
-        <div className="flex justify-center pt-6 print:hidden">
-          <Pagination
-            currentPage={pageNumber}
-            totalPages={totalPages}
-            onPageChange={setPageNumber}
-          />
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-2">
+            <Pagination
+              currentPage={pageNumber}
+              totalPages={totalPages}
+              onPageChange={setPageNumber}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

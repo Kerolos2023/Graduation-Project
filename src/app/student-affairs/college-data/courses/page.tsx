@@ -8,7 +8,7 @@ import { MultiSelect } from '@/components/ui/multi-select';
 
 // Constants
 const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
-const API_BASE = `/college/${COLLEGE_ID}/course`;
+const API_BASE = `/colleges/${COLLEGE_ID}/courses`;
 
 export default function CoursesPage() {
     // State for Table/Pagination
@@ -344,13 +344,15 @@ export default function CoursesPage() {
                 </div>
 
                 {/* Pagination Wrapper */}
-                <div className="flex justify-center mt-2">
-                    <Pagination
-                        currentPage={pageNumber}
-                        totalPages={totalPages}
-                        onPageChange={setPageNumber}
-                    />
-                </div>
+                {totalPages > 1 && (
+                    <div className="flex justify-center mt-2">
+                        <Pagination
+                            currentPage={pageNumber}
+                            totalPages={totalPages}
+                            onPageChange={setPageNumber}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -132,10 +132,10 @@ export default function GradesPage() {
               {isEditing ? "Update Grade" : "Adding Grade"}
             </h2>
             {isEditing && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={resetForm} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetForm}
                 className="text-red-500 hover:text-red-600 hover:bg-red-50"
               >
                 <X size={16} className="mr-1" /> Cancel Edit
@@ -206,7 +206,7 @@ export default function GradesPage() {
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-[#0A0D12]">Grades</h2>
-               <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">
+              <span className="bg-[#EBF2FF] text-[#2563EB] text-xs font-medium px-3 py-1 rounded-full">
                 {grades.length} {grades.length === 1 ? 'Grade' : 'Grades'}
               </span>
             </div>
@@ -267,13 +267,15 @@ export default function GradesPage() {
             </Table>
           </div>
 
-          <div className="flex justify-center pt-4">
-            <Pagination
-              currentPage={pageNumber}
-              totalPages={totalPages}
-              onPageChange={setPageNumber}
-            />
-          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-2">
+              <Pagination
+                currentPage={pageNumber}
+                totalPages={totalPages}
+                onPageChange={setPageNumber}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

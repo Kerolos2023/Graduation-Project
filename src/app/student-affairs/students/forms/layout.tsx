@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
     return (
                 <div>
-                    
+                    <HeaderNavigation />
                     {children}
                 </div>
     );

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { BiHide, BiSolidShow } from "react-icons/bi";
-import "./student.css"
+
 export default function PopupForm() {
   const [open, setOpen] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +16,7 @@ export default function PopupForm() {
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setResponseMessage("");
 
@@ -47,7 +47,7 @@ export default function PopupForm() {
 
       setResponseMessage("Student added successfully!");
       setFormData({ name: "", studentCode: "", nationalId: "", username: "", password: "" });
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 409) {
         setResponseMessage("This student already exists!");
       } else if (error.response?.status === 400) {
@@ -62,13 +62,12 @@ export default function PopupForm() {
 
   return (
     <>
-
       {open && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-          <div className={`bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative ${open ? 'animate-popup' : 'animate-popout'}`}>
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-3 text-gray-500 animate-popout"
+              className="absolute right-4 top-3 text-gray-500"
             >
               ✕
             </button>
@@ -79,7 +78,6 @@ export default function PopupForm() {
               onSubmit={handleSubmit}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
             >
-              {/* Name */}
               <div>
                 <label className="text-sm text-gray-600">Name</label>
                 <input
@@ -92,7 +90,6 @@ export default function PopupForm() {
                 />
               </div>
 
-              {/* Student Code */}
               <div>
                 <label className="text-sm text-gray-600">Student Code</label>
                 <input
@@ -105,7 +102,6 @@ export default function PopupForm() {
                 />
               </div>
 
-              {/* National ID / Passport */}
               <div>
                 <label className="text-sm text-gray-600">National ID / Passport</label>
                 <input
@@ -118,7 +114,6 @@ export default function PopupForm() {
                 />
               </div>
 
-              {/* Username */}
               <div>
                 <label className="text-sm text-gray-600">Username</label>
                 <input
@@ -131,7 +126,6 @@ export default function PopupForm() {
                 />
               </div>
 
-              {/* Password */}
               <div className="relative">
                 <label className="text-sm text-gray-600">Password</label>
                 <input
@@ -151,7 +145,6 @@ export default function PopupForm() {
                 </button>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 className="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded-xl"
@@ -160,7 +153,6 @@ export default function PopupForm() {
                 {loading ? "Submitting..." : "Add"}
               </button>
 
-              {/* Response Message */}
               {responseMessage && (
                 <p
                   className={`col-span-1 sm:col-span-2 lg:col-span-3 text-center mt-2 ${
@@ -168,7 +160,7 @@ export default function PopupForm() {
                   }`}
                 >
                   {responseMessage}
-              </p>
+                </p>
               )}
             </form>
           </div>

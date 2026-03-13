@@ -21,9 +21,8 @@ export default function BuildingsPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${
-        searchValue ? `&SearchValue=${searchValue}` : ""
-      }`;
+      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
+        }`;
       const response = await axiosInstance.get(url);
       setBuildings(response.data?.items || []);
       setTotalPages(response.data?.totalPages || 1);
@@ -203,13 +202,15 @@ export default function BuildingsPage() {
           ))}
         </div>
 
-        <div className="flex justify-center pt-2">
-          <Pagination
-            currentPage={pageNumber}
-            totalPages={totalPages}
-            onPageChange={setPageNumber}
-          />
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-2">
+            <Pagination
+              currentPage={pageNumber}
+              totalPages={totalPages}
+              onPageChange={setPageNumber}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

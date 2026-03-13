@@ -1,18 +1,18 @@
- 
+
 
 
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react";
 import { Trash2, Edit2, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Pagination } from '@/components/ui/pagination';  
+import { Pagination } from '@/components/ui/pagination';
 
 
 import { levelService, AcademicLevel } from "@/services/levelsServices";
@@ -24,21 +24,21 @@ export default function AcademicLevelsPage() {
   const [pageSize] = useState(10);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({ name: "", minHours: "", maxHours: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
-    
+
   const loadLevels = useCallback(async () => {
     try {
       setLoading(true);
-       const response = await levelService.getAllLevels(collegeId, {
+      const response = await levelService.getAllLevels(collegeId, {
         PageNumber: pageNumber,
         PageSize: pageSize
       });
 
-   
+
       const resData = response.items || [];
       const resTotalPages = response.totalPages || 1;
 
@@ -108,8 +108,8 @@ export default function AcademicLevelsPage() {
   return (
     <div className="p-8 bg-[#F8F9FB] min-h-screen font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
-        
-        
+
+
         <div className="bg-white p-8 rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-[#0A0D12]">
@@ -125,34 +125,34 @@ export default function AcademicLevelsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#090909]">Level Name</label>
-              <Input 
-                placeholder="e.g. Senior" 
+              <Input
+                placeholder="e.g. Senior"
                 value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600"
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#090909]">Min Hours</label>
-              <Input 
+              <Input
                 type="number"
                 value={formData.minHours}
-                onChange={(e) => setFormData({...formData, minHours: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, minHours: e.target.value })}
                 className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600"
               />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#090909]">Max Hours</label>
-              <Input 
+              <Input
                 type="number"
                 value={formData.maxHours}
-                onChange={(e) => setFormData({...formData, maxHours: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, maxHours: e.target.value })}
                 className="bg-white border-[#E9EAEB] h-12 rounded-xl focus-visible:ring-blue-600"
               />
             </div>
           </div>
 
-          <Button 
+          <Button
             className="w-full h-12 text-md font-bold cursor-pointer bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl transition-all"
             onClick={handleSubmit}
             disabled={submitting}
@@ -161,7 +161,7 @@ export default function AcademicLevelsPage() {
           </Button>
         </div>
 
-        
+
         <div className="bg-white p-8 rounded-[24px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
           <div className="flex items-center gap-3 mb-6">
             <h2 className="text-xl font-bold text-[#0A0D12]">Academic Levels</h2>
@@ -184,11 +184,10 @@ export default function AcademicLevelsPage() {
             ) : levels.length === 0 ? (
               <div className="text-center py-20 text-[#94A3B8]">No data found</div>
             ) : levels.map((level) => (
-              <div 
-                key={level.id} 
-                className={`grid grid-cols-[50px_1fr_1fr_1fr_120px] items-center px-4 py-4 border border-[#F1F5F9] rounded-2xl transition-all hover:bg-slate-50 ${
-                  editingId === level.id ? 'border-blue-500 bg-blue-50/30' : ''
-                }`}
+              <div
+                key={level.id}
+                className={`grid grid-cols-[50px_1fr_1fr_1fr_120px] items-center px-4 py-4 border border-[#F1F5F9] rounded-2xl transition-all hover:bg-slate-50 ${editingId === level.id ? 'border-blue-500 bg-blue-50/30' : ''
+                  }`}
               >
                 <div className="flex justify-center"><Checkbox className="w-4 h-4 rounded border-gray-300" /></div>
                 <div className="font-medium text-[#535862]">{level.name}</div>
@@ -206,18 +205,19 @@ export default function AcademicLevelsPage() {
             ))}
           </div>
 
-           
-          <div className="flex justify-center pt-8">
-            <Pagination
-              currentPage={pageNumber}
-              totalPages={totalPages}
-              onPageChange={setPageNumber}
-            />
-          </div>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-2">
+              <Pagination
+                currentPage={pageNumber}
+                totalPages={totalPages}
+                onPageChange={setPageNumber}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
- 

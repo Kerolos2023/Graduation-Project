@@ -8,14 +8,9 @@ export const HeaderNavigation = () => {
     const pathname = usePathname();
 
     // Helper to determine active pills
-    const isCollegeData = pathname?.includes('/college-data');
-    const isStudents = pathname?.includes('/students');
-    const isCommittees = pathname?.includes('/committees');
-
+    const isPersonal_data = pathname?.includes('/personal-data');
     const navLinks = [
-        { label: "College Data", active: isCollegeData, href: "/student-affairs/college-data/courses" },
-        { label: "Students", active: isStudents, href: "#" },
-        { label: "Committees & Examinations", active: isCommittees, href: "#" },
+        { label: "Personal Data", active: isPersonal_data, href: "/student-affairs/students/forms/personal-data" },
     ];
 
     return (
