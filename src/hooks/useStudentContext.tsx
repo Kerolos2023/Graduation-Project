@@ -5,6 +5,8 @@ export interface StudentContextType {
     setStudentId: (id: string | null) => void;
     isEditPopupOpen: boolean;
     setIsEditPopupOpen: (isOpen: boolean) => void;
+    isAddPopupOpen: boolean;
+    setIsAddPopupOpen: (isOpen: boolean) => void;
 }
 
 export const StudentContext = createContext<StudentContextType | undefined>(undefined);

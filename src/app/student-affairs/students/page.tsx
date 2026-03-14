@@ -79,6 +79,7 @@ export default function StudentsPage() {
     // ── Context States ─────────────────────────────────────────────────────────
     const [studentId, setStudentId] = useState<string | null>(null);
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+    const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
@@ -130,7 +131,7 @@ export default function StudentsPage() {
 
     // ──────────────────────────────────────────────────────────────────────────
     return (
-        <StudentContext.Provider value={{ studentId, setStudentId, isEditPopupOpen, setIsEditPopupOpen }}>
+        <StudentContext.Provider value={{ studentId, setStudentId, isEditPopupOpen, setIsEditPopupOpen, isAddPopupOpen, setIsAddPopupOpen }}>
             <div className="w-full flex flex-col gap-6 font-inter pb-8">
 
                 {/* ── Table Card ── */}
@@ -163,7 +164,10 @@ export default function StudentsPage() {
                         </div>
 
                         {/* Add Student */}
-                        <button className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl border border-blue-200 text-blue-600 text-sm font-medium hover:bg-blue-50 active:scale-[0.98] transition-all bg-white cursor-pointer whitespace-nowrap">
+                        <button 
+                            onClick={() => setIsAddPopupOpen(true)}
+                            className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl border border-blue-200 text-blue-600 text-sm font-medium hover:bg-blue-50 active:scale-[0.98] transition-all bg-white cursor-pointer whitespace-nowrap"
+                        >
                             <UserPlus className="w-4 h-4 shrink-0" />
                             <span className="hidden xs:inline sm:inline">Add Student</span>
                         </button>
