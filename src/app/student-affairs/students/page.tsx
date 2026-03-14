@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { Pagination } from '@/components/ui/pagination';
-import { StudentContext } from '@/hooks/useStudentContext';
+import { useStudentContext } from '@/hooks/useStudentContext';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
@@ -77,9 +77,7 @@ export default function StudentsPage() {
     const [isLoading, setIsLoading] = useState(false);
     
     // ── Context States ─────────────────────────────────────────────────────────
-    const [studentId, setStudentId] = useState<string | null>(null);
-    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
-    const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
+    const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen } = useStudentContext();
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
@@ -131,10 +129,9 @@ export default function StudentsPage() {
 
     // ──────────────────────────────────────────────────────────────────────────
     return (
-        <StudentContext.Provider value={{ studentId, setStudentId, isEditPopupOpen, setIsEditPopupOpen, isAddPopupOpen, setIsAddPopupOpen }}>
-            <div className="w-full flex flex-col gap-6 font-inter pb-8">
+        <div className="w-full flex flex-col gap-6 font-inter pb-8">
 
-                {/* ── Table Card ── */}
+            {/* ── Table Card ── */}
             <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
 
                 {/* ── Card Header ── */}
@@ -292,6 +289,5 @@ export default function StudentsPage() {
                 )}
             </div>
         </div>
-        </StudentContext.Provider>
     );
 }
