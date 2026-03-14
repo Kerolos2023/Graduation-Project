@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { Pagination } from '@/components/ui/pagination';
+import { StudentContext } from '@/hooks/useStudentContext';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
@@ -18,6 +19,7 @@ interface Student {
     nationalIdOrPassport: string;
     gender: string;
 }
+
 
 // ─── Helper: parse API error to readable message ──────────────────────────────
 function parseErrorMessage(err: unknown): string {
@@ -73,6 +75,10 @@ export default function StudentsPage() {
     const pageSize = 10;
     const [searchValue, setSearchValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    
+    // ── Context States ─────────────────────────────────────────────────────────
+    const [studentId, setStudentId] = useState<string | null>(null);
+    const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
@@ -124,9 +130,10 @@ export default function StudentsPage() {
 
     // ──────────────────────────────────────────────────────────────────────────
     return (
-        <div className="w-full flex flex-col gap-6 font-inter pb-8">
+        <StudentContext.Provider value={{ studentId, setStudentId, isEditPopupOpen, setIsEditPopupOpen }}>
+            <div className="w-full flex flex-col gap-6 font-inter pb-8">
 
-            {/* ── Table Card ── */}
+                {/* ── Table Card ── */}
             <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
 
                 {/* ── Card Header ── */}
@@ -247,6 +254,10 @@ export default function StudentsPage() {
                                 {/* Edit – form handled later */}
                                 <button
                                     title="Edit student"
+                                    onClick={() => {
+                                        setStudentId(student.id);
+                                        setIsEditPopupOpen(true);
+                                    }}
                                     className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                                 >
                                     <Pencil className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
@@ -277,5 +288,6 @@ export default function StudentsPage() {
                 )}
             </div>
         </div>
+        </StudentContext.Provider>
     );
 }
