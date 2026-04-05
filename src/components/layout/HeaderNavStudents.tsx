@@ -9,8 +9,17 @@ export const HeaderNavigation = () => {
 
     // Helper to determine active pills
     const isPersonal_data = pathname?.includes('/personal-data');
+    const iscontact_information = pathname?.includes('/contact-information');
+    const ismilitary_data = pathname?.includes('/military-data');
+    const isprevious_qualification_data = pathname?.includes('/previous-qualification-data');
+    const isparent_data = pathname?.includes('/parent-data');
+
     const navLinks = [
         { label: "Personal Data", active: isPersonal_data, href: "/student-affairs/students/forms/personal-data" },
+        { label: "Parent Data", active: isparent_data, href: "/student-affairs/students/forms/parent-data" },
+        { label: "Contact Information", active: iscontact_information, href: "/student-affairs/students/forms/contact-information" },
+        { label: "Military Data", active: ismilitary_data, href: "/student-affairs/students/forms/military-data" },
+        { label: "Previous Qualification Data", active: isprevious_qualification_data, href: "/student-affairs/students/forms/qualification-data" },
     ];
 
     return (

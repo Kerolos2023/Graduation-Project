@@ -1,13 +1,14 @@
 "use client";
 // import "./student.css"
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef,useContext } from "react";
 import Link from "next/link";
 import { HeaderNavigation } from "@/components/layout/HeaderNavStudents";
 import axiosInstance from "@/lib/axios";
+import {StudentContext} from "@/hooks/useStudentContext"
+import ProfileHeader from "@/components/layout/ProfileHeader";
 export default function StudentProfileForm() {
   const [isOpen, setIsOpen] = useState(true);
   const [collegeId , setCollegeID] = useState("019c1ea6-1738-71cb-8cfd-a90e126d177e")
-  const [studentId , setstudentId] = useState("019cd990-1a8b-74fc-a09e-99f881a1dfab")
   const [formData, setFormData] = useState({
     name: "",
     studentCode: "",
@@ -21,15 +22,18 @@ export default function StudentProfileForm() {
   });
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
-
+  const studentContext = useContext (StudentContext);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     const fetchPersonalData = async () => {
+      if(!studentContext?.studentId){
+        console.log("studentId is missing");
+      }
       try {
         const res = await axiosInstance.get(
-          `/colleges/${collegeId}/students/${studentId}`
+          `/colleges/${collegeId}/students/${studentContext?.studentId}/personal-data`
         );
         setFormData({
           name: res.data.name || "",
@@ -47,7 +51,7 @@ export default function StudentProfileForm() {
       }
     };
     fetchPersonalData();
-  }, [isOpen, collegeId, studentId]);
+  }, [isOpen, collegeId,studentContext?.studentId]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -69,7 +73,7 @@ export default function StudentProfileForm() {
     setLoading(true);
     try {
       await axiosInstance.post(
-        `/colleges/${collegeId}/students/${studentId}/update-personal`,
+        `/colleges/${collegeId}/students/${studentContext?.studentId}/update-personal`,
         formData
       );
       setResponseMessage("Student updated successfully!");
@@ -90,7 +94,7 @@ export default function StudentProfileForm() {
           >
             <div className="flex justify-end mb-2 relative">
               <button
-                className="text-gray-1000 hover:text-red-900 absolute"
+                className="text-gray-1000 hover:text-red-700 absolute"
                 onClick={() => setIsOpen(false)}
               >
                 X
@@ -101,36 +105,8 @@ export default function StudentProfileForm() {
               <HeaderNavigation />
             </div>
 
-            <div className="bg-white p-4 rounded-2xl shadow mb-4">
-              <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
-                    kero
-                  </div>
-                  <div>
-                    <Link href="" className="text-blue-600 font-medium">
-                      Change Photo
-                    </Link>
-                    <p className="text-sm text-gray-500">
-                      JPG, PNG or GIF, Max size 2GB
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <button className="bg-black text-white px-4 py-2 rounded-full cursor-pointer">
-                    Edit
-                  </button>
-                  <button className="bg-red-600 text-white px-4 py-2 rounded-full cursor-pointer">
-                    Delete
-                  </button>
-                  <button className="bg-gray-200 px-4 py-2 rounded-full cursor-pointer">
-                    Request to change the image
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ProfileHeader />
 
             <div className="bg-white p-6 rounded-2xl shadow">
           <form
@@ -245,7 +221,7 @@ export default function StudentProfileForm() {
             <button
               type="submit"
               disabled={loading}
-              className="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded-xl mt-2"
+              className="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded-xl mt-2 cursor-pointer"
             >
               {loading ? "Updating..." : "Update"}
             </button>
