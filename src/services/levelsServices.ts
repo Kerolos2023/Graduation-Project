@@ -1,57 +1,54 @@
- 
+import axiosInstance from "@/lib/axios";
 
- import axiosInstance from "@/lib/axios"; // تأكد من المسار الصحيح لملف الأكسيوس بتاعك
-
- 
-
-
-
- 
 export interface AcademicLevel {
   id: string;
   name: string;
-  minHours: string | number;
-  maxHours: string | number;
+  minHours: number;
+  maxHours: number;
 }
 
- 
 export interface ApiResponse {
   items: AcademicLevel[];
   pageNumber: number;
+  pageSize: number;
   totalPages: number;
 }
 
 export const levelService = {
- 
+
   getAllLevels: async (
-    collegeId: string, 
-    params: { PageNumber: number; PageSize: number }
+    academicProgramId: string,
+    params: {
+      PageNumber: number;
+      PageSize: number;
+      SearchValue?: string;
+    }
   ): Promise<ApiResponse> => {
-    const response = await axiosInstance.get(`/Level/college-${collegeId}-all`, {
+    const response = await axiosInstance.get(`/programs/${academicProgramId}/levels`, {
       params: {
         PageNumber: params.PageNumber,
         PageSize: params.PageSize,
+        SearchValue: params.SearchValue,
       }
     });
-        
-
-    return response.data; 
-  },
-
-
-  addLevel: async (collegeId: string, data: Omit<AcademicLevel, "id">) => {
-    const response = await axiosInstance.post(`/Level/${collegeId}`, data);
     return response.data;
   },
 
-   updateLevel: async (levelId: string, data: Omit<AcademicLevel, "id">) => {
-    const response = await axiosInstance.put(`/Level/${levelId}`, data);
+
+  addLevel: async (academicProgramId: string, data: Omit<AcademicLevel, "id">) => {
+    const response = await axiosInstance.post(`/programs/${academicProgramId}/levels`, data);
     return response.data;
   },
 
-  
-  deleteLevel: async (levelId: string) => {
-    const response = await axiosInstance.delete(`/Level/${levelId}`);
+
+  updateLevel: async (academicProgramId: string, levelId: string, data: Omit<AcademicLevel, "id">) => {
+    const response = await axiosInstance.put(`/programs/${academicProgramId}/levels/${levelId}`, data);
+    return response.data;
+  },
+
+
+  deleteLevel: async (academicProgramId: string, levelId: string) => {
+    const response = await axiosInstance.delete(`/programs/${academicProgramId}/levels/${levelId}`);
     return response.data;
   }
 };
