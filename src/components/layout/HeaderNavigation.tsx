@@ -11,7 +11,6 @@ export const HeaderNavigation = () => {
     const isCollegeData = pathname?.includes('/college-data');
     const isStudents = pathname?.includes('/students');
     const isCommittees = pathname?.includes('/committees');
-
     const navLinks = [
         { label: "College Data", active: isCollegeData, href: "/student-affairs/college-data/courses" },
         { label: "Students", active: isStudents, href: "/student-affairs/students" },

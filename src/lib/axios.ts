@@ -11,6 +11,18 @@ const axiosInstance = axios.create({
     withCredentials: true,
 });
 
+axiosInstance.interceptors.request.use((config) => {
+    const method = config.method?.toLowerCase();
+    if (method === 'get') {
+        if (config.headers) {
+            // Some endpoints reject Content-Type on GET requests.
+            delete (config.headers as any)['Content-Type'];
+            delete (config.headers as any)['content-type'];
+        }
+    }
+    return config;
+});
+
 let isRefreshing = false;
 let failedQueue: any[] = [];
 

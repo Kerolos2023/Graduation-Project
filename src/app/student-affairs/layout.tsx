@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { StudentsSidebar } from '@/components/layout/StudentsSidebar';
 import { HeaderNavigation } from '@/components/layout/HeaderNavigation';
 import { Menu } from 'lucide-react';
+import { AcademicProvider } from '@/hooks/useAcademicContext';
 
 export default function StudentAffairsLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,7 +15,8 @@ export default function StudentAffairsLayout({ children }: { children: React.Rea
     const isStudentsSection = pathname?.startsWith('/student-affairs/students');
 
     return (
-        <div className="flex h-[100dvh] w-full bg-[#e7e9ef] p-0 md:p-5 gap-0 md:gap-6 font-inter overflow-hidden relative">
+        <AcademicProvider>
+            <div className="flex h-[100dvh] w-full bg-[#e7e9ef] p-0 md:p-5 gap-0 md:gap-6 font-inter overflow-hidden relative">
 
             {/* ── Mobile Sidebar Overlay ── */}
             {isSidebarOpen && (
@@ -60,6 +62,7 @@ export default function StudentAffairsLayout({ children }: { children: React.Rea
                     {children}
                 </div>
             </div>
-        </div>
+            </div>
+        </AcademicProvider>
     );
 }

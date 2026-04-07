@@ -67,7 +67,7 @@ export default function PopupForm() {
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-4 top-3 text-gray-500"
+              className="absolute right-4 top-3 text-gray-500 cursor-pointer"
             >
               ✕
             </button>
@@ -139,7 +139,7 @@ export default function PopupForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-[70%] -translate-y-1/2 text-gray-500"
+                  className="absolute right-3 top-[70%] -translate-y-1/2 text-gray-500 cursor-pointer"
                 >
                   {showPassword ? <BiHide size={20} /> : <BiSolidShow size={20} />}
                 </button>
@@ -147,7 +147,7 @@ export default function PopupForm() {
 
               <button
                 type="submit"
-                className="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded-xl"
+                className="col-span-1 sm:col-span-2 lg:col-span-3 bg-blue-600 text-white py-2 rounded-xl cursor-pointer"
                 disabled={loading}
               >
                 {loading ? "Submitting..." : "Add"}
