@@ -304,7 +304,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </div>
 
                 <button className="w-full h-8 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition-colors cursor-pointer">
-                    Start a New Year
+                    <Link href="/student-affairs/college-data/new-year">Start a New Year</Link>
                 </button>
             </div>
 
