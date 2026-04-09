@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function StudentHomePage() {
-  return <div className="h-full w-full" />;
+  redirect("/student/basic-data-profile");
 }
