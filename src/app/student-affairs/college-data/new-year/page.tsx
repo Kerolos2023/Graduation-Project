@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 
 type Semester = {
@@ -10,22 +10,15 @@ type Semester = {
 };
 
 type AcademicYearForm = {
-  name: string;
   startDate: string;
   endDate: string;
   semesters: Semester[];
-};
-
-type CurrentYear = {
-  id: string;
-  name: string;
 };
 
 export default function StartNewYearConfiguration() {
   const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
   const [form, setForm] = useState<AcademicYearForm>({
-    name: "",
     startDate: "",
     endDate: "",
     semesters: [
@@ -36,25 +29,52 @@ export default function StartNewYearConfiguration() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [currentYear, setCurrentYear] = useState<CurrentYear | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  // Fetch current academic year
-  useEffect(() => {
-    const fetchCurrentYear = async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/colleges/${collegeId}/academic-years/current`
-        );
-        setCurrentYear(res.data);
-        // Prefill form name with current year name
-        setForm((prev) => ({ ...prev, name: res.data.name }));
-      } catch (err) {
-        console.error("Failed to fetch current year", err);
+  // ================= VALIDATION =================
+  const validateForm = (form: AcademicYearForm) => {
+    if (!form.startDate || !form.endDate) {
+      return "Please fill start and end dates";
+    }
+
+    if (new Date(form.startDate) >= new Date(form.endDate)) {
+      return "End date must be after start date";
+    }
+
+    for (let i = 0; i < form.semesters.length; i++) {
+      const s = form.semesters[i];
+
+      if (!s.startDate || !s.endDate) {
+        return `Fill dates for ${s.termType}`;
       }
-    };
-    fetchCurrentYear();
-  }, []);
 
+      if (new Date(s.startDate) >= new Date(s.endDate)) {
+        return `${s.termType}: end must be after start`;
+      }
+
+      if (
+        new Date(s.startDate) < new Date(form.startDate) ||
+        new Date(s.endDate) > new Date(form.endDate)
+      ) {
+        return `${s.termType} is outside academic year range`;
+      }
+
+      for (let j = i + 1; j < form.semesters.length; j++) {
+        const next = form.semesters[j];
+
+        if (
+          new Date(s.startDate) <= new Date(next.endDate) &&
+          new Date(next.startDate) <= new Date(s.endDate)
+        ) {
+          return `${s.termType} overlaps with ${next.termType}`;
+        }
+      }
+    }
+
+    return null;
+  };
+
+  // ================= HANDLERS =================
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     field: keyof AcademicYearForm,
@@ -62,7 +82,10 @@ export default function StartNewYearConfiguration() {
   ) => {
     if (field === "semesters" && typeof index === "number") {
       const newSemesters = [...form.semesters];
-      newSemesters[index] = { ...newSemesters[index], [e.target.name]: e.target.value };
+      newSemesters[index] = {
+        ...newSemesters[index],
+        [e.target.name]: e.target.value,
+      };
       setForm({ ...form, semesters: newSemesters });
     } else {
       setForm({ ...form, [field]: e.target.value });
@@ -70,32 +93,48 @@ export default function StartNewYearConfiguration() {
   };
 
   const handleSubmit = async () => {
+    const errorMsg = validateForm(form);
+
+    if (errorMsg) {
+      alert(errorMsg);
+      return;
+    }
+
     try {
       setLoading(true);
+      setSuccess(false);
 
-      // Prepare payload exactly as expected
-      const payload: AcademicYearForm = {
+      const payload = {
         ...form,
-        semesters: form.semesters.map((s) => ({
-          termType: s.termType,
-          startDate: s.startDate,
-          endDate: s.endDate,
-        })),
+        name: `${form.startDate.split("-")[0]}-${form.endDate.split("-")[0]}`,
       };
 
       await axiosInstance.post(
         `/colleges/${collegeId}/academic-years`,
         payload
       );
-      alert("Academic year saved successfully");
+
+      setSuccess(true);
+
+      // reset form
+      setForm({
+        startDate: "",
+        endDate: "",
+        semesters: [
+          { termType: "Fall", startDate: "", endDate: "" },
+          { termType: "Spring", startDate: "", endDate: "" },
+          { termType: "Summer", startDate: "", endDate: "" },
+        ],
+      });
     } catch (error: any) {
-      console.error(error.response?.data || error.message);
+      console.error(error.response?.data);
       alert("Failed to save academic year");
     } finally {
       setLoading(false);
     }
   };
 
+  // ================= UI =================
   return (
     <div className="min-h-screen bg-[#f5f5f7] p-4 md:p-6">
       <div className="mx-auto w-full max-w-[1080px] rounded-[22px] border border-[#e5e7eb] bg-white p-5 md:p-7 shadow-sm">
@@ -103,33 +142,19 @@ export default function StartNewYearConfiguration() {
           Start New Year Configuration
         </h1>
 
-        {/* Current Year */}
-        <div className="mb-6">
-          <label className="block mb-2 text-sm font-medium text-[#111827]">
-            Current Year
-          </label>
-          <input
-            type="text"
-            value={currentYear ? currentYear.name : "Loading..."}
-            disabled
-            className="h-[48px] w-full rounded-[16px] border border-[#e5e7eb] bg-[#f9fafb] px-5 text-sm outline-none"
-          />
-        </div>
-
-        {/* Academic Year Name / Start / End */}
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div>
-            <label className="block mb-2 text-sm font-medium text-[#111827]">Year Name</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => handleChange(e, "name")}
-              className="h-[48px] w-full rounded-[16px] border border-[#e5e7eb] px-5 text-sm outline-none focus:border-[#2563eb]"
-            />
+        {/* SUCCESS MESSAGE */}
+        {success && (
+          <div className="mb-4 rounded-[12px] bg-green-100 text-green-700 px-4 py-3 text-sm font-medium">
+            Academic year created successfully ✅
           </div>
+        )}
 
+        {/* Start / End */}
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="block mb-2 text-sm font-medium text-[#111827]">Start Date</label>
+            <label className="block mb-2 text-sm font-medium text-[#111827]">
+              Start Date
+            </label>
             <input
               type="date"
               value={form.startDate}
@@ -139,7 +164,9 @@ export default function StartNewYearConfiguration() {
           </div>
 
           <div>
-            <label className="block mb-2 text-sm font-medium text-[#111827]">End Date</label>
+            <label className="block mb-2 text-sm font-medium text-[#111827]">
+              End Date
+            </label>
             <input
               type="date"
               value={form.endDate}
@@ -153,18 +180,22 @@ export default function StartNewYearConfiguration() {
         {form.semesters.map((semester, idx) => (
           <div key={idx} className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="block mb-2 text-sm font-medium text-[#111827]">Name</label>
+              <label className="block mb-2 text-sm font-medium text-[#111827]">
+                Name
+              </label>
               <input
                 type="text"
                 name="termType"
                 value={semester.termType}
-                onChange={(e) => handleChange(e, "semesters", idx)}
-                className="h-[48px] w-full rounded-[16px] border border-[#e5e7eb] px-5 text-sm outline-none bg-[#f9fafb]"
+                readOnly
+                className="h-[48px] w-full rounded-[16px] border border-[#e5e7eb] px-5 text-sm bg-[#f9fafb]"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-[#111827]">Start</label>
+              <label className="block mb-2 text-sm font-medium text-[#111827]">
+                Start
+              </label>
               <input
                 type="date"
                 name="startDate"
@@ -175,7 +206,9 @@ export default function StartNewYearConfiguration() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium text-[#111827]">End</label>
+              <label className="block mb-2 text-sm font-medium text-[#111827]">
+                End
+              </label>
               <input
                 type="date"
                 name="endDate"
