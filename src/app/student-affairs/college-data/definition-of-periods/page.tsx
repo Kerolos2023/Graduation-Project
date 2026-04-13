@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import axiosInstance from "@/lib/axios";
-import { useAcademicContext } from "@/hooks/useAcademicContext";
-import { toast } from "sonner";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+
+import { toast } from 'sonner';
+
+import { useAcademicContext } from '@/hooks/useAcademicContext';
+import axiosInstance from '@/lib/axios';
 
 type ScheduleDefinition = {
   dayStartTime: string;
@@ -13,7 +19,7 @@ type ScheduleDefinition = {
 
 const DEFAULT_DEFINITION = {
   dayStartTime: "08:00",
-  dayEndTime: "16:00",
+  dayEndTime: "20:00",
   slotDurationMinutes: "60",
 };
 
