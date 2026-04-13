@@ -196,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 <NavItem
                     icon={BookAIcon}
                     label="Department Data"
-                    href="/student-affairs/college-data/department-data"
+                    href="/student-affairs/departments-data/department-data"
                     isActive={pathname?.includes('/department-data')}
                     onClick={onClose}
                 />
