@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import { LuClipboardType } from "react-icons/lu";
 
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
+import { useAcademicContext } from '@/hooks/useAcademicContext';
 
 interface NavItemProps {
     icon: React.ElementType;
@@ -41,6 +42,27 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const pathname = usePathname();
     const router = useRouter();
+    const {
+        setSelectedProgramId,
+        setSelectedSemesterId,
+        setSelectedYearId,
+        setSelectedTermId,
+    } = useAcademicContext();
+
+    const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
+    const [academicYears, setAcademicYears] = useState<{ id: string; name: string }[]>([]);
+    const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
+    const [selectedYear, setSelectedYear] = useState<string>("");
+    const [selectedProgram, setSelectedProgram] = useState<string>("");
+    const [currentSemester, setCurrentSemester] = useState<{ id: string; name: string } | null>(null);
+    const [selectedTermType, setSelectedTermType] = useState<string>("");
+
+    const termOptions = [
+        { value: "1", label: "Fall" },
+        { value: "2", label: "Spring" },
+        { value: "3", label: "Summer" },
+    ];
 
     const handleLogout = async () => {
         try {
@@ -56,23 +78,102 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         }
     };
 
+    const fetchAcademicYears = async () => {
+        try {
+            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years`);
+            const items = res.data?.items || [];
+            const list = Array.isArray(items) ? items : [];
+            setAcademicYears(list);
+            if (!selectedYear && list.length > 0) {
+                const fallbackYearId = list[0].id;
+                setSelectedYear(fallbackYearId);
+                setSelectedYearId(fallbackYearId);
+                await fetchCurrentSemester(fallbackYearId);
+            }
+        } catch (error) {
+            console.error("Error fetching academic years:", error);
+        }
+    };
+
+    const fetchCurrentYear = async () => {
+        try {
+            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years/current`);
+            const year = res.data;
+            if (year?.id) {
+                setSelectedYear(year.id);
+                setSelectedYearId(year.id);
+                await fetchCurrentSemester(year.id);
+            }
+        } catch (error) {
+            console.error("Error fetching current year:", error);
+        }
+    };
+
+    const fetchCurrentSemester = async (yearId: string) => {
+        try {
+            const res = await axiosInstance.get(
+                `/colleges/${COLLEGE_ID}/academic-years/${yearId}/current-semester`
+            );
+            const semester = res.data;
+            if (semester?.id) {
+                setCurrentSemester({ id: semester.id, name: semester.name || "Current" });
+                setSelectedSemesterId(semester.id);
+                const termFromName =
+                    semester.name === "Fall" ? "1" :
+                    semester.name === "Spring" ? "2" :
+                    semester.name === "Summer" ? "3" : "";
+                setSelectedTermType(termFromName);
+                setSelectedTermId(termFromName || semester.id);
+            } else {
+                setCurrentSemester(null);
+                setSelectedSemesterId(null);
+                setSelectedTermType("");
+                setSelectedTermId(null);
+            }
+        } catch (error) {
+            console.error("Error fetching current semester:", error);
+            setCurrentSemester(null);
+        }
+    };
+
+    const fetchPrograms = async () => {
+        try {
+            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-programs`);
+            const items = res.data?.items || [];
+            const list = Array.isArray(items) ? items : [];
+            setPrograms(list);
+            if (!selectedProgram && list.length > 0) {
+                setSelectedProgram(list[0].id);
+                setSelectedProgramId(list[0].id);
+            }
+        } catch (error) {
+            console.error("Error fetching programs:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAcademicYears();
+        fetchCurrentYear();
+        fetchPrograms();
+    }, []);
+
     return (
         <aside className="w-[280px] h-full bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col border border-gray-100/50 shrink-0">
 
             {/* Brand Logo & Version */}
-            <div className="flex items-center gap-3 p-8 pb-6">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-2.5 p-5 pb-3">
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0">
                     <Image
                         src="/auth/Vector.svg"
                         alt="Universe Logo"
-                        width={32}
-                        height={32}
+                        width={24}
+                        height={24}
                         className="w-full h-full object-contain"
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="font-bold text-[19px] tracking-tight text-gray-900">Universe</span>
-                    <span className="bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded ml-1 tracking-wider uppercase">Beta Version</span>
+                    <span className="font-bold text-[15px] tracking-tight text-gray-900">Universe</span>
+                    <span className="bg-blue-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded ml-1 tracking-wider uppercase">Beta Version</span>
                 </div>
             </div>
 
@@ -127,8 +228,85 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     isActive={pathname?.includes('/levels')}
                     onClick={onClose}
                 />
+                <NavItem
+                    icon={LuClipboardType}
+                    label="Definition of Periods"
+                    href="/student-affairs/college-data/definition-of-periods"
+                    isActive={pathname?.includes('/definition-of-periods')}
+                    onClick={onClose}
+                />
+                <NavItem
+                    icon={BookOpen}
+                    label="Schedule"
+                    href="/student-affairs/college-data/schedule"
+                    isActive={pathname?.includes('/schedule')}
+                    onClick={onClose}
+                />
                 
             </nav>
+
+            {/* Academic Controls */}
+            <div className="px-4 pb-3 space-y-2">
+                <div className="space-y-2">
+                    <select
+                        value={selectedProgram}
+                        onChange={(e) => {
+                            setSelectedProgram(e.target.value);
+                            setSelectedProgramId(e.target.value);
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    >
+                        {programs.length === 0 && <option value="">Select Program</option>}
+                        {programs.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="space-y-2">
+                    <select
+                        value={selectedYear}
+                        onChange={(e) => {
+                            const yearId = e.target.value;
+                            setSelectedYear(yearId);
+                            setSelectedYearId(yearId);
+                            if (yearId) fetchCurrentSemester(yearId);
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    >
+                        {academicYears.length === 0 && <option value="">Select Year</option>}
+                        {academicYears.map((y) => (
+                            <option key={y.id} value={y.id}>
+                                {y.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="space-y-2">
+                    <select
+                        value={selectedTermType}
+                        onChange={(e) => {
+                            const termValue = e.target.value;
+                            setSelectedTermType(termValue);
+                            setSelectedTermId(termValue || null);
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                    >
+                        {termOptions.map((t) => (
+                            <option key={t.value} value={t.value}>
+                                {t.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <button className="w-full h-8 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition-colors cursor-pointer">
+                    <Link href="/student-affairs/college-data/new-year">Start a New Year</Link>
+                </button>
+            </div>
 
             {/* Footer Settings & User Profile */}
             <div className="p-4 mt-auto border-t border-gray-100/50 flex flex-col gap-2">
