@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Building2, Settings, LogOut, BookAIcon } from 'lucide-react';
+import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
@@ -55,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
     const [selectedYear, setSelectedYear] = useState<string>("");
     const [selectedProgram, setSelectedProgram] = useState<string>("");
-    const [currentSemester, setCurrentSemester] = useState<{ id: string; name: string } | null>(null);
+    const [, setCurrentSemester] = useState<{ id: string; name: string } | null>(null);
     const [selectedTermType, setSelectedTermType] = useState<string>("");
 
     const termOptions = [
@@ -155,10 +155,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         fetchAcademicYears();
         fetchCurrentYear();
         fetchPrograms();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <aside className="w-[280px] h-full bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col border border-gray-100/50 shrink-0">
+        <aside className="w-[300px] md:w-[320px] h-[calc(100dvh-2rem)] md:h-[calc(100dvh-2.5rem)] bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.02)] flex flex-col border border-gray-100/50 shrink-0 overflow-hidden">
 
             {/* Brand Logo & Version */}
             <div className="flex items-center gap-2.5 p-5 pb-3">
@@ -177,8 +177,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 </div>
             </div>
 
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
             {/* Main Navigation */}
-            <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto px-1 py-2 custom-scrollbar">
+            <nav className="flex flex-col gap-1.5 px-1 py-2">
                 <NavItem
                     icon={BookOpen}
                     label="Courses"
@@ -253,15 +254,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </nav>
 
             {/* Academic Controls */}
-            <div className="px-4 pb-3 space-y-2">
-                <div className="space-y-2">
+            <div className="px-4 pt-2 pb-4 space-y-3">
+                <div className="relative">
                     <select
                         value={selectedProgram}
                         onChange={(e) => {
                             setSelectedProgram(e.target.value);
                             setSelectedProgramId(e.target.value);
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                     >
                         {programs.length === 0 && <option value="">Select Program</option>}
                         {programs.map((p) => (
@@ -270,9 +271,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             </option>
                         ))}
                     </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="relative">
                     <select
                         value={selectedYear}
                         onChange={(e) => {
@@ -281,7 +283,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             setSelectedYearId(yearId);
                             if (yearId) fetchCurrentSemester(yearId);
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                     >
                         {academicYears.length === 0 && <option value="">Select Year</option>}
                         {academicYears.map((y) => (
@@ -290,9 +292,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             </option>
                         ))}
                     </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="relative">
                     <select
                         value={selectedTermType}
                         onChange={(e) => {
@@ -300,7 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             setSelectedTermType(termValue);
                             setSelectedTermId(termValue || null);
                         }}
-                        className="w-full px-2.5 py-1.5 rounded-[10px] border border-gray-200 bg-[#f9fafc] text-[11px] font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                     >
                         {termOptions.map((t) => (
                             <option key={t.value} value={t.value}>
@@ -308,11 +311,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             </option>
                         ))}
                     </select>
+                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
                 </div>
 
-                <button className="w-full h-8 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition-colors cursor-pointer">
+                <button className="w-full h-[56px] rounded-[20px] bg-blue-600 hover:bg-blue-700 text-white text-[16px] font-semibold transition-colors cursor-pointer">
                     <Link href="/student-affairs/college-data/new-year">Start a New Year</Link>
                 </button>
+            </div>
             </div>
 
             {/* Footer Settings & User Profile */}
