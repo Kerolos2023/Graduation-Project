@@ -12,7 +12,7 @@ export default function CollegeDataTabs() {
     { id: 'semesters', label: 'Semesters', path: '/student-affairs/college-data/departments-data/levels' },
     { id: 'grades', label: 'Grades', path: '/student-affairs/college-data/departments-data/grades' },
     { id: 'levels', label: 'Credit Load by Level', path: '/student-affairs/college-data/departments-data/credit' },
-    { id: 'courses', label: 'Department Courses', path: '/student-affairs/college-data/departments-data/department-course' },
+    { id: 'courses', label: 'Department Courses', path: '/student-affairs/college-data/departments-data/department-courses' },
   ];
 
   return (
