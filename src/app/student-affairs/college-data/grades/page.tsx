@@ -16,6 +16,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Trash2, Pencil, Loader, Search, Printer, MoreVertical, X } from "lucide-react";
 import { toast } from "sonner";
+import CollegeDataTabs from "@/components/departmentsTabs";
 
 export default function GradesPage() {
   const [grades, setGrades] = useState<GradeSetting[]>([]);
@@ -125,6 +126,7 @@ export default function GradesPage() {
 
   return (
     <div className="space-y-6">
+       <CollegeDataTabs />
       <Card className="border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
         <CardContent className="p-8">
           <div className="flex justify-between items-center mb-6">

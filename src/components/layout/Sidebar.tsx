@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Building2, Settings, LogOut } from 'lucide-react';
+import { BookOpen, Building2, Settings, LogOut, BookAIcon } from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
@@ -194,6 +194,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     onClick={onClose}
                 />
                 <NavItem
+                    icon={BookAIcon}
+                    label="Departments"
+                    href="/student-affairs/college-data/department-data"
+                    isActive={pathname?.includes('/department-data')}
+                    onClick={onClose}
+                />
+                <NavItem
                     icon={PiBuildingOfficeLight}
                     label="Buildings"
                     href="/student-affairs/college-data/buildings"
@@ -214,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     isActive={pathname?.includes('/rooms')}
                     onClick={onClose}
                 />
-                <NavItem
+                {/* <NavItem
                     icon={FaUniversity}
                     label="Grades"
                     href="/student-affairs/college-data/grades"
@@ -227,7 +234,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     href="/student-affairs/college-data/levels"
                     isActive={pathname?.includes('/levels')}
                     onClick={onClose}
-                />
+                /> */}
                 <NavItem
                     icon={LuClipboardType}
                     label="Definition of Periods"
