@@ -1,4 +1,6 @@
  
+
+
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -12,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Pagination } from '@/components/ui/pagination';
 
 import { levelService, AcademicLevel } from "@/services/levelsServices";
-
-export default function AcademicLevelsPage() {
+import CollegeDataTabs from "@/components/departmentsTabs";
+   export default function AcademicLevelsPage() {
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
@@ -110,11 +112,18 @@ export default function AcademicLevelsPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 bg-[#F8F9FB] min-h-screen">
+    
+    
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen ">
+      <CollegeDataTabs />
+      
+      
       <div className="max-w-6xl mx-auto space-y-6">
-
         
-        <div className="bg-white p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
+ 
+        
+         
+        <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
               {editingId ? "Update Academic Level" : "Add Academic Level"}

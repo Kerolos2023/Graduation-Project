@@ -579,7 +579,7 @@ export default function SchedulePage() {
             <select
               value={selectedLevelId}
               onChange={(e) => setSelectedLevelId(e.target.value)}
-              className="w-full px-3 py-2 rounded-[10px] border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              className="w-full h-11 px-3 rounded-[10px] border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
             >
               <option value="">Select level</option>
               {levels.map((level) => (
@@ -591,7 +591,7 @@ export default function SchedulePage() {
           </div>
           <button
             onClick={openModal}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors cursor-pointer md:self-end"
+            className="flex h-11 items-center justify-center gap-2 px-4 rounded-[10px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors cursor-pointer md:self-end"
           >
             <Plus className="w-4 h-4" />
             Add Period
@@ -710,7 +710,7 @@ export default function SchedulePage() {
                                   </div>
                                   <button
                                     onClick={() => handleDeleteSession(session.id)}
-                                    className="absolute top-1 right-1 p-1 text-gray-500 hover:text-red-600"
+                                    className="absolute top-1 right-1 p-1 text-gray-500 hover:text-red-600 cursor-pointer"
                                     title="Delete session"
                                   >
                                     <Trash2 className="w-3 h-3" />
@@ -741,7 +741,7 @@ export default function SchedulePage() {
               <h2 className="text-lg font-bold text-gray-900">Period</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-full hover:bg-gray-100"
+                className="p-1 rounded-full hover:bg-gray-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -754,7 +754,7 @@ export default function SchedulePage() {
                   type="time"
                   value={periodForm.startTime}
                   onChange={(e) => setPeriodForm({ ...periodForm, startTime: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm"
                 />
               </div>
               <div>
@@ -763,7 +763,7 @@ export default function SchedulePage() {
                   type="time"
                   value={periodForm.endTime}
                   onChange={(e) => setPeriodForm({ ...periodForm, endTime: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm"
                 />
               </div>
               <div>
@@ -771,7 +771,7 @@ export default function SchedulePage() {
                 <select
                   value={periodForm.day}
                   onChange={(e) => setPeriodForm({ ...periodForm, day: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm bg-white"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer"
                 >
                   <option value="">Select Day</option>
                   {DAYS.map((d) => (
@@ -786,7 +786,7 @@ export default function SchedulePage() {
                 <select
                   value={periodForm.type}
                   onChange={(e) => setPeriodForm({ ...periodForm, type: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm bg-white"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer"
                 >
                   <option value="Lecture">Lecture</option>
                   <option value="Section">Section</option>
@@ -801,7 +801,7 @@ export default function SchedulePage() {
                     setSelectedBuildingId(e.target.value);
                     setPeriodForm((prev) => ({ ...prev, roomId: "" }));
                   }}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm bg-white cursor-pointer"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer"
                 >
                   <option value="">Select Building</option>
                   {buildings.map((b) => (
@@ -817,7 +817,7 @@ export default function SchedulePage() {
                   value={periodForm.roomId}
                   onChange={(e) => setPeriodForm({ ...periodForm, roomId: e.target.value })}
                   disabled={!selectedBuildingId || isLoadingRooms}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm bg-white cursor-pointer disabled:opacity-60"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer disabled:opacity-60"
                 >
                   <option value="">
                     {isLoadingRooms ? "Loading rooms..." : "Select Room"}
@@ -834,7 +834,7 @@ export default function SchedulePage() {
                 <select
                   value={periodForm.instructorId}
                   onChange={(e) => setPeriodForm({ ...periodForm, instructorId: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm bg-white"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer"
                 >
                   <option value="">Select Instructor</option>
                   {staff.map((m) => (
@@ -850,7 +850,7 @@ export default function SchedulePage() {
                   type="number"
                   value={periodForm.capacity}
                   onChange={(e) => setPeriodForm({ ...periodForm, capacity: e.target.value })}
-                  className="w-full mt-1 border border-gray-200 rounded-[10px] px-3 py-2 text-sm"
+                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm"
                   placeholder="Optional"
                 />
               </div>
@@ -859,7 +859,7 @@ export default function SchedulePage() {
             <button
               onClick={handleSaveSession}
               disabled={isSavingSession}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-[10px] text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-[10px] text-sm font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSavingSession ? "Saving…" : "Save"}
             </button>

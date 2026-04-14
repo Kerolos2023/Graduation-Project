@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { StudyLoadService, StudyLoadResponse } from "@/services/studyLoadServices";
-
+import CollegeDataTabs from "@/components/departmentsTabs";
 export default function CreditLoadPage() {
   const [data, setData] = useState<StudyLoadResponse[]>([]);
   const [search, setSearch] = useState("");
@@ -115,7 +115,12 @@ export default function CreditLoadPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-white min-h-screen">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen ">
+         <CollegeDataTabs />
+
+         <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
+
+         
 
       
       <section className="space-y-6">
@@ -198,8 +203,11 @@ export default function CreditLoadPage() {
           )}
         </Button>
       </section>
+      </div>
 
-      <hr className="border-gray-100" />
+          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+
+        
 
       <section className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
@@ -225,6 +233,7 @@ export default function CreditLoadPage() {
             </Button>
           </div>
         </div>
+        
 
         
 
@@ -332,5 +341,6 @@ export default function CreditLoadPage() {
         </div>
       </section>
     </div>
+     </div>
   );
 }
