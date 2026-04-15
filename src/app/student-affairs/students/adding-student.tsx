@@ -7,9 +7,11 @@ import { BiHide, BiSolidShow } from "react-icons/bi";
 export default function PopupForm({
   open,
   setOpen,
+  onSuccess,
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
+  onSuccess?: () => void;
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -22,20 +24,28 @@ export default function PopupForm({
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setResponseMessage("");
+    setMessage("");
 
+    // validation
     if (
-      !formData.name.trim() ||
-      !formData.studentCode.trim() ||
-      !formData.nationalId.trim() ||
-      !formData.username.trim() ||
-      !formData.password.trim()
+      !formData.name ||
+      !formData.studentCode ||
+      !formData.nationalId ||
+      !formData.username ||
+      !formData.password
     ) {
-      setResponseMessage("Please fill all fields correctly.");
+      setMessage("Please fill all fields");
       return;
     }
 
@@ -53,7 +63,7 @@ export default function PopupForm({
         }
       );
 
-      setResponseMessage("Student added successfully!");
+      setMessage("Student added successfully");
 
       setFormData({
         name: "",
@@ -62,14 +72,13 @@ export default function PopupForm({
         username: "",
         password: "",
       });
-    } catch (error: any) {
-      if (error.response?.status === 409) {
-        setResponseMessage("This student already exists!");
-      } else if (error.response?.status === 400) {
-        setResponseMessage("Invalid data. Please check your inputs.");
-      } else {
-        setResponseMessage(error.response?.data?.message || "Something went wrong");
-      }
+
+      setOpen(false);
+      onSuccess?.();
+    } catch (err: any) {
+      setMessage(
+        err?.response?.data?.message || "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
@@ -78,104 +87,104 @@ export default function PopupForm({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
-      {/* click outside */}
-      <div className="absolute inset-0" onClick={() => setOpen(false)} />
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      {/* overlay close */}
+      <div
+        className="absolute inset-0"
+        onClick={() => setOpen(false)}
+      />
 
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl relative z-10">
+      <div className="bg-white w-full max-w-3xl rounded-2xl p-6 relative z-10">
+
         {/* close button */}
         <button
           onClick={() => setOpen(false)}
-          className="absolute right-4 top-3 text-gray-500 cursor-pointer"
+          className="absolute top-3 right-4 text-gray-500"
         >
           ✕
         </button>
 
-        <h2 className="text-lg font-semibold mb-6 text-center">
-          Adding Student
+        <h2 className="text-xl font-bold mb-5 text-center">
+          Add Student
         </h2>
 
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
-          <div>
-            <label className="text-sm text-gray-600">Name</label>
-            <input
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full mt-1 border rounded-lg px-3 py-2"
-            />
-          </div>
+          {/* Name */}
+          <input
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Name"
+            className="border p-2 rounded-lg"
+          />
 
-          <div>
-            <label className="text-sm text-gray-600">Student Code</label>
-            <input
-              value={formData.studentCode}
-              onChange={(e) =>
-                setFormData({ ...formData, studentCode: e.target.value })
-              }
-              className="w-full mt-1 border rounded-lg px-3 py-2"
-            />
-          </div>
+          {/* Student Code */}
+          <input
+            name="studentCode"
+            value={formData.studentCode}
+            onChange={handleChange}
+            placeholder="Student Code"
+            className="border p-2 rounded-lg"
+          />
 
-          <div>
-            <label className="text-sm text-gray-600">
-              National ID / Passport
-            </label>
-            <input
-              value={formData.nationalId}
-              onChange={(e) =>
-                setFormData({ ...formData, nationalId: e.target.value })
-              }
-              className="w-full mt-1 border rounded-lg px-3 py-2"
-            />
-          </div>
+          {/* National ID */}
+          <input
+            name="nationalId"
+            value={formData.nationalId}
+            onChange={handleChange}
+            placeholder="National ID"
+            className="border p-2 rounded-lg"
+          />
 
-          <div>
-            <label className="text-sm text-gray-600">Username</label>
-            <input
-              value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-              className="w-full mt-1 border rounded-lg px-3 py-2"
-            />
-          </div>
+          {/* Username */}
+          <input
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Username"
+            className="border p-2 rounded-lg"
+          />
 
+          {/* Password */}
           <div className="relative">
-            <label className="text-sm text-gray-600">Password</label>
             <input
+              name="password"
               type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="w-full mt-1 border rounded-lg px-3 py-2"
+              onChange={handleChange}
+              placeholder="Password"
+              className="border p-2 rounded-lg w-full"
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[70%] -translate-y-1/2 text-gray-500"
+              className="absolute right-3 top-2 text-gray-500"
             >
-              {showPassword ? <BiHide size={20} /> : <BiSolidShow size={20} />}
+              {showPassword ? (
+                <BiHide size={20} />
+              ) : (
+                <BiSolidShow size={20} />
+              )}
             </button>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="col-span-full bg-blue-600 text-white py-2 rounded-xl"
+            className="col-span-1 sm:col-span-2 bg-blue-600 text-white py-2 rounded-xl"
           >
-            {loading ? "Submitting..." : "Add"}
+            {loading ? "Adding..." : "Add Student"}
           </button>
 
-          {responseMessage && (
-            <p className="col-span-full text-center mt-2 text-sm">
-              {responseMessage}
+          {/* Message */}
+          {message && (
+            <p className="col-span-2 text-center text-sm text-gray-600">
+              {message}
             </p>
           )}
         </form>

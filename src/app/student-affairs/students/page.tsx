@@ -7,6 +7,7 @@ import axiosInstance from '@/lib/axios';
 import { Pagination } from '@/components/ui/pagination';
 import { useStudentContext } from '@/hooks/useStudentContext';
 import StudentFormsPopup from "@/components/forms";
+import PopupForm from './adding-student';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
@@ -78,7 +79,7 @@ export default function StudentsPage() {
     const [isLoading, setIsLoading] = useState(false);
     
     // ── Context States ─────────────────────────────────────────────────────────
-    const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, setActiveTab } = useStudentContext();
+    const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, isAddPopupOpen, setActiveTab } = useStudentContext();
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
@@ -132,6 +133,10 @@ export default function StudentsPage() {
     return (
         <div className="w-full flex flex-col gap-6 font-inter pb-8">
             <StudentFormsPopup />
+            <PopupForm
+                open={isAddPopupOpen}
+                setOpen={setIsAddPopupOpen}
+                />
             {/* ── Table Card ── */}
             <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
 

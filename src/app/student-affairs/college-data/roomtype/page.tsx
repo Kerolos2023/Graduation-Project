@@ -21,7 +21,7 @@ export default function RoomTypePage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
+      const url = `/Building/room-types?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
         }`;
 
       const response = await axiosInstance.get(url);
