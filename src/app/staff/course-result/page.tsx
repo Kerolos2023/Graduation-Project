@@ -130,7 +130,7 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
       const res = await staffControlService.updateDegree(academicProgramId, {
         studentId,
         courseAssessmentId,
-        value: String(numVal),
+        degree: String(numVal),
       });
       onUpdated(
         studentId,
@@ -342,7 +342,7 @@ export default function CourseResultPage() {
         CourseOfferingId: selectedCourseOfferingId,
       };
       if (groupNumber) params.GroupNumber = Number(groupNumber);
-      if (searchValue) params.StudentCodeOrName = searchValue;
+      if (searchValue) params["Filter.SearchValue"] = searchValue;
       if (sortColumn) params["Filter.SortColumn"] = sortColumn;
 
       const res = await staffControlService.getStudents(
@@ -390,7 +390,7 @@ export default function CourseResultPage() {
       setTotalPages(1);
       setHasFetched(false);
     }
-  }, [fetchStudents, selectedCourseOfferingId]);
+  }, [fetchStudents]);
 
   // ── Handle Degree Update ──────────────────────────────────────────────────
   const handleDegreeUpdated = (

@@ -47,7 +47,7 @@ export interface StudentsControlResponse {
 export interface GetStudentsControlParams {
   CourseOfferingId?: string;
   GroupNumber?: number;
-  StudentCodeOrName?: string;
+  "Filter.SearchValue"?: string;
   "Filter.PageNumber"?: number;
   "Filter.PageSize"?: number;
   "Filter.SortColumn"?: string;
@@ -56,7 +56,7 @@ export interface GetStudentsControlParams {
 export interface UpdateDegreeBody {
   studentId: string;
   courseAssessmentId: string;
-  value: string;
+  degree: string;
 }
 
 export interface UpdateDegreeResponse {

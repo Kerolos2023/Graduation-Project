@@ -202,30 +202,37 @@ export default function AdvisorRegisterPage() {
       .catch(console.error);
   }, [programId]);
 
+  // Core search — fires even with an empty name (backend returns first page)
+  const performSearch = async (val: string) => {
+    setIsSearching(true);
+    try {
+      const params: Record<string, string | number> = { PageNumber: 1, PageSize: 20 };
+      if (val.trim()) params.SearchValue = val.trim();
+      const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/stuff/advisor-students`, { params });
+      const items = res.data?.items || [];
+      setSearchResults(items);
+      setShowDropdown(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Search students with debounce
   const handleSearchChange = (val: string) => {
     setSearchValue(val);
-    if (!val.trim()) {
-      setSearchResults([]);
-      setShowDropdown(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => performSearch(val), 300);
+  };
+
+  // On focus: immediately show results (first page if empty, filtered if has value)
+  const handleSearchFocus = () => {
+    if (searchResults.length > 0) {
+      setShowDropdown(true);
       return;
     }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/stuff/advisor-students`, {
-          params: { PageNumber: 1, PageSize: 10, SearchValue: val },
-        });
-        const items = res.data?.items || [];
-        setSearchResults(items);
-        setShowDropdown(true);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300);
+    performSearch(searchValue);
   };
 
   const selectStudent = (s: StudentResult) => {
@@ -468,7 +475,7 @@ export default function AdvisorRegisterPage() {
               placeholder="Search by name or student code…"
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+              onFocus={handleSearchFocus}
               className="w-full h-11 pl-10 pr-10 rounded-[12px] border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
             />
             {searchValue && (
