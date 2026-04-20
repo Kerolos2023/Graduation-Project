@@ -45,6 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const {
         setSelectedProgramId,
         setSelectedSemesterId,
+        setSelectedSemesterName,
         setSelectedYearId,
         setSelectedTermId,
     } = useAcademicContext();
@@ -118,6 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             if (semester?.id) {
                 setCurrentSemester({ id: semester.id, name: semester.name || "Current" });
                 setSelectedSemesterId(semester.id);
+                setSelectedSemesterName(semester.name || null);
                 const termFromName =
                     semester.name === "Fall" ? "1" :
                     semester.name === "Spring" ? "2" :
@@ -127,6 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             } else {
                 setCurrentSemester(null);
                 setSelectedSemesterId(null);
+                setSelectedSemesterName(null);
                 setSelectedTermType("");
                 setSelectedTermId(null);
             }
@@ -302,6 +305,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             const termValue = e.target.value;
                             setSelectedTermType(termValue);
                             setSelectedTermId(termValue || null);
+                            // Map term number to semester name for course-offerings API
+                            const nameMap: Record<string, string> = { "1": "Fall", "2": "Spring", "3": "Summer" };
+                            setSelectedSemesterName(nameMap[termValue] || null);
                         }}
                         className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                     >

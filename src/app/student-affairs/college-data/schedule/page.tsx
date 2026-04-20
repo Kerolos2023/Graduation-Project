@@ -198,7 +198,28 @@ const normalizeTeachingSession = (item: any): TeachingSession => ({
 });
 
 export default function SchedulePage() {
-  const { selectedProgramId, selectedSemesterId } = useAcademicContext();
+  const { selectedProgramId, selectedSemesterId, selectedYearId, selectedSemesterName } = useAcademicContext();
+
+  // Fetch current academic year locally (required by course-offerings API)
+  const [academicYearId, setAcademicYearId] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchYear = async () => {
+      try {
+        const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years/current`);
+        const raw = res.data?.data ?? res.data;
+        const id = raw?.id ?? raw?.Id ?? null;
+        if (id) setAcademicYearId(id);
+      } catch (err) {
+        console.error("Error fetching current academic year:", err);
+      }
+    };
+    fetchYear();
+  }, []);
+
+  // Prefer the sidebar-selected year, fall back to fetched current year
+  const effectiveYearId = selectedYearId || academicYearId;
+  // semesterType comes directly from sidebar context name ("Fall"/"Spring"/"Summer")
+  const semesterType = selectedSemesterName;
 
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [selectedLevelId, setSelectedLevelId] = useState<string>("");
@@ -292,32 +313,37 @@ export default function SchedulePage() {
     if (isMissingContext || !selectedLevelId) return;
     setIsLoadingOfferings(true);
     try {
+      const params: Record<string, string> = {
+        levelId: selectedLevelId,
+      };
+      // API requires semesterType ("Fall"/"Spring"/"Summer"), NOT semesterId
+      if (semesterType) params.semesterType = semesterType;
+      if (effectiveYearId) params.academicYearId = effectiveYearId;
+
       const res = await axiosInstance.get(`/programs/${selectedProgramId}/course-offerings`, {
-        params: {
-          levelId: selectedLevelId,
-          semesterId: selectedSemesterId,
-        },
-        // Avoid sending a JSON Content-Type header on GET if the API rejects it.
-        headers: {
-          "Content-Type": undefined,
-        },
+        params,
+        headers: { "Content-Type": undefined },
       });
       const data = res.data?.items || res.data?.data || res.data || [];
       const items: CourseOffering[] = Array.isArray(data)
-        ? data.map((c: any) => ({
-          id:
-            c.id ||
-            c.Id ||
-            c.courseOfferingId ||
-            c.courseOfferingID ||
-            c.courseOfferingGuid ||
-            c.courseId ||
-            c.CourseId ||
-            c.courseOffering?.id,
-          name: c.name || c.Name || c.courseName || c.CourseName || "Unnamed",
-          code: c.code || c.Code,
-          numberOfGroups: c.numberOfGroups || c.NumberOfGroups || 1,
-        }))
+        ? data
+            .map((c: { id?: string; Id?: string; courseOfferingId?: string; courseOfferingID?: string; courseOfferingGuid?: string; courseId?: string; CourseId?: string; courseOffering?: { id?: string }; name?: string; Name?: string; courseName?: string; CourseName?: string; code?: string; Code?: string; numberOfGroups?: number; NumberOfGroups?: number }) => ({
+              id: (
+                c.id ||
+                c.Id ||
+                c.courseOfferingId ||
+                c.courseOfferingID ||
+                c.courseOfferingGuid ||
+                c.courseId ||
+                c.CourseId ||
+                c.courseOffering?.id ||
+                ""
+              ) as string,
+              name: c.name || c.Name || c.courseName || c.CourseName || "Unnamed",
+              code: (c.code || c.Code) as string | undefined,
+              numberOfGroups: c.numberOfGroups || c.NumberOfGroups || 1,
+            }))
+            .filter((item) => Boolean(item.id))
         : [];
       setCourseOfferings(items);
       if (items.length > 0) {
@@ -379,7 +405,7 @@ export default function SchedulePage() {
     setIsLoadingRooms(true);
     setRooms([]);
     try {
-      const url = `/buildings/${selectedBuildingId}/rooms/all?PageNumber=1&PageSize=1000`;
+      const url = `/buildings/${selectedBuildingId}/rooms`;
       const res = await axiosInstance.get(url);
       const items = res.data?.items || res.data?.data || res.data || [];
       setRooms(Array.isArray(items) ? items : []);
@@ -393,7 +419,7 @@ export default function SchedulePage() {
 
   const fetchBuildings = async () => {
     try {
-      const res = await axiosInstance.get(`/Building/all`);
+      const res = await axiosInstance.get(`/buildings`);
       const items = res.data?.items || [];
       setBuildings(Array.isArray(items) ? items : []);
       if (!selectedBuildingId && Array.isArray(items) && items.length > 0) {
