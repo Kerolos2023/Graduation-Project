@@ -26,7 +26,12 @@ export default function ContactInformation() {
 
     const fetchData = async () => {
       const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/${studentId}/contact-data`
+        `/colleges/${collegeId}/students/contact-data`,
+        {
+          params:{
+            studentId,
+          }
+        }
       );
 
       setFormData({
@@ -49,11 +54,19 @@ export default function ContactInformation() {
 
     setLoading(true);
     setResponseMessage("");
+    const payload = {
+  
+  city: formData.city,
+  address: formData.address,
+  postalCode: formData.postalCode,
+  phoneNumber: formData.phoneNumber,
+  email: formData.email,
+};
 
     try {
       await axiosInstance.put(
-        `/colleges/${collegeId}/students/${studentId}/contact-data`,
-        formData
+        `/colleges/${collegeId}/students/contact-data`,
+        payload
       );
 
       setResponseMessage("Updated successfully ✅");

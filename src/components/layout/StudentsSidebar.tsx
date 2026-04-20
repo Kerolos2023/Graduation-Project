@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Settings, LogOut, Users } from 'lucide-react';
+import { Settings, LogOut, Users,UserPen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
 
@@ -86,6 +86,15 @@ export const StudentsSidebar: React.FC<StudentsSidebarProps> = ({ onClose }) => 
                     label="Students"
                     href="/student-affairs/students"
                     isActive={pathname?.startsWith('/student-affairs/students')}
+                    onClick={onClose}
+                />
+            </nav>
+            <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto px-1 py-2 custom-scrollbar min-h-0">
+                <NavItem
+                    icon={UserPen}
+                    label="Basic Data Profile"
+                    href="/student/basic-data-profile"
+                    isActive={pathname?.startsWith('/student/basic-data-profile')}
                     onClick={onClose}
                 />
             </nav>

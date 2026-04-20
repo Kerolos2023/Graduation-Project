@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Menu } from "lucide-react";
 import { StudentSidebar } from "@/components/layout/StudentSidebar";
-
+import { StudentProvider } from "@/hooks/useStudentContext";
 export default function StudentLayout({
   children,
 }: {
@@ -48,7 +48,9 @@ export default function StudentLayout({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0 md:pr-2 pb-4 scroll-smooth custom-scrollbar">
-          {children}
+          <StudentProvider>
+            {children}
+          </StudentProvider>
         </div>
       </div>
     </div>

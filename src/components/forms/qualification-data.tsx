@@ -37,19 +37,26 @@ export default function PreviousQualificationData() {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/${studentId}/previous-qualification-data`
-      );
+      try {
+        const res = await axiosInstance.get(
+          `/colleges/${collegeId}/students/previous-qualification-data`,
+          {
+            params: { studentId },
+          }
+        );
 
-      setFormData({
-        schoolName: res.data.schoolName || "",
-        enrollmentYear: res.data.enrollmentYear || "",
-        seatNumber: res.data.seatNumber || "",
-        qualification: res.data.qualification || "",
-        graduationYear: res.data.graduationYear || "",
-        totalGrade: res.data.totalGrade || "",
-        admissionType: res.data.admissionType ?? "",
-      });
+        setFormData({
+          schoolName: res.data.schoolName || "",
+          enrollmentYear: res.data.enrollmentYear || "",
+          seatNumber: res.data.seatNumber || "",
+          qualification: res.data.qualification || "",
+          graduationYear: res.data.graduationYear || "",
+          totalGrade: res.data.totalGrade || "",
+          admissionType: res.data.admissionType ?? "",
+        });
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchData();
@@ -58,27 +65,30 @@ export default function PreviousQualificationData() {
   // ✅ SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!studentId) return;
 
     setLoading(true);
     setResponseMessage("");
 
+    const payload = {
+
+      schoolName: formData.schoolName,
+      enrollmentYear: formData.enrollmentYear.toString(),
+      seatNumber: formData.seatNumber,
+      qualification: formData.qualification,
+      graduationYear: formData.graduationYear.toString(),
+      totalGrade: formData.totalGrade.toString(),
+
+      admissionType:
+        formData.admissionType === ""
+          ? null
+          : Number(formData.admissionType),
+    };
+
     try {
       await axiosInstance.put(
-        `/colleges/${collegeId}/students/${studentId}/previous-qualification-data`,
-        {
-          schoolName: formData.schoolName,
-          enrollmentYear: formData.enrollmentYear,
-          seatNumber: formData.seatNumber,
-          qualification: formData.qualification,
-          graduationYear: formData.graduationYear,
-          totalGrade: formData.totalGrade,
-          admissionType:
-            formData.admissionType === ""
-              ? null
-              : Number(formData.admissionType),
-        }
+        `/colleges/${collegeId}/students/previous-qualification-data`,
+        payload
       );
 
       setResponseMessage("Updated successfully ✅");
@@ -93,51 +103,50 @@ export default function PreviousQualificationData() {
   };
 
   return (
-      <div className="bg-white p-9 shadow-sm rounded-[20px]"> 
-    <form className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" onSubmit={handleSubmit}>
-      {Object.entries(formData).map(([key, value]) => (
-        <div key={key} className="flex flex-col gap-1">
-          <label className="text-[13px] text-gray-500 capitalize">
-            {key.replace(/([A-Z])/g, " $1")}
-          </label>
-
-          <input
-            type={
-              key.includes("Year") || key === "admissionType"
-                ? "number"
-                : "text"
-            }
-            value={value}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                [key]:
-                  key === "admissionType"
-                    ? e.target.value === ""
-                      ? ""
-                      : Number(e.target.value)
-                    : e.target.value,
-              })
-            }
-            className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-          />
-        </div>
-      ))}
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
+    <div className="bg-white p-9 shadow-sm rounded-[20px]">
+      <form
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        onSubmit={handleSubmit}
       >
-        {loading ? "Updating..." : "Update"}
-      </button>
+        {Object.entries(formData).map(([key, value]) => (
+          <div key={key} className="flex flex-col gap-1">
+            <label className="text-[13px] text-gray-500 capitalize">
+              {key.replace(/([A-Z])/g, " $1")}
+            </label>
 
-      {responseMessage && (
-        <p className="col-span-full text-center text-green-600 text-sm">
-          {responseMessage}
-        </p>
-      )}
-    </form>
+            <input
+              type={key === "admissionType" ? "number" : "text"}
+              value={value}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  [key]:
+                    key === "admissionType"
+                      ? e.target.value === ""
+                        ? ""
+                        : Number(e.target.value)
+                      : e.target.value,
+                })
+              }
+              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+            />
+          </div>
+        ))}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
+        >
+          {loading ? "Updating..." : "Update"}
+        </button>
+
+        {responseMessage && (
+          <p className="col-span-full text-center text-green-600 text-sm">
+            {responseMessage}
+          </p>
+        )}
+      </form>
     </div>
   );
 }

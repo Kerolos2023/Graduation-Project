@@ -36,7 +36,12 @@ export default function MilitaryData() {
 
     const fetchData = async () => {
       const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/${studentId}/military-data`
+        `/colleges/${collegeId}/students/military-data`,
+        {
+          params:{
+            studentId,
+          }
+        }
       );
 
       setFormData({
@@ -60,21 +65,19 @@ export default function MilitaryData() {
 
     setLoading(true);
     setResponseMessage("");
-
+    const payload = {
+  studentId,
+  militaryStatus: formData.militaryStatus,
+  militaryNumber: formData.militaryNumber,
+  decisionNumber: formData.decisionNumber,
+  decisionDate: formData.decisionDate,
+  enrollmentDate: formData.enrollmentDate,
+  endDate: formData.endDate,
+};
     try {
       await axiosInstance.put(
-        `/colleges/${collegeId}/students/${studentId}/military-data`,
-        {
-          militaryStatus:
-            formData.militaryStatus === ""
-              ? null
-              : Number(formData.militaryStatus),
-          militaryNumber: formData.militaryNumber,
-          decisionNumber: formData.decisionNumber,
-          decisionDate: formData.decisionDate || null,
-          enrollmentDate: formData.enrollmentDate || null,
-          endDate: formData.endDate || null,
-        }
+        `/colleges/${collegeId}/students/military-data`,
+        payload
       );
 
       setResponseMessage("Updated successfully ✅");

@@ -39,7 +39,12 @@ export default function StudentParentForm() {
 
     const fetchParentData = async () => {
       const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/${studentId}/parent-data`
+        `/colleges/${collegeId}/students/parent-data`,
+        {
+          params:{
+            studentId,
+          }
+        }
       );
 
       setFormData({
@@ -65,10 +70,21 @@ export default function StudentParentForm() {
     setLoading(true);
     setResponseMessage("");
 
+  const payload = {
+  studentId,
+  guardianName: formData.guardianName,
+  relationshipDegree: formData.relationshipDegree,
+  job: formData.job,
+  motherName: formData.motherName,
+  guardianCity: formData.guardianCity,
+  guardianEmail: formData.guardianEmail,
+  guardianPhoneNumber: formData.guardianPhoneNumber,
+  guardianAddress: formData.guardianAddress,
+};
     try {
       await axiosInstance.put(
-        `/colleges/${collegeId}/students/${studentId}/parent-data`,
-        formData
+        `/colleges/${collegeId}/students/parent-data`,
+        payload
       );
 
       setResponseMessage("Updated successfully ✅");

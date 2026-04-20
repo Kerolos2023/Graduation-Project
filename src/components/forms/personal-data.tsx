@@ -20,7 +20,6 @@ export default function PersonalData() {
     nationality: "",
   });
 
-  // ✅ LABEL MAPPING (ONLY ADDITION)
   const getLabel = (key: string) => {
     const labels: Record<string, string> = {
       name: "Name",
@@ -42,7 +41,12 @@ export default function PersonalData() {
 
     const fetchData = async () => {
       const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/${studentId}/personal-data`
+        `/colleges/${collegeId}/students/personal-data`,
+        {
+          params:{
+            studentId,
+          }
+        }
       );
 
       setFormData({
@@ -65,7 +69,7 @@ export default function PersonalData() {
     e.preventDefault();
 
     await axiosInstance.put(
-      `/colleges/${collegeId}/students/${studentId}/personal-data`,
+      `/colleges/${collegeId}/students/personal-data`,
       formData
     );
 
