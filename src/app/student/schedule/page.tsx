@@ -65,92 +65,98 @@ export default function SchedulePage() {
     <div className="p-6 bg-white rounded-lg shadow">
       <h1 className="text-lg font-semibold mb-4">Schedule</h1>
 
-      <div className="space-y-3">
+      {/* ✅ التعديل الوحيد */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[900px]">
 
-        {/* HEADER */}
-        <div className="grid grid-cols-13 bg-gray-100 rounded-xl text-xs">
-          <div className="p-3 font-medium text-gray-600">Day</div>
-          {slots.map((h, i) => (
-            <div key={i} className="p-3 text-center text-gray-500">
-              {h}-{String(Number(h.split(":")[0]) + 1).padStart(2,"0")}:00
+          <div className="space-y-3">
+
+            {/* HEADER */}
+            <div className="grid grid-cols-13 bg-gray-100 rounded-xl text-xs">
+              <div className="p-3 font-medium text-gray-600">Day</div>
+              {slots.map((h, i) => (
+                <div key={i} className="p-3 text-center text-gray-500">
+                  {h}-{String(Number(h.split(":")[0]) + 1).padStart(2,"0")}:00
+                </div>
+              ))}
             </div>
-          ))}
+
+            {/* ROWS */}
+            {DAYS.map((day) => {
+              const daySessions = grouped[day];
+
+              return (
+                <div
+                  key={day}
+                  className="grid grid-cols-13 items-stretch border-[1px] border-gray-200 rounded-xl text-xs overflow-hidden"
+                >
+                  <div className="ps-3  font-medium text-gray-800 flex items-center justify-center">
+                    {day}
+                  </div>
+
+                  {(() => {
+                    const cells = [];
+                    let i = 0;
+
+                    while (i < slots.length) {
+                      const slot = slots[i];
+                      const slotMin = toMinutes(slot);
+
+                      const session = daySessions.find((s) => {
+                        return toMinutes(s.startTime.slice(0,5)) === slotMin;
+                      });
+
+                      if (!session) {
+                        cells.push(
+                          <div key={i} className="p-2 flex items-center justify-center text-gray-600">
+                            -
+                          </div>
+                        );
+                        i++;
+                        continue;
+                      }
+
+                      const start = toMinutes(session.startTime.slice(0,5));
+                      const end = toMinutes(session.endTime.slice(0,5));
+
+                      const span = slots.filter((s) => {
+                        const m = toMinutes(s);
+                        return m >= start && m < end;
+                      }).length;
+
+                      cells.push(
+                        <div 
+                          key={session.sessionId}
+                          className={cn(
+                            "relative p-2 m-1 rounded-lg text-[11px] flex flex-col justify-center",
+                            getColor(session.courseOfferingId)
+                          )}
+                          style={{
+                            gridColumn: `span ${span}`,
+                            minHeight: "60px",
+                          }}
+                        >
+                          <div className="font-semibold">
+                            {session.type}
+                          </div>
+                          <div className="opacity-70 text-[10px]">
+                            {session.startTime.slice(0,5)} - {session.endTime.slice(0,5)}
+                          </div>
+                        </div>
+                      );
+
+                      i += span;
+                    }
+
+                    return cells;
+                  })()}
+                </div>
+              );
+            })}
+
+          </div>
+
         </div>
-
-        {/* ROWS */}
-        {DAYS.map((day) => {
-          const daySessions = grouped[day];
-
-          return (
-            <div
-              key={day}
-              className="grid grid-cols-13 items-stretch border-[1px] border-gray-200 rounded-xl text-xs overflow-hidden"
-            >
-              {/* DAY */}
-              <div className="ps-3  font-medium text-gray-800 flex items-center justify-center">
-                {day}
-              </div>
-
-              {/* CELLS */}
-              {(() => {
-                const cells = [];
-                let i = 0;
-
-                while (i < slots.length) {
-                  const slot = slots[i];
-                  const slotMin = toMinutes(slot);
-
-                  const session = daySessions.find((s) => {
-                    return toMinutes(s.startTime.slice(0,5)) === slotMin;
-                  });
-
-                  if (!session) {
-                    cells.push(
-                      <div key={i} className="p-2 flex items-center justify-center text-gray-600">
-                        -
-                      </div>
-                    );
-                    i++;
-                    continue;
-                  }
-
-                  const start = toMinutes(session.startTime.slice(0,5));
-                  const end = toMinutes(session.endTime.slice(0,5));
-
-                  const span = slots.filter((s) => {
-                    const m = toMinutes(s);
-                    return m >= start && m < end;
-                  }).length;
-
-                  cells.push(
-                    <div 
-                      key={session.sessionId}
-                      className={cn(
-                        "relative p-2 m-1 rounded-lg text-[11px] flex flex-col justify-center",
-                        getColor(session.courseOfferingId)
-                      )}
-                      style={{
-                        gridColumn: `span ${span}`,
-                        minHeight: "60px",
-                      }}
-                    >
-                      <div className="font-semibold">
-                        {session.type}
-                      </div>
-                      <div className="opacity-70 text-[10px]">
-                        {session.startTime.slice(0,5)} - {session.endTime.slice(0,5)}
-                      </div>
-                    </div>
-                  );
-
-                  i += span;
-                }
-
-                return cells;
-              })()}
-            </div>
-          );
-        })}
       </div>
     </div>
   );
