@@ -8,6 +8,7 @@ import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'l
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
+import { SiLevelsdotfyi } from "react-icons/si";
 
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
@@ -246,11 +247,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     isActive={pathname?.includes('/definition-of-periods')}
                     onClick={onClose}
                 />
+                
                 <NavItem
                     icon={BookOpen}
                     label="Schedule"
                     href="/student-affairs/college-data/schedule"
                     isActive={pathname?.includes('/schedule')}
+                    onClick={onClose}
+                />
+                <NavItem
+                    icon={SiLevelsdotfyi}
+                    label="levels"
+                    href="/student-affairs/college-data/levels"
+                    isActive={pathname?.includes('/levels')}
                     onClick={onClose}
                 />
                 

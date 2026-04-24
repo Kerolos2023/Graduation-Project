@@ -5,17 +5,25 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 export interface AcademicContextType {
   selectedProgramId: string | null;
   setSelectedProgramId: (id: string | null) => void;
+
   selectedSemesterId: string | null;
   setSelectedSemesterId: (id: string | null) => void;
-  selectedSemesterName: string | null;   // "Fall" | "Spring" | "Summer"
+
+  selectedSemesterName: string | null;
   setSelectedSemesterName: (name: string | null) => void;
+
   selectedYearId: string | null;
   setSelectedYearId: (id: string | null) => void;
+
   selectedTermId: string | null;
   setSelectedTermId: (id: string | null) => void;
+
+  isAcademicReady: boolean;
 }
 
-const AcademicContext = createContext<AcademicContextType | undefined>(undefined);
+const AcademicContext = createContext<AcademicContextType | undefined>(
+  undefined
+);
 
 export const AcademicProvider = ({ children }: { children: ReactNode }) => {
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
@@ -23,6 +31,9 @@ export const AcademicProvider = ({ children }: { children: ReactNode }) => {
   const [selectedSemesterName, setSelectedSemesterName] = useState<string | null>(null);
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null);
   const [selectedTermId, setSelectedTermId] = useState<string | null>(null);
+
+  // 🔥 READY FLAG (IMPORTANT)
+  const isAcademicReady = !!selectedProgramId && !!selectedSemesterId;
 
   return (
     <AcademicContext.Provider
@@ -37,6 +48,7 @@ export const AcademicProvider = ({ children }: { children: ReactNode }) => {
         setSelectedYearId,
         selectedTermId,
         setSelectedTermId,
+        isAcademicReady,
       }}
     >
       {children}
