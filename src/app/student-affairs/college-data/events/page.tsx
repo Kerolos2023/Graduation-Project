@@ -150,8 +150,7 @@ export default function UniversityEventsPage() {
          <h1 className="hidden print:block text-2xl font-bold mb-4 text-center">University Calendar Events</h1>
 
         <div className="space-y-3">
-          {/* Header */}
-          <div className="grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center px-6 py-4 bg-[#F9FAFB] rounded-[15px] text-[14px] font-bold text-[#181D27] print:bg-gray-100">
+           <div className="grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center px-6 py-4 bg-[#F9FAFB] rounded-[15px] text-[14px] font-bold text-[#181D27] print:bg-gray-100">
             <input type="checkbox" className="h-4 w-4 accent-[#2D60FF] print:hidden" />
             <div>Event</div>
             <div>Start Date</div>
@@ -159,8 +158,7 @@ export default function UniversityEventsPage() {
             <div className="text-right px-2 print:hidden">Actions</div>
           </div>
 
-          {/* Data Rows */}
-          {loading ? (
+           {loading ? (
              <div className="text-center py-10 text-gray-400">Loading events...</div>
           ) : events.length > 0 ? events.map((event) => (
             <div key={event.id} className="grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center px-6 py-4 bg-white border border-[#F2F4F7] rounded-[15px] text-[14px] text-[#181D27] hover:shadow-md transition-all print:border-b print:rounded-none">
