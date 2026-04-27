@@ -1,16 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, ClipboardList } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, ShoppingBag, Loader2, ClipboardList } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   studentServicesService,
   type ServiceHistoryItem,
@@ -18,36 +11,40 @@ import {
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const STATUS_MAP: Record<number, { label: string; className: string; dot: string }> = {
-  0: {
-    label: "Pending",
-    className:
-      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200",
-    dot: "bg-amber-500",
+const STATUS_MAP: Record<string, { dot: string; bg: string; text: string; border: string }> = {
+  Pending: {
+    dot: "bg-amber-400",
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    border: "border-amber-200",
   },
-  1: {
-    label: "Approved",
-    className:
-      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200",
+  Approved: {
     dot: "bg-emerald-500",
+    bg: "bg-emerald-50",
+    text: "text-emerald-600",
+    border: "border-emerald-200",
   },
-  2: {
-    label: "Rejected",
-    className:
-      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-500 border border-red-200",
+  Rejected: {
     dot: "bg-red-500",
+    bg: "bg-red-50",
+    text: "text-red-500",
+    border: "border-red-200",
   },
 };
 
-const StatusBadge = ({ status }: { status: number }) => {
-  const cfg = STATUS_MAP[status] ?? STATUS_MAP[0];
+const StatusBadge = ({ status }: { status: string }) => {
+  const cfg = STATUS_MAP[status] ?? STATUS_MAP["Pending"];
   return (
-    <span className={cfg.className}>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.text} ${cfg.border}`}
+    >
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
-      {cfg.label}
+      {status}
     </span>
   );
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-GB", {
@@ -57,16 +54,21 @@ const formatDate = (iso: string) =>
   });
 
 const formatTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  new Date(iso).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 10;
 
 export default function ServicesHistoryPage() {
+  const router = useRouter();
   const [items, setItems] = useState<ServiceHistoryItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,12 +79,13 @@ export default function ServicesHistoryPage() {
       const res = await studentServicesService.getHistory(currentPage, PAGE_SIZE, search);
       setItems(res.items ?? []);
       setTotalPages(res.totalPages ?? 1);
+      if (totalItems === null) setTotalItems((res.totalPages ?? 1) * PAGE_SIZE);
     } catch {
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search]);
+  }, [currentPage, search, totalItems]);
 
   useEffect(() => {
     fetchData();
@@ -95,131 +98,143 @@ export default function ServicesHistoryPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-5 h-full">
 
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-200">
-            <ClipboardList className="w-5 h-5 text-white" strokeWidth={2} />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">My Services</h1>
-            <p className="text-sm text-gray-500">Track your service requests</p>
-          </div>
+      <div className="flex items-center gap-4 flex-wrap">
+        {/* Title + badge */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <h1 className="text-xl font-bold text-gray-900">Services</h1>
+          {totalItems !== null && (
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold border border-blue-100">
+              {totalItems} Request{totalItems !== 1 ? "s" : ""}
+            </span>
+          )}
         </div>
 
-        <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        {/* Search — center */}
+        <form onSubmit={handleSearch} className="flex-1 min-w-[160px] max-w-xs mx-auto relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search services…"
-            className="w-full sm:w-64 pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition shadow-sm"
+            placeholder="Search"
+            className="w-full pl-10 pr-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition shadow-sm"
           />
         </form>
+
+        {/* CTA button */}
+        <button
+          onClick={() => router.push("/student/services")}
+          className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[.98] text-white text-sm font-semibold transition-all shadow-sm shadow-blue-200 cursor-pointer"
+        >
+          <ShoppingBag className="w-4 h-4" />
+          Request a New Service
+        </button>
       </div>
 
       {/* ── Table card ── */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col bg-white rounded-2xl border border-gray-200 overflow-hidden">
 
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-gray-400 text-sm flex-1">
-            Loading…
+          <div className="flex flex-col items-center justify-center flex-1 gap-3 text-gray-400 text-sm py-20">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span>Loading...</span>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 flex-1">
+          <div className="flex flex-col items-center justify-center flex-1 gap-3 py-20">
             <ClipboardList className="w-10 h-10 text-gray-300" />
             <p className="text-gray-400 text-sm font-medium">No service requests found</p>
           </div>
         ) : (
-          /* Table wraps its own overflow-x-auto internally */
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50 hover:bg-gray-50">
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Student Code
-                  </TableHead>
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Service Name
-                  </TableHead>
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Status
-                  </TableHead>
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </TableHead>
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Created
-                  </TableHead>
-                  <TableHead className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Updated
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
+          <div className="flex-1 overflow-auto custom-scrollbar">
+            <table className="w-full min-w-[800px] border-collapse">
 
-              <TableBody>
+              {/* Head */}
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-gray-100 border-b border-gray-200">
+                  {["Order ID", "Service Name", "Status", "Amount", "Created At", "Updated At"].map((col) => (
+                    <th
+                      key={col}
+                      className="px-6 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap"
+                    >
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              {/* Body */}
+              <tbody className="divide-y divide-gray-100">
                 {items.map((item, idx) => (
-                  <TableRow key={idx} className="hover:bg-gray-50/60 transition-colors border-gray-100">
+                  <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
 
-                    {/* Student Code */}
-                    <TableCell className="px-6 py-4">
+                    {/* Order ID */}
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-mono font-semibold text-gray-700">
                         #{item.studentCode}
                       </span>
-                    </TableCell>
+                    </td>
 
                     {/* Service Name */}
-                    <TableCell className="px-6 py-4 max-w-[200px]">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-semibold text-gray-800 truncate">
-                          {item.serviceName}
-                        </span>
-                        <span className="text-xs text-gray-400">{item.studentName}</span>
-                      </div>
-                    </TableCell>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-800">
+                        {item.serviceName}
+                      </span>
+                    </td>
 
                     {/* Status */}
-                    <TableCell className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <StatusBadge status={item.status} />
-                    </TableCell>
+                    </td>
 
                     {/* Amount */}
-                    <TableCell className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-bold text-gray-800">
                         ${item.price.toFixed(2)}{" "}
                         <span className="text-xs font-normal text-gray-400">EGP</span>
                       </span>
-                    </TableCell>
+                    </td>
 
-                    {/* Created */}
-                    <TableCell className="px-6 py-4">
+                    {/* Created At */}
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm text-gray-700">{formatDate(item.createdAt)}</span>
-                        <span className="text-xs text-gray-400">{formatTime(item.createdAt)}</span>
+                        <span className="text-sm text-gray-700 font-medium">
+                          {formatDate(item.createdAt)}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {formatTime(item.createdAt)}
+                        </span>
                       </div>
-                    </TableCell>
+                    </td>
 
-                    {/* Updated */}
-                    <TableCell className="px-6 py-4">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm text-gray-700">{formatDate(item.updatedAt)}</span>
-                        <span className="text-xs text-gray-400">{formatTime(item.updatedAt)}</span>
-                      </div>
-                    </TableCell>
+                    {/* Updated At */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {item.updatedAt ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm text-gray-700 font-medium">
+                            {formatDate(item.updatedAt)}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {formatTime(item.updatedAt)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </td>
 
-                  </TableRow>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         )}
       </div>
 
       {/* ── Pagination ── */}
       {totalPages > 1 && (
-        <div className="flex justify-center shrink-0">
+        <div className="flex justify-center shrink-0 pb-1">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

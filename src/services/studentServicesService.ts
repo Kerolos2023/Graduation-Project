@@ -10,9 +10,9 @@ export interface ServiceHistoryItem {
   studentName: string;
   studentCode: string;
   createdAt: string;
-  updatedAt: string;
-  /** 0 = Pending, 1 = Approved, 2 = Rejected */
-  status: number;
+  updatedAt: string | null;
+  /** "Pending" | "Approved" | "Rejected" */
+  status: string;
 }
 
 export interface PaginatedResponse<T> {
