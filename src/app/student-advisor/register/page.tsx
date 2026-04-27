@@ -4,8 +4,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Plus, X, Printer, User, BookOpen, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
-import { levelService, AcademicLevel } from "@/services/levelsServices";
+import { levelService } from "@/services/levelsServices";
 import { cn } from "@/lib/utils";
+
+type AcademicLevel = { id: string; name: string };
 
 const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -105,11 +107,34 @@ const buildSlots = (start?: string, end?: string, duration?: number) => {
   return slots;
 };
 
+const SESSION_TYPE_MAP: Record<string, string> = {
+  "1": "Lecture",
+  "2": "Section",
+  "3": "Lab",
+  lecture: "Lecture",
+  section: "Section",
+  lab: "Lab",
+};
+const normalizeType = (t: unknown): string => {
+  if (!t) return "";
+  const s = String(t).trim();
+  return SESSION_TYPE_MAP[s] ?? SESSION_TYPE_MAP[s.toLowerCase()] ?? s;
+};
+
 const SESSION_COLORS: Record<string, string> = {
   Lecture: "bg-blue-50 border-blue-200 text-blue-900",
   Section: "bg-amber-50 border-amber-200 text-amber-900",
-  Lab: "bg-purple-50 border-purple-200 text-purple-900",
+  Lab:     "bg-purple-50 border-purple-200 text-purple-900",
 };
+const SESSION_BADGES: Record<string, string> = {
+  Lecture: "bg-blue-100 text-blue-700",
+  Section: "bg-amber-100 text-amber-700",
+  Lab:     "bg-purple-100 text-purple-700",
+};
+const getSessionColor = (type: string) =>
+  SESSION_COLORS[type] ?? "bg-gray-50 border-gray-200 text-gray-800";
+const getSessionBadge = (type: string) =>
+  SESSION_BADGES[type] ?? "bg-gray-100 text-gray-600";
 
 export default function AdvisorRegisterPage() {
   const [searchValue, setSearchValue] = useState("");
@@ -194,10 +219,11 @@ export default function AdvisorRegisterPage() {
   // Fetch levels when program is ready
   useEffect(() => {
     if (!programId) return;
-    levelService.getAllLevels(programId, { PageNumber: 1, PageSize: 100 })
-      .then((res) => {
-        setLevels(res.items || []);
-        if (res.items?.length > 0) setSelectedLevelId(res.items[0].id);
+    levelService.getAllLevels(programId, { PageNumber: 1, PageSize: 1000 })
+      .then((response) => {
+        const items = response.items;
+        setLevels(items);
+        if (items.length > 0) setSelectedLevelId(items[0].id);
       })
       .catch(console.error);
   }, [programId]);
@@ -713,19 +739,30 @@ export default function AdvisorRegisterPage() {
       {/* ── Schedule ── */}
       {selectedStudent && hasSchedule && (
         <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <Calendar className="w-5 h-5 text-indigo-600" />
             <h2 className="text-base font-bold text-gray-900">Schedule</h2>
           </div>
 
+          {/* Legend */}
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            {Object.entries(SESSION_BADGES).map(([type, cls]) => (
+              <span key={type} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${cls}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+                {type}
+              </span>
+            ))}
+          </div>
+
           <div className="overflow-x-auto custom-scrollbar -mx-4 sm:-mx-6 px-4 sm:px-6">
             <table className="min-w-[600px] w-max text-xs">
-              <thead className="bg-[#f8f9fc]">
-                <tr>
-                  <th className="sticky left-0 z-10 bg-[#f8f9fc] px-3 sm:px-4 py-3 text-left font-semibold text-gray-600 w-[80px] sm:w-[110px] whitespace-nowrap">Day</th>
-                  {slots.map((slot) => (
-                    <th key={slot.label} className="px-2 sm:px-3 py-3 text-center font-semibold text-gray-500 whitespace-nowrap">
-                      {slot.label}
+              <thead>
+                <tr className="bg-[#f8f9fc]">
+                  <th className="sticky left-0 z-10 bg-[#f8f9fc] px-3 sm:px-4 py-3 text-left font-semibold text-gray-600 w-[80px] sm:w-[110px] whitespace-nowrap rounded-tl-[14px]">Day</th>
+                  {slots.map((slot, idx) => (
+                    <th key={slot.label} className="px-2 sm:px-3 py-3 text-center whitespace-nowrap">
+                      <div className="font-semibold text-gray-700">{slot.label}</div>
+                      <div className="text-[10px] text-gray-400 font-normal mt-0.5">P{idx + 1}</div>
                     </th>
                   ))}
                 </tr>
@@ -759,12 +796,14 @@ export default function AdvisorRegisterPage() {
                               <div className="flex flex-col gap-1">
                                 {/* Active draft sessions */}
                                 {slotSessions.map((s) => {
-                                  const colorClass = SESSION_COLORS[s.type] || "bg-gray-50 border-gray-200 text-gray-900";
+                                  const sessionType = normalizeType(s.type);
+                                  const colorClass = getSessionColor(sessionType);
+                                  const badgeClass = getSessionBadge(sessionType);
                                   return (
                                     <div key={s.enrollemntId} className={cn("relative group rounded-[10px] border px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5", colorClass)}>
                                       <div className="font-bold truncate max-w-[120px]">{getCourseNameById(s.courseOfferingId)}</div>
-                                      <div className="opacity-75">{s.type}</div>
-                                      <div className="text-[10px] opacity-60">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
+                                      <span className={cn("inline-block self-start px-1.5 py-0.5 rounded-full text-[10px] font-semibold", badgeClass)}>{sessionType}</span>
+                                      <div className="text-[10px] opacity-60 mt-0.5">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
                                       {/* X button — removes the whole course offering from draft */}
                                       <button
                                         onClick={() => handleRemoveCourseOfferingFromDraft(s.courseOfferingId)}

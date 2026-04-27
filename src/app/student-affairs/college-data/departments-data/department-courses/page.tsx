@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 import axiosInstance from "@/lib/axios";
-import { levelService } from "@/services/levelsServices";
+import { levelService, AcademicLevel as LevelOption } from "@/services/levelsServices";
 
 const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
@@ -49,10 +49,6 @@ type CourseOption = {
   code: string;
 };
 
-type LevelOption = {
-  id: string;
-  name: string;
-};
 
 type AssessmentItem = {
   type: AssessmentType;
@@ -382,18 +378,8 @@ export default function DepartmentCoursesPage() {
 
     setLoadingLevels(true);
     try {
-      const response = await levelService.getAllLevels(selectedProgramId, {
-        PageNumber: 1,
-        PageSize: 1000,
-      });
-
-      const rows = Array.isArray(response?.items) ? response.items : [];
-      const normalizedLevels = rows
-        .map((level) => ({
-          id: readString(level?.id),
-          name: readString(level?.name),
-        }))
-        .filter((level) => Boolean(level.id));
+      const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
+      const normalizedLevels = response.items;
 
       setLevels(normalizedLevels);
 

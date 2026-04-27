@@ -12,6 +12,8 @@ import {
   IdCard,
   LogOut,
   Settings,
+  ShoppingBag,
+  ClipboardList,
   TrendingUp,
 } from "lucide-react";
 
@@ -90,6 +92,16 @@ const NAV_ITEMS = [
     icon: CalendarPlus,
     label: "Register Schedule",
     href: "/student/register-schedule",
+  },
+  {
+    icon: ClipboardList,
+    label: "My Services",
+    href: "/student/services-history",
+  },
+  {
+    icon: ShoppingBag,
+    label: "Buy Services",
+    href: "/student/services",
   },
 ] as const;
 
