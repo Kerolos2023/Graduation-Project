@@ -11,6 +11,7 @@ import {
   AssessmentHeader,
   StudentControlInfo,
 } from "@/services/staffControlService";
+import { levelService } from "@/services/levelsServices";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
@@ -277,11 +278,9 @@ export default function CourseResultPage() {
     if (!selectedProgramId) return;
     const load = async () => {
       try {
-        const res = await axiosInstance.get(`/programs/${selectedProgramId}/levels`, {
-          params: { PageNumber: 1, PageSize: 100 },
-        });
-        const raw = res.data?.items ?? res.data ?? [];
-        setLevels(Array.isArray(raw) ? raw : []);
+      const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
+        const items = response.items;
+        setLevels(items);
         setSelectedLevelId("");
         setSemesterType("");
         setCourseOfferings([]);

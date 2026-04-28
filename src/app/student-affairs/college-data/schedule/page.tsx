@@ -16,10 +16,9 @@ import { toast } from 'sonner';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
-import {
-  AcademicLevel,
-  levelService,
-} from '@/services/levelsServices';
+import { levelService } from '@/services/levelsServices';
+
+type AcademicLevel = { id: string; name: string };
 
 type ScheduleDefinition = {
   dayStartTime: string;
@@ -150,6 +149,21 @@ const SESSION_TYPE_MAP: Record<string, string> = {
   lab: "Lab",
 };
 
+const SESSION_COLORS: Record<string, string> = {
+  Lecture: "bg-blue-50 border-blue-200 text-blue-900",
+  Section: "bg-amber-50 border-amber-200 text-amber-900",
+  Lab:     "bg-purple-50 border-purple-200 text-purple-900",
+};
+const SESSION_BADGES: Record<string, string> = {
+  Lecture: "bg-blue-100 text-blue-700",
+  Section: "bg-amber-100 text-amber-700",
+  Lab:     "bg-purple-100 text-purple-700",
+};
+const getSessionColor = (type: string) =>
+  SESSION_COLORS[type] ?? "bg-gray-50 border-gray-200 text-gray-800";
+const getSessionBadge = (type: string) =>
+  SESSION_BADGES[type] ?? "bg-gray-100 text-gray-600";
+
 const normalizeSessionType = (value: unknown) => {
   if (value === null || value === undefined) return "";
   const text = String(value).trim();
@@ -279,11 +293,8 @@ export default function SchedulePage() {
   const fetchLevels = async () => {
     if (!selectedProgramId) return;
     try {
-      const res = await levelService.getAllLevels(selectedProgramId, {
-        PageNumber: 1,
-        PageSize: 1000,
-      });
-      const items = Array.isArray(res.items) ? res.items : [];
+      const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
+      const items = response.items;
       setLevels(items);
       if (!selectedLevelId && items.length > 0) {
         setSelectedLevelId(items[0].id);
@@ -522,6 +533,8 @@ export default function SchedulePage() {
         Lab: 3,
       };
       const payload: any = {
+        courseOfferingId: selectedCourseOfferingId,
+        groupNumber: selectedGroupNumber,
         startTime: periodForm.startTime,
         endTime: periodForm.endTime,
         type: sessionTypeMap[periodForm.type] ?? periodForm.type,
@@ -533,12 +546,7 @@ export default function SchedulePage() {
         payload.capacity = Number(periodForm.capacity);
       }
       console.log("Saving session payload:", payload);
-      await axiosInstance.post("/teaching-sessions", payload, {
-        params: {
-          courseOfferingId: selectedCourseOfferingId,
-          groupNumber: selectedGroupNumber,
-        },
-      });
+      await axiosInstance.post("/teaching-sessions", payload);
       toast.success("Session added.");
       setIsModalOpen(false);
       fetchSessions();
@@ -681,14 +689,25 @@ export default function SchedulePage() {
           </div>
         )}
 
+        {/* Legend */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          {Object.entries(SESSION_BADGES).map(([type, cls]) => (
+            <span key={type} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${cls}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+              {type}
+            </span>
+          ))}
+        </div>
+
         <div className="overflow-x-auto overflow-y-hidden border border-gray-100 rounded-[18px] custom-scrollbar">
           <table className="min-w-[960px] w-max text-xs">
-            <thead className="bg-[#f8f9fc]">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-600 w-[120px]">Day</th>
-                {slots.map((slot) => (
-                  <th key={slot.label} className="px-3 py-3 text-center font-semibold text-gray-500">
-                    {slot.label}
+            <thead>
+              <tr className="bg-[#f8f9fc]">
+                <th className="px-4 py-3 text-left font-semibold text-gray-600 w-[120px] rounded-tl-[18px]">Day</th>
+                {slots.map((slot, idx) => (
+                  <th key={slot.label} className="px-3 py-3 text-center whitespace-nowrap">
+                    <div className="font-semibold text-gray-700">{slot.label}</div>
+                    <div className="text-[10px] text-gray-400 font-normal mt-0.5">P{idx + 1}</div>
                   </th>
                 ))}
               </tr>
@@ -720,18 +739,17 @@ export default function SchedulePage() {
                                   key={session.id}
                                   className={cn(
                                     "relative rounded-[10px] border px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5",
-                                    session.type === "Lecture"
-                                      ? "bg-blue-50 border-blue-200 text-blue-900"
-                                      : session.type === "Section"
-                                      ? "bg-amber-50 border-amber-200 text-amber-900"
-                                      : "bg-purple-50 border-purple-200 text-purple-900"
+                                    getSessionColor(session.type)
                                   )}
                                 >
                                   <div className="font-bold">{session.type}</div>
-                                  <div className="text-[10px]">
-                                    {normalizeTime(session.startTime)} - {normalizeTime(session.endTime)}
-                                  </div>
-                                  <div className="text-[10px] text-gray-600">
+                                  <span className={cn(
+                                    "inline-block self-start px-1.5 py-0.5 rounded-full text-[10px] font-semibold",
+                                    getSessionBadge(session.type)
+                                  )}>
+                                    {normalizeTime(session.startTime)} – {normalizeTime(session.endTime)}
+                                  </span>
+                                  <div className="text-[10px] text-gray-500 mt-0.5">
                                     {session.instructorName || "—"} · {session.roomName || "—"}
                                   </div>
                                   <button
