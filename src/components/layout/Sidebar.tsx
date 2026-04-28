@@ -9,6 +9,8 @@ import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
 import { SiLevelsdotfyi } from "react-icons/si";
+import { FaCogs } from "react-icons/fa";
+import { FiSliders } from "react-icons/fi";
 
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
@@ -256,14 +258,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     onClick={onClose}
                 />
                 <NavItem
-                    icon={SiLevelsdotfyi}
+                    icon={FiSliders}
                     label="levels"
                     href="/student-affairs/college-data/levels"
                     isActive={pathname?.includes('/levels')}
                     onClick={onClose}
                 />
+                <NavItem
+                    icon={FaCogs}
+                    label="Services"
+                    href="/student-affairs/college-data/services"
+                    isActive={pathname?.includes('/services')}
+                    onClick={onClose}
+                />
                 
             </nav>
+            
 
             {/* Academic Controls */}
             <div className="px-4 pt-2 pb-4 space-y-3">
