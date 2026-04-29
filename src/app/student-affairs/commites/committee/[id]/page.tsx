@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Edit2, Trash2, Loader2, X, AlertCircle, MoreVertical, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-
+import ExamCommitteeTabs from "@/components/layout/Committee";
  const EXAM_TERM_ID = "019dda85-b914-7ca1-aefe-4843ec2fe9f4";
 const BUILDING_ID = "019D64EF-1A80-7B40-A9B3-3D56F4B3A805";
 
@@ -134,7 +134,8 @@ export default function CommitteesPage() {
 
   return (
     <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto bg-[#F5F5F5] min-h-screen">
-      
+      <ExamCommitteeTabs />
+
       {/* 1. Add/Edit Card */}
       <Card className="border-none shadow-sm rounded-2xl md:rounded-3xl overflow-hidden bg-white">
         <CardHeader className="pb-2 pt-6 md:pt-8 px-5 md:px-8 border-b border-gray-50">
