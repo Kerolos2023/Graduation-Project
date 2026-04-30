@@ -1,8 +1,3 @@
-
-
-
-
-
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -32,7 +27,8 @@ export default function CommitteesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  // حالة لمتابعة ما إذا كان يتم تحميل الغرف حالياً
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
 
   const [form, setForm] = useState({
     number: "",
@@ -88,7 +84,7 @@ export default function CommitteesPage() {
     } catch (error) {
       toast.error("Error loading rooms for this building");
     } finally {
-      setIsLoadingRooms(false);     
+      setIsLoadingRooms(false);   
     }
   };
 
@@ -265,7 +261,7 @@ export default function CommitteesPage() {
        <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[#0A0D12]">Committees </h2>
+            <h2 className="text-2xl font-bold text-[#0A0D12]">Committees</h2>
             <span className="bg-blue-50 text-[#2B59FF] text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
               {filteredCommittees.length} Rooms
             </span>
