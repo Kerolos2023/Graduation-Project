@@ -8,7 +8,7 @@ import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'l
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
-import { SiLevelsdotfyi } from "react-icons/si";
+import { TfiClipboard } from "react-icons/tfi";
 import { FaCogs } from "react-icons/fa";
 import { FiSliders } from "react-icons/fi";
 
@@ -269,6 +269,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     label="Services"
                     href="/student-affairs/college-data/services"
                     isActive={pathname?.includes('/services')}
+                    onClick={onClose}
+                />
+                 <NavItem
+                    icon={TfiClipboard}
+                    label="Service Requests"
+                    href="/student-affairs/college-data/service-request"
+                    isActive={pathname?.includes('/service-request')}
                     onClick={onClose}
                 />
                 
