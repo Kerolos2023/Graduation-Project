@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -11,8 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Edit2,
   Trash2,
-  Printer,
-  MoreVertical,
   Search,
   X,
   Loader2,
@@ -21,7 +18,7 @@ import {
 } from "lucide-react";
 import { examTermsService } from '@/services/examServices';
 import { Checkbox } from '@/components/ui/checkbox';
-
+import { useAcademicContext } from '@/hooks/useAcademicContext';
 
 const ExamTypeOptions = [
   { id: 1, name: "Midterm" },
@@ -31,12 +28,8 @@ const ExamTypeOptions = [
 
 export default function ExamTermsPage() {
   const router = useRouter();
+  const { selectedProgramId, selectedSemesterId, isAcademicReady } = useAcademicContext();
   const [mounted, setMounted] = useState(false);
-
-
-  const academicProgramId = "019DB291-C74C-730E-B2BC-14893A68B8BA";
-  const semesterId = "019d7980-c25c-7793-b137-248b067f98d5";
-
   const [exams, setExams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
@@ -56,46 +49,60 @@ export default function ExamTermsPage() {
 
   useEffect(() => {
     setMounted(true);
-    loadData();
   }, []);
 
+
+  useEffect(() => {
+    if (isAcademicReady) {
+      loadData();
+    }
+  }, [isAcademicReady, selectedProgramId, selectedSemesterId]);
+
   const loadData = async () => {
+    if (!selectedProgramId || !selectedSemesterId) return;
+
     try {
       setFetching(true);
-      const examsData = await examTermsService.getProgramExams(academicProgramId, semesterId);
+      const examsData = await examTermsService.getProgramExams(selectedProgramId, selectedSemesterId);
       setExams(examsData.items || []);
-    } catch (error) {
-      setStatusMessage({ text: "Failed to load data from the server", type: 'error' });
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.errors?.[0] || "Failed to load data";
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setFetching(false);
     }
   };
 
   const handleToggleStatus = async (id: string) => {
+    if (!selectedProgramId) return;
     try {
-      await examTermsService.togglePublisher(academicProgramId, id);
+      await examTermsService.togglePublisher(selectedProgramId, id);
       loadData();
     } catch (error) {
-      setStatusMessage({ text: "Failed to update publish status", type: 'error' });
+      setStatusMessage({ text: "Failed to update status", type: 'error' });
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this term?")) return;
+    if (!confirm("Are you sure?") || !selectedProgramId) return;
     try {
-      await examTermsService.deleteExamTerm(academicProgramId, id);
+      await examTermsService.deleteExamTerm(selectedProgramId, id);
       loadData();
     } catch (error) {
-      setStatusMessage({ text: "Failed to delete the term", type: 'error' });
+      setStatusMessage({ text: "Failed to delete", type: 'error' });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatusMessage({ text: "", type: null });
+    if (!isAcademicReady) {
+      setStatusMessage({ text: "Academic context is not ready", type: 'error' });
+      return;
+    }
 
+    setStatusMessage({ text: "", type: null });
     if (!formData.examType || !formData.startDate || !formData.endDate) {
-      setStatusMessage({ text: "Please fill in all required fields", type: 'warning' });
+      setStatusMessage({ text: "Please fill all fields", type: 'warning' });
       return;
     }
 
@@ -106,25 +113,18 @@ export default function ExamTermsPage() {
         startDate: formData.startDate,
         endDate: formData.endDate
       };
+
       if (editingId) {
-        await examTermsService.updateExamTerm(academicProgramId, editingId, payload);
+        await examTermsService.updateExamTerm(selectedProgramId!, editingId, payload);
         setStatusMessage({ text: "Successfully updated", type: 'success' });
       } else {
-        await examTermsService.addExamTerm(academicProgramId, semesterId, payload);
+        await examTermsService.addExamTerm(selectedProgramId!, selectedSemesterId!, payload);
         setStatusMessage({ text: "Successfully added", type: 'success' });
       }
       resetForm();
       loadData();
     } catch (error: any) {
-      const serverErrors = error.response?.data?.errors;
-      const serverTitle = error.response?.data?.title;
-
-      const errorText = (serverErrors && serverErrors[0]) ||
-        (serverTitle === "ExamTerm.OverlabbingTime"
-          ? "There is a scheduling conflict with another exam"
-          : "An error occurred while saving the data");
-
-      setStatusMessage({ text: errorText, type: 'error' });
+      setStatusMessage({ text: error.response?.data?.errors?.[0] || "Save failed", type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -135,18 +135,6 @@ export default function ExamTermsPage() {
     setFormData({ examType: "", startDate: "", endDate: "" });
   };
 
-  const handleEditClick = (item: any) => {
-    const typeObj = ExamTypeOptions.find(t => t.name === item.examType);
-    setEditingId(item.id);
-    setFormData({
-      examType: typeObj ? typeObj.id.toString() : "",
-      startDate: item.startDate || "",
-      endDate: item.endDate || ""
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setStatusMessage({ text: "", type: null });
-  };
-
   const filteredExams = useMemo(() => {
     return exams.filter(item =>
       item.examType?.toLowerCase().includes(searchValue.toLowerCase())
@@ -155,17 +143,26 @@ export default function ExamTermsPage() {
 
   if (!mounted) return null;
 
+  if (!isAcademicReady) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+        <p className="text-gray-500 font-bold text-lg">Please select academic program and semester first...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 space-y-8 bg-[#F5F7FA] min-h-screen font-sans">
 
-
+      {/* Alert System */}
       {statusMessage.type && (
-        <div className={`flex items-center justify-between p-4 rounded-2xl border animate-in fade-in slide-in-from-top-4 ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
-          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
-            'bg-emerald-50 border-emerald-200 text-emerald-800'
+        <div className={`flex items-center justify-between p-4 rounded-2xl border ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
+            statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+              'bg-emerald-50 border-emerald-200 text-emerald-800'
           }`}>
           <div className="flex items-center gap-3">
-            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5 text-red-600" />}
+            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
             <span>{statusMessage.text}</span>
           </div>
           <button onClick={() => setStatusMessage({ text: "", type: null })}>
@@ -173,7 +170,6 @@ export default function ExamTermsPage() {
           </button>
         </div>
       )}
-
       <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
         <CardHeader className="pb-2 pt-8 px-8 border-b border-gray-50">
           <div className="flex justify-between items-center">
@@ -181,7 +177,7 @@ export default function ExamTermsPage() {
               {editingId ? "Update Exam Term" : "Adding Exam Terms"}
             </CardTitle>
             {editingId && (
-              <Button variant="ghost" onClick={resetForm} className="text-red-500 hover:bg-red-50 rounded-xl gap-1 font-bold">
+              <Button variant="ghost" onClick={resetForm} className="text-red-500 hover:bg-red-50 rounded-xl font-bold">
                 <X className="w-4 h-4" /> Cancel Edit
               </Button>
             )}
@@ -217,53 +213,36 @@ export default function ExamTermsPage() {
             <Button
               type="submit"
               disabled={loading}
-              className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all flex items-center justify-center text-white ${editingId
-                  ? 'bg-purple-600 hover:bg-purple-700'
-                  : 'bg-[#2463F0] hover:bg-[#1e51c9]'
+              className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all flex items-center justify-center text-white ${editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#2463F0] hover:bg-[#1e51c9]'
                 }`}
             >
-              {loading ? (
-                <Loader2 className="animate-spin w-6 h-6 text-white" />
-              ) : (
-                editingId ? "Save Changes" : "Add Exam"
-              )}
+              {loading ? <Loader2 className="animate-spin w-6 h-6 text-white" /> : editingId ? "Save Changes" : "Add Exam"}
             </Button>
           </form>
         </CardContent>
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-        <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[#0A0D12]">Exam List</h2>
-            <span className="bg-blue-50 text-blue-500 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
-              {filteredExams.length} Terms
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search..."
-                className="pl-11 h-12 bg-white border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-              />
-            </div>
-            <Button variant="outline" onClick={() => window.print()} className="h-12 border-[#DBEAFE] text-[#2563EB] rounded-xl px-4 font-bold gap-2">
-              <Printer className="w-4 h-4" /> Print
-            </Button>
+        <div className="p-8 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-[#0A0D12]">Exam List</h2>
+          <div className="relative w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search..."
+              className="pl-11 h-12 bg-white border-[#E2E8F0] rounded-xl"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="px-8 pb-8 overflow-x-auto">
           <div className="min-w-[900px]">
-            <div className="grid grid-cols-[50px_1fr_1fr_1fr_280px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl text-xs font-semibold text-[#181D27] mb-4 border border-gray-100">
-              <div className="text-center flex justify-center"><Checkbox disabled className="h-4 w-4" /></div>
+            <div className="grid grid-cols-[50px_1fr_1fr_1fr_280px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl text-xs font-semibold text-[#181D27] mb-4">
+              <div className="text-center flex justify-center"><Checkbox disabled /></div>
               <div>Name</div>
               <div className="text-center">Start Date</div>
-              <div className="text-center ">End Date</div>
+              <div className="text-center">End Date</div>
               <div className="text-right pr-6">Actions</div>
             </div>
 
@@ -274,16 +253,29 @@ export default function ExamTermsPage() {
                 <div className="py-10 text-center text-gray-400 font-bold border-2 border-dashed rounded-2xl">No data found</div>
               ) : (
                 filteredExams.map((item) => (
-                  <div key={item.id} className="grid grid-cols-[50px_1fr_1fr_1fr_280px] items-center px-6 py-4 border border-[#E2E8F0] rounded-2xl hover:shadow-md transition-all bg-white group">
-                    <div className="text-center flex justify-center"><Checkbox className="h-5 w-5 border-slate-300 rounded-lg" /></div>
+                  <div key={item.id} className="grid grid-cols-[50px_1fr_1fr_1fr_280px] items-center px-6 py-4 border border-[#E2E8F0] rounded-2xl bg-white hover:shadow-md transition-all">
+                    <div className="text-center flex justify-center"><Checkbox className="rounded-lg" /></div>
                     <div className="font-bold text-[#1E293B]">{item.examType}</div>
                     <div className="text-center text-slate-600 font-medium">{item.startDate}</div>
                     <div className="text-center text-slate-600 font-medium">{item.endDate}</div>
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-10 w-10 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl"><Edit2 className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-10 w-10 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl"><Trash2 className="w-4 h-4" /></Button>
-                      <Button variant="outline" onClick={() => handleToggleStatus(item.id)} className={`min-w-[90px] h-10 rounded-xl font-bold text-[11px] shadow-sm transition-all ${item.isPublished ? 'text-[#2563EB] border-[#DBEAFE] bg-blue-50' : 'text-[#EF4444] border-red-100 bg-red-50'}`}>{item.isPublished ? 'Published' : 'Draft'}</Button>
-                      <Button onClick={() => router.push(`/student-affairs/commites/committee/${item.id}`)} className="h-10 px-5 bg-[#2463F0] hover:bg-black text-white rounded-xl font-bold text-[11px] shadow-sm flex items-center gap-1 transition-all">Open <ExternalLink className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => {
+                        const typeObj = ExamTypeOptions.find(t => t.name === item.examType);
+                        setEditingId(item.id);
+                        setFormData({
+                          examType: typeObj ? typeObj.id.toString() : "",
+                          startDate: item.startDate || "",
+                          endDate: item.endDate || ""
+                        });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }} className="text-gray-400 hover:text-blue-600"><Edit2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-gray-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="outline" onClick={() => handleToggleStatus(item.id)} className={`min-w-[90px] h-10 rounded-xl font-bold text-[11px] ${item.isPublished ? 'text-blue-600 border-blue-100 bg-blue-50' : 'text-red-600 border-red-100 bg-red-50'}`}>
+                        {item.isPublished ? 'Published' : 'Draft'}
+                      </Button>
+                      <Button onClick={() => router.push(`/student-affairs/commites/committee/${item.id}`)} className="h-10 px-5 bg-[#2463F0] hover:bg-blue-800 text-white rounded-xl font-bold text-[11px] flex items-center gap-1">
+                        Open <ExternalLink className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -295,13 +287,3 @@ export default function ExamTermsPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-

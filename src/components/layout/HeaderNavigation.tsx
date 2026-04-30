@@ -1,20 +1,36 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useParams } from 'next/navigation'; 
 import { cn } from '@/lib/utils';
 
 export const HeaderNavigation = () => {
     const pathname = usePathname();
-
-    // Helper to determine active pills
+    const params = useParams(); 
+    const programId = params.programId as string;
+    const semesterId = params.semesterId as string;
     const isCollegeData = pathname?.includes('/college-data');
     const isStudents = pathname?.includes('/students');
-    const isCommittees = pathname?.includes('/committees');
+    const isCommittees = pathname?.includes('/commites');
+
+    
+
     const navLinks = [
-        { label: "College Data", active: isCollegeData, href: "/student-affairs/college-data/courses" },
-        { label: "Students", active: isStudents, href: "/student-affairs/students" },
-        { label: "Committees & Examinations", active: isCommittees, href: "/student-affairs/commites/exams" },
+        {
+            label: "College Data",
+            active: isCollegeData,
+            href: "/student-affairs/college-data/courses"
+        },
+        {
+            label: "Students",
+            active: isStudents,
+            href: "/student-affairs/students"
+        },
+        {
+            label: "Committees & Examinations",
+            active: isCommittees,
+            href: "/student-affairs/commites/exams"
+        },
     ];
 
     return (
