@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Edit2, Trash2, Loader2, X, AlertCircle, MoreVertical, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import ExamCommitteeTabs from "@/components/layout/Committee";
  const EXAM_TERM_ID = "019dda85-b914-7ca1-aefe-4843ec2fe9f4";
 const BUILDING_ID = "019D64EF-1A80-7B40-A9B3-3D56F4B3A805";
 
