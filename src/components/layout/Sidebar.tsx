@@ -1,18 +1,28 @@
+ 
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'lucide-react';
+import { 
+    BookOpen, 
+    Building2, 
+    Settings, 
+    LogOut, 
+    BookAIcon, 
+    ChevronDown, 
+    CalendarDays, 
+    Users, 
+    ClipboardList, 
+    Clock,
+    LayoutGrid
+} from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
-import { LuClipboardType } from "react-icons/lu";
-import { TfiClipboard } from "react-icons/tfi";
 import { FaCogs } from "react-icons/fa";
 import { FiSliders } from "react-icons/fi";
-import { CalendarDays } from 'lucide-react';
-import { Contact2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
@@ -217,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         onClick={onClose}
                     />
                     <NavItem
-                        icon={LuClipboardType}
+                        icon={LayoutGrid}
                         label="Room Types"
                         href="/student-affairs/college-data/roomtype"
                         isActive={pathname?.includes('/roomtype')}
@@ -230,22 +240,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         isActive={pathname?.includes('/rooms')}
                         onClick={onClose}
                     />
-                    {/* <NavItem
-                    icon={FaUniversity}
-                    label="Grades"
-                    href="/student-affairs/college-data/grades"
-                    isActive={pathname?.includes('/grades')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={FaUniversity}
-                    label="Levels"
-                    href="/student-affairs/college-data/levels"
-                    isActive={pathname?.includes('/levels')}
-                    onClick={onClose}
-                /> */}
                     <NavItem
-                        icon={LuClipboardType}
+                        icon={Clock}
                         label="Definition of Periods"
                         href="/student-affairs/college-data/definition-of-periods"
                         isActive={pathname?.includes('/definition-of-periods')}
@@ -253,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     />
 
                     <NavItem
-                        icon={BookOpen}
+                        icon={CalendarDays}
                         label="Schedule"
                         href="/student-affairs/college-data/schedule"
                         isActive={pathname?.includes('/schedule')}
@@ -274,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         onClick={onClose}
                     />
                     <NavItem
-                        icon={TfiClipboard}
+                        icon={ClipboardList}
                         label="Service Requests"
                         href="/student-affairs/college-data/service-request"
                         isActive={pathname?.includes('/service-request')}
@@ -288,7 +284,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         onClick={onClose}
                     />
                     <NavItem
-                        icon={Contact2}
+                        icon={Users}
                         label="Staff"
                         href="/student-affairs/college-data/stuff"
                         isActive={pathname?.includes('/stuff')}
@@ -371,7 +367,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="p-4 mt-auto border-t border-gray-100/50 flex flex-col gap-2">
                 {/* Profile Card */}
                 <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-2">
-                    {/* Faking the avatar */}
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center text-gray-400 font-bold bg-gradient-to-tr from-gray-100 to-gray-200 cursor-pointer">
                         MO
                     </div>
@@ -395,3 +390,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         </aside>
     );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
