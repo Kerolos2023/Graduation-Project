@@ -1,14 +1,26 @@
+ 
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'lucide-react';
+import { 
+    BookOpen, 
+    Building2, 
+    Settings, 
+    LogOut, 
+    BookAIcon, 
+    ChevronDown, 
+    CalendarDays, 
+    Users, 
+    ClipboardList, 
+    Clock,
+    LayoutGrid
+} from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
-import { LuClipboardType } from "react-icons/lu";
-import { TbClipboardCheck } from "react-icons/tb";
 import { FaCogs } from "react-icons/fa";
 import { FiSliders } from "react-icons/fi";
 import { MdOutlinePendingActions } from "react-icons/md";
@@ -126,8 +138,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 setSelectedSemesterName(semester.name || null);
                 const termFromName =
                     semester.name === "Fall" ? "1" :
-                    semester.name === "Spring" ? "2" :
-                    semester.name === "Summer" ? "3" : "";
+                        semester.name === "Spring" ? "2" :
+                            semester.name === "Summer" ? "3" : "";
                 setSelectedTermType(termFromName);
                 setSelectedTermId(termFromName || semester.id);
             } else {
@@ -185,179 +197,178 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             </div>
 
             <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-            {/* Main Navigation */}
-            <nav className="flex flex-col gap-1.5 px-1 py-2">
-                <NavItem
-                    icon={BookOpen}
-                    label="Courses"
-                    href="/student-affairs/college-data/courses"
-                    isActive={pathname?.includes('/courses')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={Building2}
-                    label="Departments"
-                    href="/student-affairs/college-data/departments"
-                    isActive={pathname?.includes('/departments')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={BookAIcon}
-                    label="Department Data"
-                    href="/student-affairs/college-data/departments-data/department-data"
-                    isActive={pathname?.includes('/department-data')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={PiBuildingOfficeLight}
-                    label="Buildings"
-                    href="/student-affairs/college-data/buildings"
-                    isActive={pathname?.includes('/buildings')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={LuClipboardType}
-                    label="Room Types"
-                    href="/student-affairs/college-data/roomtype"
-                    isActive={pathname?.includes('/roomtype')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={FaUniversity}
-                    label="Rooms"
-                    href="/student-affairs/college-data/rooms"
-                    isActive={pathname?.includes('/rooms')}
-                    onClick={onClose}
-                />
-                {/* <NavItem
-                    icon={FaUniversity}
-                    label="Grades"
-                    href="/student-affairs/college-data/grades"
-                    isActive={pathname?.includes('/grades')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={FaUniversity}
-                    label="Levels"
-                    href="/student-affairs/college-data/levels"
-                    isActive={pathname?.includes('/levels')}
-                    onClick={onClose}
-                /> */}
-                <NavItem
-                    icon={LuClipboardType}
-                    label="Definition of Periods"
-                    href="/student-affairs/college-data/definition-of-periods"
-                    isActive={pathname?.includes('/definition-of-periods')}
-                    onClick={onClose}
-                />
-                
-                <NavItem
-                    icon={BookOpen}
-                    label="Schedule"
-                    href="/student-affairs/college-data/schedule"
-                    isActive={pathname?.includes('/schedule')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={FiSliders}
-                    label="levels"
-                    href="/student-affairs/college-data/levels"
-                    isActive={pathname?.includes('/levels')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={FaCogs}
-                    label="Add Services"
-                    href="/student-affairs/college-data/services"
-                    isActive={pathname?.includes('/services')}
-                    onClick={onClose}
-                />
-                <NavItem
-                    icon={TbClipboardCheck}
-                    label="View Service Requests"
-                    href="/student-affairs/college-data/service-pending"
-                    isActive={pathname?.includes('/service-pending')}
-                    onClick={onClose}
-                />
-                
-            </nav>
-            
+                {/* Main Navigation */}
+                <nav className="flex flex-col gap-1.5 px-1 py-2">
+                    <NavItem
+                        icon={BookOpen}
+                        label="Courses"
+                        href="/student-affairs/college-data/courses"
+                        isActive={pathname?.includes('/courses')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={Building2}
+                        label="Departments"
+                        href="/student-affairs/college-data/departments"
+                        isActive={pathname?.includes('/departments')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={BookAIcon}
+                        label="Department Data"
+                        href="/student-affairs/college-data/departments-data/department-data"
+                        isActive={pathname?.includes('/department-data')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={PiBuildingOfficeLight}
+                        label="Buildings"
+                        href="/student-affairs/college-data/buildings"
+                        isActive={pathname?.includes('/buildings')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={LayoutGrid}
+                        label="Room Types"
+                        href="/student-affairs/college-data/roomtype"
+                        isActive={pathname?.includes('/roomtype')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={FaUniversity}
+                        label="Rooms"
+                        href="/student-affairs/college-data/rooms"
+                        isActive={pathname?.includes('/rooms')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={Clock}
+                        label="Definition of Periods"
+                        href="/student-affairs/college-data/definition-of-periods"
+                        isActive={pathname?.includes('/definition-of-periods')}
+                        onClick={onClose}
+                    />
 
-            {/* Academic Controls */}
-            <div className="px-4 pt-2 pb-4 space-y-3">
-                <div className="relative">
-                    <select
-                        value={selectedProgram}
-                        onChange={(e) => {
-                            setSelectedProgram(e.target.value);
-                            setSelectedProgramId(e.target.value);
-                        }}
-                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                    >
-                        {programs.length === 0 && <option value="">Select Program</option>}
-                        {programs.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.name}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
+                    <NavItem
+                        icon={CalendarDays}
+                        label="Schedule"
+                        href="/student-affairs/college-data/schedule"
+                        isActive={pathname?.includes('/schedule')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={FiSliders}
+                        label="Course Availability"
+                        href="/student-affairs/college-data/levels"
+                        isActive={pathname?.includes('/levels')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={CalendarDays}
+                        label="Events"
+                        href="/student-affairs/college-data/events"
+                        isActive={pathname?.includes('/events')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={Users}
+                        label="Staff"
+                        href="/student-affairs/college-data/stuff"
+                        isActive={pathname?.includes('/stuff')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={FaCogs}
+                        label="Services"
+                        href="/student-affairs/college-data/services"
+                        isActive={pathname?.includes('/services')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={ClipboardList}
+                        label="View Services Requests"
+                        href="/student-affairs/college-data/view-acc-rej-service"
+                        isActive={pathname?.includes('/view-acc-rej-service')}
+                        onClick={onClose}
+                    />
+                    
+                </nav>
+
+
+                {/* Academic Controls */}
+                <div className="px-4 pt-2 pb-4 space-y-3">
+                    <div className="relative">
+                        <select
+                            value={selectedProgram}
+                            onChange={(e) => {
+                                setSelectedProgram(e.target.value);
+                                setSelectedProgramId(e.target.value);
+                            }}
+                            className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        >
+                            {programs.length === 0 && <option value="">Select Program</option>}
+                            {programs.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={selectedYear}
+                            onChange={(e) => {
+                                const yearId = e.target.value;
+                                setSelectedYear(yearId);
+                                setSelectedYearId(yearId);
+                                if (yearId) fetchCurrentSemester(yearId);
+                            }}
+                            className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        >
+                            {academicYears.length === 0 && <option value="">Select Year</option>}
+                            {academicYears.map((y) => (
+                                <option key={y.id} value={y.id}>
+                                    {y.name}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
+                    </div>
+
+                    <div className="relative">
+                        <select
+                            value={selectedTermType}
+                            onChange={(e) => {
+                                const termValue = e.target.value;
+                                setSelectedTermType(termValue);
+                                setSelectedTermId(termValue || null);
+                                // Map term number to semester name for course-offerings API
+                                const nameMap: Record<string, string> = { "1": "Fall", "2": "Spring", "3": "Summer" };
+                                setSelectedSemesterName(nameMap[termValue] || null);
+                            }}
+                            className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                        >
+                            {termOptions.map((t) => (
+                                <option key={t.value} value={t.value}>
+                                    {t.label}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
+                    </div>
+
+                    <button className="w-full h-[56px] rounded-[20px] bg-blue-600 hover:bg-blue-700 text-white text-[16px] font-semibold transition-colors cursor-pointer">
+                        <Link href="/student-affairs/college-data/new-year">Start a New Year</Link>
+                    </button>
                 </div>
-
-                <div className="relative">
-                    <select
-                        value={selectedYear}
-                        onChange={(e) => {
-                            const yearId = e.target.value;
-                            setSelectedYear(yearId);
-                            setSelectedYearId(yearId);
-                            if (yearId) fetchCurrentSemester(yearId);
-                        }}
-                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                    >
-                        {academicYears.length === 0 && <option value="">Select Year</option>}
-                        {academicYears.map((y) => (
-                            <option key={y.id} value={y.id}>
-                                {y.name}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
-                </div>
-
-                <div className="relative">
-                    <select
-                        value={selectedTermType}
-                        onChange={(e) => {
-                            const termValue = e.target.value;
-                            setSelectedTermType(termValue);
-                            setSelectedTermId(termValue || null);
-                            // Map term number to semester name for course-offerings API
-                            const nameMap: Record<string, string> = { "1": "Fall", "2": "Spring", "3": "Summer" };
-                            setSelectedSemesterName(nameMap[termValue] || null);
-                        }}
-                        className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-                    >
-                        {termOptions.map((t) => (
-                            <option key={t.value} value={t.value}>
-                                {t.label}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#344054]" />
-                </div>
-
-                <button className="w-full h-[56px] rounded-[20px] bg-blue-600 hover:bg-blue-700 text-white text-[16px] font-semibold transition-colors cursor-pointer">
-                    <Link href="/student-affairs/college-data/new-year">Start a New Year</Link>
-                </button>
-            </div>
             </div>
 
             {/* Footer Settings & User Profile */}
             <div className="p-4 mt-auto border-t border-gray-100/50 flex flex-col gap-2">
                 {/* Profile Card */}
                 <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-2">
-                    {/* Faking the avatar */}
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center text-gray-400 font-bold bg-gradient-to-tr from-gray-100 to-gray-200 cursor-pointer">
                         MO
                     </div>
@@ -381,3 +392,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         </aside>
     );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
