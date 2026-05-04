@@ -8,9 +8,10 @@ import { BookOpen, Building2, Settings, LogOut, BookAIcon, ChevronDown } from 'l
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
 import { LuClipboardType } from "react-icons/lu";
-import { TfiClipboard } from "react-icons/tfi";
+import { TbClipboardCheck } from "react-icons/tb";
 import { FaCogs } from "react-icons/fa";
 import { FiSliders } from "react-icons/fi";
+import { MdOutlinePendingActions } from "react-icons/md";
 
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
@@ -266,16 +267,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 />
                 <NavItem
                     icon={FaCogs}
-                    label="Services"
+                    label="Add Services"
                     href="/student-affairs/college-data/services"
                     isActive={pathname?.includes('/services')}
                     onClick={onClose}
                 />
-                 <NavItem
-                    icon={TfiClipboard}
-                    label="Service Requests"
-                    href="/student-affairs/college-data/service-request"
-                    isActive={pathname?.includes('/service-request')}
+                <NavItem
+                    icon={TbClipboardCheck}
+                    label="View Service Requests"
+                    href="/student-affairs/college-data/service-pending"
+                    isActive={pathname?.includes('/service-pending')}
                     onClick={onClose}
                 />
                 
