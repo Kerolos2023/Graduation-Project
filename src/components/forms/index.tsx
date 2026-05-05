@@ -58,7 +58,7 @@ export default function StudentFormsPopup() {
 
         <ProfileHeader />
 
-        {/* ✅ here only content */}
+        {/* here only content */}
         <div className="mt-6">{renderStep()}</div>
       </div>
     </div>

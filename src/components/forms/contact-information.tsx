@@ -20,7 +20,7 @@ export default function ContactInformation() {
 
   const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
-  // ✅ FETCH
+  // FETCH
   useEffect(() => {
     if (!studentId) return;
 
@@ -46,7 +46,7 @@ export default function ContactInformation() {
     fetchData();
   }, [studentId]);
 
-  // ✅ SUBMIT
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -69,7 +69,7 @@ export default function ContactInformation() {
         payload
       );
 
-      setResponseMessage("Updated successfully ✅");
+      setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
     } catch (err: any) {
       setResponseMessage(

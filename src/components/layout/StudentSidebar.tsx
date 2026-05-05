@@ -199,7 +199,7 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ onClose }) => {
         </Link>
 
         <Link
-          href="/student/settings"
+          href="/settings"
           onClick={onClose}
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer"
         >

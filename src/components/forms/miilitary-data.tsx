@@ -30,7 +30,7 @@ export default function MilitaryData() {
 
   const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
-  // ✅ FETCH
+  // FETCH
   useEffect(() => {
     if (!studentId) return;
 
@@ -57,7 +57,7 @@ export default function MilitaryData() {
     fetchData();
   }, [studentId]);
 
-  // ✅ SUBMIT
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,7 +80,7 @@ export default function MilitaryData() {
         payload
       );
 
-      setResponseMessage("Updated successfully ✅");
+      setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
     } catch (err: any) {
       setResponseMessage(

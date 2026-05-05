@@ -87,7 +87,7 @@ export default function StudentParentForm() {
         payload
       );
 
-      setResponseMessage("Updated successfully ✅");
+      setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
     } catch (err: any) {
       setResponseMessage(

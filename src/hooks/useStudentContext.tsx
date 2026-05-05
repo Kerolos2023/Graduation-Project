@@ -32,7 +32,7 @@ export const StudentProvider = ({ children }: { children: ReactNode }) => {
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
 
-  // ✅ default = personal
+  // default = personal
   const [activeTab, setActiveTab] = useState<ActiveTab>("personal");
 
   return (

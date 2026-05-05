@@ -258,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     />
                     <NavItem
                         icon={FiSliders}
-                        label="Course Availability"
+                        label="Courses Availability"
                         href="/student-affairs/college-data/levels"
                         isActive={pathname?.includes('/levels')}
                         onClick={onClose}

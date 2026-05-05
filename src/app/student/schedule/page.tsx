@@ -65,7 +65,7 @@ export default function SchedulePage() {
     <div className="p-6 bg-white rounded-lg shadow">
       <h1 className="text-lg font-semibold mb-4">Schedule</h1>
 
-      {/* ✅ التعديل الوحيد */}
+      {/* التعديل الوحيد */}
       <div className="overflow-x-auto">
         <div className="min-w-[900px]">
 

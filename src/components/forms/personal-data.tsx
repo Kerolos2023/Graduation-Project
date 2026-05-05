@@ -85,7 +85,7 @@ export default function PersonalData() {
       {Object.entries(formData).map(([key, value]) => (
         <div key={key} className="flex flex-col gap-1">
           
-          {/* ✅ FIXED LABEL */}
+          {/* FIXED LABEL */}
           <label className="text-sm text-gray-500">
             {getLabel(key)}
           </label>

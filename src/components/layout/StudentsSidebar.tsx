@@ -90,13 +90,6 @@ export const StudentsSidebar: React.FC<StudentsSidebarProps> = ({ onClose }) => 
                 />
             </nav>
             <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto px-1 py-2 custom-scrollbar min-h-0">
-                <NavItem
-                    icon={UserPen}
-                    label="Basic Data Profile"
-                    href="/student/basic-data-profile"
-                    isActive={pathname?.startsWith('/student/basic-data-profile')}
-                    onClick={onClose}
-                />
             </nav>
 
             {/* ── Footer ── */}

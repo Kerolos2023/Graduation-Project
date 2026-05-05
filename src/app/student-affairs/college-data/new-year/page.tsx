@@ -145,7 +145,7 @@ export default function StartNewYearConfiguration() {
         {/* SUCCESS MESSAGE */}
         {success && (
           <div className="mb-4 rounded-[12px] bg-green-100 text-green-700 px-4 py-3 text-sm font-medium">
-            Academic year created successfully ✅
+            Academic year created successfully
           </div>
         )}
 
