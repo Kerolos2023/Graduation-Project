@@ -10,30 +10,33 @@ import { cn } from "@/lib/utils";
 import CollegeDataTabs from "@/components/departmentsTabs";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAcademicContext } from "@/hooks/useAcademicContext";
 
 export default function GradesPage() {
   const [grades, setGrades] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
 
   const { register, handleSubmit, reset, setValue } = useForm<GradeRequest>();
 
   const fetchGrades = useCallback(async () => {
+    if (!selectedProgramId) return;
     try {
       setLoading(true);
-      const data = await gradeService.getAllGrades();
+      const data = await gradeService.getAllGrades(selectedProgramId);
       setGrades(data.items || []);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProgramId]);
 
   useEffect(() => {
     fetchGrades();
-  }, [fetchGrades]);
+  }, [fetchGrades, academicVersion]);
 
   const filteredGrades = useMemo(() => {
     return grades.filter(g =>
@@ -54,10 +57,10 @@ export default function GradesPage() {
 
     try {
       if (editingId) {
-        await gradeService.updateGrade(editingId, payload);
+        await gradeService.updateGrade(selectedProgramId!, editingId, payload);
         alert("Grade updated successfully!");
       } else {
-        await gradeService.createGrade(payload);
+        await gradeService.createGrade(selectedProgramId!, payload);
         alert("Grade added successfully!");
       }
       cancelEdit();
@@ -86,9 +89,9 @@ export default function GradesPage() {
   };
 
   const onDelete = async (gradeId: string) => {
-    if (!confirm("Are you sure?")) return;
+    if (!selectedProgramId || !confirm("Are you sure?")) return;
     try {
-      await gradeService.deleteGrade(gradeId);
+      await gradeService.deleteGrade(selectedProgramId, gradeId);
       setGrades(prev => prev.filter(g => g.id !== gradeId));
     } catch (error) {
       alert("Failed to delete grade");

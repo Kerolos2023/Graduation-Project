@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Pencil, Loader2 } from "lucide-react";
 import { getAllCourses } from '@/services/coursesServices';
+import { useAcademicContext } from "@/hooks/useAcademicContext";
 
 
 export default function CoursesPage() {
@@ -15,10 +16,15 @@ export default function CoursesPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const { selectedProgramId, selectedSemesterId, academicVersion } = useAcademicContext();
 
   useEffect(() => {
-    getAllCourses().then(setAllCourses).finally(() => setLoading(false));
-  }, []);
+    if (!selectedProgramId || !selectedSemesterId) return;
+    setLoading(true);
+    getAllCourses(selectedProgramId, selectedSemesterId)
+      .then(setAllCourses)
+      .finally(() => setLoading(false));
+  }, [selectedProgramId, selectedSemesterId, academicVersion]);
 
   const filteredCourses = useMemo(() => {
     return allCourses.filter((c: any) =>

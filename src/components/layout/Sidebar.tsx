@@ -68,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         setSelectedSemesterName,
         setSelectedYearId,
         setSelectedTermId,
+        incrementAcademicVersion,
     } = useAcademicContext();
     const { user, logout } = useAuth();
     const initials = user?.name ? getInitials(user.name) : "?";
@@ -118,6 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                 setSelectedYear(year.id);
                 setSelectedYearId(year.id);
                 await fetchCurrentSemester(year.id);
+                incrementAcademicVersion();
             }
         } catch (error) {
             console.error("Error fetching current year:", error);
@@ -137,6 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             semester.name === "Summer" ? "3" : "";
                 setSelectedTermType(termFromName);
                 setSelectedTermId(termFromName || semester.id);
+                incrementAcademicVersion();
             } else {
                 setCurrentSemester(null);
                 setSelectedSemesterId(null);
@@ -157,6 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             if (!selectedProgram && list.length > 0) {
                 setSelectedProgram(list[0].id);
                 setSelectedProgramId(list[0].id);
+                incrementAcademicVersion();
             }
         } catch (error) {
             console.error("Error fetching programs:", error);
@@ -296,6 +300,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                             onChange={(e) => {
                                 setSelectedProgram(e.target.value);
                                 setSelectedProgramId(e.target.value);
+                                incrementAcademicVersion();
                             }}
                             className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                         >

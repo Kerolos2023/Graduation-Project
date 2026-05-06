@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 
 export interface AcademicContextType {
   selectedProgramId: string | null;
@@ -19,6 +19,9 @@ export interface AcademicContextType {
   setSelectedTermId: (id: string | null) => void;
 
   isAcademicReady: boolean;
+  
+  academicVersion: number;
+  incrementAcademicVersion: () => void;
 }
 
 const AcademicContext = createContext<AcademicContextType | undefined>(
@@ -31,9 +34,13 @@ export const AcademicProvider = ({ children }: { children: ReactNode }) => {
   const [selectedSemesterName, setSelectedSemesterName] = useState<string | null>(null);
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null);
   const [selectedTermId, setSelectedTermId] = useState<string | null>(null);
+  const [academicVersion, setAcademicVersion] = useState(0);
 
-  // 🔥 READY FLAG (IMPORTANT)
   const isAcademicReady = !!selectedProgramId && !!selectedSemesterId;
+
+  const incrementAcademicVersion = useCallback(() => {
+    setAcademicVersion(v => v + 1);
+  }, []);
 
   return (
     <AcademicContext.Provider
@@ -49,6 +56,8 @@ export const AcademicProvider = ({ children }: { children: ReactNode }) => {
         selectedTermId,
         setSelectedTermId,
         isAcademicReady,
+        academicVersion,
+        incrementAcademicVersion,
       }}
     >
       {children}

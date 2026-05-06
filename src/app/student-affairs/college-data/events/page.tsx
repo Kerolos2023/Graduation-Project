@@ -2,13 +2,14 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, Edit2, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import eventService, { AcademicEvent } from '@/services/eventServices';
+import { useAcademicContext } from "@/hooks/useAcademicContext";
 
 export default function UniversityEventsPage() {
   const [isClient, setIsClient] = useState(false);
@@ -16,29 +17,30 @@ export default function UniversityEventsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const { selectedProgramId, selectedSemesterId, academicVersion } = useAcademicContext();
 
   // Form State
   const [type, setType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-
-  useEffect(() => {
-    setIsClient(true);
-    loadData();
-  }, []);
-
-  const loadData = async (query = "") => {
+  const loadData = useCallback(async (query = "") => {
+    if (!selectedProgramId || !selectedSemesterId) return;
     setLoading(true);
     try {
-      const data = await eventService.getEvents(query);
+      const data = await eventService.getEvents(selectedProgramId, selectedSemesterId, query);
       setEvents(data.items || []);
     } catch (error) {
       console.error("Fetch Error:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProgramId, selectedSemesterId]);
+
+  useEffect(() => {
+    setIsClient(true);
+    loadData();
+  }, [loadData, academicVersion]);
 
 
 
@@ -47,13 +49,13 @@ export default function UniversityEventsPage() {
   };
 
   const handleAddEvent = async () => {
-    if (!type || !startDate || !endDate) {
+    if (!selectedProgramId || !selectedSemesterId || !type || !startDate || !endDate) {
       alert("Please fill in all fields.");
       return;
     }
     setActionLoading(true);
     try {
-      await eventService.addEvent({ type, startDate, endDate });
+      await eventService.addEvent(selectedProgramId, selectedSemesterId, { type, startDate, endDate });
       setType(""); setStartDate(""); setEndDate("");
       loadData(search);
     } catch (error: any) {
@@ -65,9 +67,9 @@ export default function UniversityEventsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+    if (!selectedProgramId || !selectedSemesterId || !confirm("Are you sure you want to delete this event?")) return;
     try {
-      await eventService.deleteEvent(id);
+      await eventService.deleteEvent(selectedProgramId, selectedSemesterId, id);
       loadData(search);
     } catch (error) {
       console.error("Delete Error:", error);

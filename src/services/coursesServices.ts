@@ -1,11 +1,8 @@
 import axiosInstance from '@/lib/axios';
 
-const PROGRAM_ID = '019D5C67-392B-74A6-8E1F-2221FC6BBF0A';
-const SEMESTER_ID = '019d7980-c25c-7793-b137-248b067f98d5';
-
-export const getAllCourses = async () => {
-  const response = await axiosInstance.get(`/programs/${PROGRAM_ID}/course-offerings/for-exams`, {
-    params: { PageNumber: 1, PageSize: 500, semesterId: SEMESTER_ID }
+export const getAllCourses = async (programId: string, semesterId: string) => {
+  const response = await axiosInstance.get(`/programs/${programId}/course-offerings/for-exams`, {
+    params: { PageNumber: 1, PageSize: 500, semesterId }
   });
   return response.data.items || [];
 };

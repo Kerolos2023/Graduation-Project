@@ -1,8 +1,4 @@
-
 import axiosInstance from "@/lib/axios";
-
-const PROGRAM_ID = '019D5C67-392B-74A6-8E1F-2221FC6BBF0A';
-
 
 export interface GradeRequest {
   name: string;
@@ -24,10 +20,9 @@ export interface Grade {
 }
 
 export const gradeService = {
-  
-  getAllGrades: async (page = 1, size = 100) => {
+  getAllGrades: async (programId: string, page = 1, size = 100) => {
     const response = await axiosInstance.get(
-      `/programs/${PROGRAM_ID}/grades/all`,
+      `/programs/${programId}/grades/all`,
       {
         params: { PageNumber: page, PageSize: size },
       }
@@ -35,32 +30,32 @@ export const gradeService = {
     return response.data;
   },
 
-  
-  createGrade: async (data: GradeRequest): Promise<Grade> => {
+  createGrade: async (programId: string, data: GradeRequest): Promise<Grade> => {
     const response = await axiosInstance.post(
-      `/programs/${PROGRAM_ID}/grades`,
+      `/programs/${programId}/grades`,
       data
     );
     return response.data;
   },
 
-   
   updateGrade: async (
+    programId: string,
     gradeId: string,
     data: GradeRequest
   ): Promise<Grade> => {
     const response = await axiosInstance.put(
-      `/programs/${PROGRAM_ID}/grades/${gradeId}`,
+      `/programs/${programId}/grades/${gradeId}`,
       data
     );
     return response.data;
   },
 
-   
-  deleteGrade: async (gradeId: string) => {
+  deleteGrade: async (programId: string, gradeId: string) => {
     const response = await axiosInstance.delete(
-      `/programs/${PROGRAM_ID}/grades/${gradeId}`
+      `/programs/${programId}/grades/${gradeId}`
     );
     return response.data;
   },
 };
+
+export default gradeService;
