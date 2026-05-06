@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type FieldProps = {
   title: string;
@@ -20,7 +21,7 @@ function Field({ title, value }: FieldProps) {
 }
 
 export default function StudentProfileView() {
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);

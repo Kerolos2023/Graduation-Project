@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "@/lib/axios";
 import { cn } from "@/lib/utils";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type Session = {
   sessionId: string;
@@ -46,7 +47,7 @@ const getColor = (id: string) => {
 export default function SchedulePage() {
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   useEffect(() => {
     axiosInstance

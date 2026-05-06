@@ -12,10 +12,10 @@ import {
   StudentControlInfo,
 } from "@/services/staffControlService";
 import { levelService } from "@/services/levelsServices";
+import { COLLEGE_ID } from "@/lib/constants";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 const Avatar: React.FC<{ name: string }> = ({ name }) => {

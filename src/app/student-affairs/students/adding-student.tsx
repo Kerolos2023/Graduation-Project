@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { BiHide, BiSolidShow } from "react-icons/bi";
+import { COLLEGE_ID } from "@/lib/constants";
 
 export default function PopupForm({
   open,
@@ -53,7 +54,7 @@ export default function PopupForm({
 
     try {
       await axiosInstance.post(
-        "colleges/019c1ea6-1738-71cb-8cfd-a90e126d177e/students",
+        `colleges/${COLLEGE_ID}/students`,
         {
           name: formData.name,
           studentCode: formData.studentCode,

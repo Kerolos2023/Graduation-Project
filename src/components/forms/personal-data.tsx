@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { useStudentContext } from "@/hooks/useStudentContext";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 export default function PersonalData() {
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
   const { studentId, setIsEditPopupOpen } = useStudentContext();
 
   const [formData, setFormData] = useState({

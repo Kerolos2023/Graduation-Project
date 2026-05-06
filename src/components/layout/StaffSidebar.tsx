@@ -13,8 +13,9 @@ import {
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
 import { useStaffContext } from "@/hooks/useStaffContext";
+import { COLLEGE_ID } from "@/lib/constants";
 
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
 interface NavItemProps {
   icon: React.ElementType;

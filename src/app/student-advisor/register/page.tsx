@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import axiosInstance from "@/lib/axios";
 import { levelService } from "@/services/levelsServices";
 import { cn } from "@/lib/utils";
+import { COLLEGE_ID } from "@/lib/constants";
 
 type AcademicLevel = { id: string; name: string };
 
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 type StudentResult = {

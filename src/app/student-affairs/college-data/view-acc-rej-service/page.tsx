@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
+import { COLLEGE_ID } from "@/lib/constants";
 
 const API = "/service-requests";
 
@@ -20,7 +21,7 @@ export default function ServiceRequestsPage() {
         params: {
           pageNumber,
           pageSize,
-          collegeId: "019c1ea6-1738-71cb-8cfd-a90e126d177e",
+          collegeId: COLLEGE_ID,
         },
       });
 

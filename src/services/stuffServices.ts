@@ -1,6 +1,7 @@
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID } from "@/lib/constants";
 
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
 export const staffService = {
   getAllStaff: async () => {

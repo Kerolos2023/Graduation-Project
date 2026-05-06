@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID } from "@/lib/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

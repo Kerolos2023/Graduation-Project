@@ -4,13 +4,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
+import { COLLEGE_ID } from '@/lib/constants';
 import { Pagination } from '@/components/ui/pagination';
 import { useStudentContext } from '@/hooks/useStudentContext';
 import StudentFormsPopup from "@/components/forms";
 import PopupForm from './adding-student';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
 const API_BASE = `/colleges/${COLLEGE_ID}/students`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────

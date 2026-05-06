@@ -28,6 +28,7 @@ import { MdOutlinePendingActions } from "react-icons/md";
 import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
+import { COLLEGE_ID } from '@/lib/constants';
 
 interface NavItemProps {
     icon: React.ElementType;
@@ -66,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         setSelectedTermId,
     } = useAcademicContext();
 
-    const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
     const [academicYears, setAcademicYears] = useState<{ id: string; name: string }[]>([]);
     const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);

@@ -17,6 +17,7 @@ import { useAcademicContext } from '@/hooks/useAcademicContext';
 import axiosInstance from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { levelService } from '@/services/levelsServices';
+import { COLLEGE_ID } from '@/lib/constants';
 
 type AcademicLevel = { id: string; name: string };
 
@@ -67,7 +68,6 @@ type Building = {
   name: string;
 };
 
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
 const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 const normalizeTime = (value?: string) => {

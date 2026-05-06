@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Search, Printer, Pencil, Trash2 } from "lucide-react";
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 import { Pagination } from "@/components/ui/pagination";
 
 const API_BASE = "/services";
@@ -22,7 +23,7 @@ export default function ServicesPage() {
     price: ""
   });
 
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);

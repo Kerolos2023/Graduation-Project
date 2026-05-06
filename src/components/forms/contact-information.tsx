@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 import { useStudentContext } from "@/hooks/useStudentContext";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 export default function ContactInformation() {
   const { studentId, setIsEditPopupOpen } = useStudentContext();
@@ -18,7 +19,7 @@ export default function ContactInformation() {
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   // FETCH
   useEffect(() => {

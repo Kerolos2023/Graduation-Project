@@ -26,8 +26,9 @@ import {
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 import axiosInstance from "@/lib/axios";
 import { levelService, AcademicLevel as LevelOption } from "@/services/levelsServices";
+import { COLLEGE_ID } from "@/lib/constants";
 
-const COLLEGE_ID = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
 type SemesterType = "Fall" | "Spring" | "Summer";
 type RequirementType = "University" | "College" | "Program";

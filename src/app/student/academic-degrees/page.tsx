@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 export default function AcademicHistory() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   useEffect(() => {
     const fetchData = async () => {

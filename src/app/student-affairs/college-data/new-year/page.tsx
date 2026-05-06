@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import axiosInstance from "@/lib/axios";
+import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type Semester = {
   termType: string;
@@ -16,7 +17,7 @@ type AcademicYearForm = {
 };
 
 export default function StartNewYearConfiguration() {
-  const collegeId = "019c1ea6-1738-71cb-8cfd-a90e126d177e";
+
 
   const [form, setForm] = useState<AcademicYearForm>({
     startDate: "",

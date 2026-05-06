@@ -1,52 +1,46 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Printer, MoreVertical, Pencil, Trash2 } from 'lucide-react';
-import axiosInstance from '@/lib/axios';
+import { Search, Printer, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
-
-const COLLEGE_ID = '019c1ea6-1738-71cb-8cfd-a90e126d177e';
-const API_BASE = `/colleges/${COLLEGE_ID}/academic-programs`;
+import { departmentsService, type Department, type DepartmentPayload } from '@/services/departmentsService';
 
 export default function DepartmentsPage() {
-    const [departments, setDepartments] = useState<any[]>([]);
+    // ── Table / Pagination state ────────────────────────────────────────────
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    // ── Form state ──────────────────────────────────────────────────────────
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        code: '',
+    const [formData, setFormData] = useState<DepartmentPayload>({
+        Name: '',
+        Code: '',
     });
 
-    // --- API Calls ---
+    // ── API helpers ─────────────────────────────────────────────────────────
 
     const fetchTableData = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Matching exactly the upper-camel-case query parameters required
-            const url = `${API_BASE}?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ''}`;
-            const response = await axiosInstance.get(url);
-
-            const resData = response.data?.data || response.data?.items || response.data || [];
-            const resTotalPages = response.data?.totalPages || response.data?.meta?.totalPages || 1;
-
-            setDepartments(Array.isArray(resData) ? resData : []);
-            setTotalPages(resTotalPages);
+            const data = await departmentsService.getAll(pageNumber, pageSize, searchValue || undefined);
+            const items = data.data ?? data.items ?? [];
+            const pages = data.totalPages ?? data.meta?.totalPages ?? 1;
+            setDepartments(Array.isArray(items) ? items : []);
+            setTotalPages(pages);
         } catch (err) {
-            console.error("Error fetching table data:", err);
+            console.error("Error fetching departments:", err);
         } finally {
             setIsLoading(false);
         }
     }, [pageNumber, pageSize, searchValue]);
 
-    useEffect(() => {
-        fetchTableData();
-    }, [fetchTableData]);
+    useEffect(() => { fetchTableData(); }, [fetchTableData]);
 
+    // ── Handlers ────────────────────────────────────────────────────────────
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -55,28 +49,16 @@ export default function DepartmentsPage() {
 
     const resetForm = () => {
         setEditingId(null);
-        setFormData({
-            name: '',
-            code: '',
-        });
+        setFormData({ Name: '', Code: '' });
     };
 
     const handleAddOrSave = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const payload = {
-                Name: formData.name,
-                Code: formData.code,
-                Description: "Department Description", // Adding fallback defaults for required backend fields
-                RequiredCreditHours: 0                 // Adding fallback defaults for required backend fields
-            };
-
             if (editingId) {
-                // Update
-                await axiosInstance.put(`${API_BASE}/${editingId}`, payload);
+                await departmentsService.update(editingId, formData);
             } else {
-                // Create
-                await axiosInstance.post(API_BASE, payload);
+                await departmentsService.create(formData);
             }
             resetForm();
             fetchTableData();
@@ -99,20 +81,15 @@ export default function DepartmentsPage() {
         }
     };
 
-    const handleEditClick = async (department: any) => {
-        const targetId = department.id || department.Id;
-
+    const handleEditClick = async (department: Department) => {
+        const targetId = department.id;
         try {
-            // Optioanally get by ID to ensure fresh data
-            const response = await axiosInstance.get(`${API_BASE}/${targetId}`);
-            const freshData = response.data?.data || response.data || department;
-
+            const freshData = await departmentsService.getById(targetId);
             setEditingId(targetId);
             setFormData({
-                code: freshData.code || freshData.Code || '',
-                name: freshData.name || freshData.Name || '',
+                Name: freshData.name ?? '',
+                Code: freshData.code ?? '',
             });
-            // Scroll smoothly to top when editing starts
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
             console.error("Error fetching department details:", err);
@@ -122,14 +99,14 @@ export default function DepartmentsPage() {
     const handleDeleteClick = async (id: string) => {
         if (!window.confirm("Are you sure you want to delete this department?")) return;
         try {
-            await axiosInstance.delete(`${API_BASE}/${id}`);
+            await departmentsService.delete(id);
             fetchTableData();
         } catch (err) {
             console.error("Error deleting department:", err);
         }
     };
 
-    const renderInputField = (label: string, name: keyof typeof formData, placeholder: string = "Placeholder") => (
+    const renderInputField = (label: string, name: keyof DepartmentPayload, placeholder = "Placeholder") => (
         <div className="flex flex-col gap-1.5 w-full">
             <label className="text-[13px] font-bold text-gray-900 ml-1">{label}</label>
             <input
@@ -151,8 +128,8 @@ export default function DepartmentsPage() {
                 <h1 className="text-xl font-bold text-gray-900 mb-6">Adding Departments</h1>
                 <form onSubmit={handleAddOrSave}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        {renderInputField("Name", "name", "Ex: Computer Science")}
-                        {renderInputField("Code (Shortcut)", "code", "Ex: CS")}
+                        {renderInputField("Name", "Name", "Ex: Computer Science")}
+                        {renderInputField("Code (Shortcut)", "Code", "Ex: CS")}
                     </div>
 
                     <button
@@ -171,12 +148,11 @@ export default function DepartmentsPage() {
                     <div className="flex items-center gap-3">
                         <h2 className="text-[22px] font-bold text-gray-900 leading-none">Departments</h2>
                         <span className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100">
-                            100 Room
+                            {departments.length} Department
                         </span>
                     </div>
 
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        {/* Search Input */}
                         <div className="relative w-full md:w-[280px]">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
@@ -198,20 +174,19 @@ export default function DepartmentsPage() {
                     </div>
                 </div>
 
-                {/* Table Header pseudo-row from the design */}
+                {/* Table Header */}
                 <div className="flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl gap-4">
                     <div className="flex items-center gap-4 flex-1 w-full">
                         <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
                         <span className="text-[13px] font-bold text-gray-800 w-1/3">Code (Shortcut)</span>
                     </div>
-                    {/* Placeholder to match the space taken by action buttons in rows */}
                     <div className="flex items-center justify-end gap-2 invisible">
                         <button className="p-1.5 w-[30px] h-[30px]" />
                         <button className="p-1.5 w-[30px] h-[30px]" />
                     </div>
                 </div>
 
-                {/* Table List Items */}
+                {/* Table Rows */}
                 <div className="flex flex-col gap-3 mb-8">
                     {isLoading && <div className="text-center p-4 text-gray-500 text-sm">Loading...</div>}
 
@@ -221,38 +196,35 @@ export default function DepartmentsPage() {
                         </div>
                     )}
 
-                    {!isLoading && departments.map((dept, idx) => {
-                        const id = dept.id || dept.Id;
-                        const name = dept.name || dept.Name || 'Unknown';
-                        const code = dept.code || dept.Code || 'Unknown';
-
-                        return (
-                            <div key={id || idx} className="flex flex-row items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-1 sm:gap-4 relative">
-                                <div className="flex flex-row items-center gap-1 sm:gap-4 flex-1 w-full">
-                                    <span className="text-[14px] text-gray-900 w-1/3 truncate">{name}</span>
-                                    <span className="text-[14px] text-gray-500 sm:text-gray-900 w-1/3 truncate">{code}</span>
-                                </div>
-
-                                <div className="flex items-center justify-end gap-2 absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
-                                    <button
-                                        onClick={() => handleEditClick(dept)}
-                                        className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
-                                    >
-                                        <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteClick(id)}
-                                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
-                                    >
-                                        <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                                    </button>
-                                </div>
+                    {!isLoading && departments.map((dept, idx) => (
+                        <div
+                            key={dept.id ?? idx}
+                            className="flex flex-row items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-1 sm:gap-4 relative"
+                        >
+                            <div className="flex flex-row items-center gap-1 sm:gap-4 flex-1 w-full">
+                                <span className="text-[14px] text-gray-900 w-1/3 truncate">{dept.name}</span>
+                                <span className="text-[14px] text-gray-500 sm:text-gray-900 w-1/3 truncate">{dept.code}</span>
                             </div>
-                        );
-                    })}
+
+                            <div className="flex items-center justify-end gap-2 absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
+                                <button
+                                    onClick={() => handleEditClick(dept)}
+                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
+                                >
+                                    <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteClick(dept.id)}
+                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
+                                >
+                                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
-                {/* Pagination Wrapper */}
+                {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="flex justify-center mt-2">
                         <Pagination
