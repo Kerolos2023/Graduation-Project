@@ -11,7 +11,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
+import { academicService } from "@/services/academic.service";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { COLLEGE_ID } from "@/lib/constants";
 import { useAuth, getInitials } from "@/hooks/useAuth";
@@ -74,9 +75,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
 
   const fetchPrograms = async () => {
     try {
-      const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-programs`);
-      const items = res.data?.items || [];
-      const list = Array.isArray(items) ? items : [];
+      const list = await academicService.getAllPrograms();
       setPrograms(list);
       if (!selectedProgram && list.length > 0) {
         setSelectedProgram(list[0].id);
@@ -89,9 +88,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
 
   const fetchCurrentAcademicYear = async () => {
     try {
-      // Same pattern as Sidebar.tsx in student-affairs
-      const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years/current`);
-      const year = res.data;
+      const year = await academicService.getCurrentAcademicYear();
       if (year?.id) {
         setCurrentAcademicYearId(year.id);
       }
@@ -107,7 +104,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/Auth/revoke-refresh-token");
+      await authService.logout();
     } catch { /* ignore */ }
     logout();
     router.replace("/auth/login");

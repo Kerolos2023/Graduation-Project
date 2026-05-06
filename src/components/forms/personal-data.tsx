@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 export default function PersonalData() {
   const { studentId, setIsEditPopupOpen } = useStudentContext();
@@ -40,25 +39,18 @@ export default function PersonalData() {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/personal-data`,
-        {
-          params:{
-            studentId,
-          }
-        }
-      );
+      const data = await studentProfileService.getPersonalDataForStudent(studentId);
 
       setFormData({
-        name: res.data.name || "",
-        studentCode: res.data.studentCode || "",
-        nationalIdOrPassport: res.data.nationalIdOrPassport || "",
-        religion: res.data.religion || "",
-        gender: res.data.gender || "",
-        maritalStatus: res.data.maritalStatus || "",
-        dateOfBirth: res.data.dateOfBirth || "",
-        placeOfBirth: res.data.placeOfBirth || "",
-        nationality: res.data.nationality || "",
+        name: data.name || "",
+        studentCode: data.studentCode || "",
+        nationalIdOrPassport: data.nationalIdOrPassport || "",
+        religion: data.religion || "",
+        gender: data.gender || "",
+        maritalStatus: data.maritalStatus || "",
+        dateOfBirth: data.dateOfBirth || "",
+        placeOfBirth: data.placeOfBirth || "",
+        nationality: data.nationality || "",
       });
     };
 
@@ -68,10 +60,7 @@ export default function PersonalData() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await axiosInstance.put(
-      `/colleges/${collegeId}/students/personal-data`,
-      formData
-    );
+    await studentProfileService.updatePersonalData(formData);
 
     setIsEditPopupOpen(false);
   };

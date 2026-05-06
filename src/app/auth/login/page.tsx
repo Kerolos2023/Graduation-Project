@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { roleRoutes, getFirstRole } from '@/lib/roles';
-import axiosInstance from '@/lib/axios';
+import { authService } from '@/services/auth.service';
 
 export default function LoginPage() {
     const [userName, setUsername] = useState('');
@@ -34,36 +34,30 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const response = await axiosInstance.post('/Auth/login', {
+            const data = await authService.login({
                 userName,
                 password,
                 rememberMe
             });
 
-            if (response.status === 200) {
-                const data = response.data;
+            const roles: string[] = Array.isArray(data.roles) ? data.roles : [];
+            const firstRole = getFirstRole(roles);
 
-                const roles: string[] = Array.isArray(data.roles) ? data.roles : [];
-                const firstRole = getFirstRole(roles);
-
-                if (!firstRole || !roleRoutes[firstRole]) {
-                    setErrorMessage("No valid role found.");
-                    return;
-                }
-
-                // Store everything in AuthContext (persisted to localStorage)
-                // Token is managed by the backend via httpOnly cookie (withCredentials: true)
-                setUser({
-                    id:                 data.id ?? '',
-                    name:               data.name ?? '',
-                    email:              data.email ?? null,
-                    roles,
-                    activeModule:       firstRole,
-                    profilePictureUrl:  data.imageUrl ?? null,
-                });
-
-                router.replace(roleRoutes[firstRole]);
+            if (!firstRole || !roleRoutes[firstRole]) {
+                setErrorMessage("No valid role found.");
+                return;
             }
+
+            setUser({
+                id:                 data.id ?? '',
+                name:               data.name ?? '',
+                email:              data.email ?? null,
+                roles,
+                activeModule:       firstRole,
+                profilePictureUrl:  data.imageUrl ?? null,
+            });
+
+            router.replace(roleRoutes[firstRole]);
 
         } catch (error: any) {
             if (error.response?.status === 401) {

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { ClipboardList, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { SETTINGS_ROUTE, roleLabels } from "@/lib/roles";
 
@@ -63,7 +63,7 @@ export const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({ onClose }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/Auth/revoke-refresh-token");
+      await authService.logout();
     } catch { /* ignore */ }
     logout();
     router.replace("/auth/login");

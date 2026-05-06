@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Settings, LogOut, Users,UserPen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import axiosInstance from '@/lib/axios';
+import { authService } from '@/services/auth.service';
 
 interface NavItemProps {
     icon: React.ElementType;
@@ -45,7 +45,7 @@ export const StudentsSidebar: React.FC<StudentsSidebarProps> = ({ onClose }) => 
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.post('/Auth/revoke-refresh-token');
+            await authService.logout();
         } catch (error) {
             console.error("Logout error:", error);
         } finally {

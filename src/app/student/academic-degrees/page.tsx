@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
+import { studentProfileService } from "@/services/studentProfile.service";
 
 export default function AcademicHistory() {
   const [data, setData] = useState<any[]>([]);
@@ -13,10 +12,8 @@ export default function AcademicHistory() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axiosInstance.get(
-          `/colleges/${collegeId}/students/academic-history`
-        );
-        setData(res.data || []);
+        const data = await studentProfileService.getAcademicHistory();
+        setData(data);
       } catch (err) {
         console.error(err);
       } finally {

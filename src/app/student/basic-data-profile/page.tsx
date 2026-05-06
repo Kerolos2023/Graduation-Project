@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type FieldProps = {
@@ -33,24 +33,8 @@ export default function StudentProfileView() {
         setLoading(true);
         setError(null);
 
-        const [personal, parent, contact, military, qualification] =
-          await Promise.all([
-            axiosInstance.get(`/colleges/${collegeId}/students/personal-data`),
-            axiosInstance.get(`/colleges/${collegeId}/students/parent-data`),
-            axiosInstance.get(`/colleges/${collegeId}/students/contact-data`),
-            axiosInstance.get(`/colleges/${collegeId}/students/military-data`),
-            axiosInstance.get(
-              `/colleges/${collegeId}/students/previous-qualification-data`
-            ),
-          ]);
-
-        setData({
-          personal: personal.data,
-          parent: parent.data,
-          contact: contact.data,
-          military: military.data,
-          qualification: qualification.data,
-        });
+        const data = await studentProfileService.getAllData();
+        setData(data);
       } catch (err) {
         console.error("API Error:", err);
         setError("Failed to load student data");

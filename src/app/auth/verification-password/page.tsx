@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Loader } from "lucide-react";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 
 import {
@@ -64,15 +64,13 @@ export default function VerificationPage() {
 
         setIsLoading(true);
         try {
-            const response = await axiosInstance.post("/Auth/Verification-Reset-Password-Code", {
+            await authService.verifyResetCode({
                 email: email,
                 code: values.code,
             });
 
-            if (response.status === 200) {
-                alert("Verification successful!");
-                router.replace("/auth/reset-password");
-            }
+            alert("Verification successful!");
+            router.replace("/auth/reset-password");
         } catch (error: any) {
             const serverMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || "Invalid code";
             alert(`Error: ${serverMsg}`);
@@ -88,10 +86,7 @@ export default function VerificationPage() {
         }
         setIsResending(true);
         try {
-            await axiosInstance.post("/Auth/send-reset-password", {
-                userName: userName,
-                email: email,
-            });
+            await authService.sendResetPassword({ email });
             alert("A new code has been sent to your email.");
             setTimeLeft(60);
         } catch (error: any) {

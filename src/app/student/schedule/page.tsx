@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentScheduleService } from "@/services/studentSchedule.service";
 import { cn } from "@/lib/utils";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type Session = {
   sessionId: string;
@@ -50,9 +49,8 @@ export default function SchedulePage() {
 
 
   useEffect(() => {
-    axiosInstance
-      .get(`/colleges/${collegeId}/students/student-schedule`)
-      .then((res) => setSessions(res.data || []));
+    studentScheduleService.getSchedule()
+      .then((data) => setSessions(data));
   }, []);
 
   const grouped = useMemo(() => {

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type ParentFormData = {
   guardianName: string;
@@ -35,28 +34,21 @@ export default function StudentParentForm() {
 
 
 
-  useEffect(() => {
+useEffect(() => {
     if (!studentId) return;
 
     const fetchParentData = async () => {
-      const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/parent-data`,
-        {
-          params:{
-            studentId,
-          }
-        }
-      );
+      const data = await studentProfileService.getParentDataForStudent(studentId);
 
       setFormData({
-        guardianName: res.data.guardianName || "",
-        relationshipDegree: res.data.relationshipDegree || "",
-        job: res.data.job || "",
-        motherName: res.data.motherName || "",
-        guardianCity: res.data.guardianCity || "",
-        guardianEmail: res.data.guardianEmail || "",
-        guardianPhoneNumber: res.data.guardianPhoneNumber || "",
-        guardianAddress: res.data.guardianAddress || "",
+        guardianName: data.guardianName || "",
+        relationshipDegree: data.relationshipDegree || "",
+        job: data.job || "",
+        motherName: data.motherName || "",
+        guardianCity: data.guardianCity || "",
+        guardianEmail: data.guardianEmail || "",
+        guardianPhoneNumber: data.guardianPhoneNumber || "",
+        guardianAddress: data.guardianAddress || "",
       });
     };
 
@@ -71,22 +63,19 @@ export default function StudentParentForm() {
     setLoading(true);
     setResponseMessage("");
 
-  const payload = {
-  studentId,
-  guardianName: formData.guardianName,
-  relationshipDegree: formData.relationshipDegree,
-  job: formData.job,
-  motherName: formData.motherName,
-  guardianCity: formData.guardianCity,
-  guardianEmail: formData.guardianEmail,
-  guardianPhoneNumber: formData.guardianPhoneNumber,
-  guardianAddress: formData.guardianAddress,
-};
+    const payload = {
+      studentId,
+      guardianName: formData.guardianName,
+      relationshipDegree: formData.relationshipDegree,
+      job: formData.job,
+      motherName: formData.motherName,
+      guardianCity: formData.guardianCity,
+      guardianEmail: formData.guardianEmail,
+      guardianPhoneNumber: formData.guardianPhoneNumber,
+      guardianAddress: formData.guardianAddress,
+    };
     try {
-      await axiosInstance.put(
-        `/colleges/${collegeId}/students/parent-data`,
-        payload
-      );
+      await studentProfileService.updateParentData(payload);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);

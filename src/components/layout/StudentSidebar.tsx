@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { isMultiRole } from "@/lib/roles";
 
@@ -128,7 +128,7 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ onClose }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/Auth/revoke-refresh-token");
+      await authService.logout();
     } catch { /* ignore */ }
     logout();
     router.replace("/auth/login");

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 export default function ContactInformation() {
   const { studentId, setIsEditPopupOpen } = useStudentContext();
@@ -26,21 +25,14 @@ export default function ContactInformation() {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/contact-data`,
-        {
-          params:{
-            studentId,
-          }
-        }
-      );
+      const data = await studentProfileService.getContactDataForStudent(studentId);
 
       setFormData({
-        city: res.data.city || "",
-        address: res.data.address || "",
-        postalCode: res.data.postalCode || "",
-        phoneNumber: res.data.phoneNumber || "",
-        email: res.data.email || "",
+        city: data.city || "",
+        address: data.address || "",
+        postalCode: data.postalCode || "",
+        phoneNumber: data.phoneNumber || "",
+        email: data.email || "",
       });
     };
 
@@ -56,19 +48,15 @@ export default function ContactInformation() {
     setLoading(true);
     setResponseMessage("");
     const payload = {
-  
-  city: formData.city,
-  address: formData.address,
-  postalCode: formData.postalCode,
-  phoneNumber: formData.phoneNumber,
-  email: formData.email,
-};
+      city: formData.city,
+      address: formData.address,
+      postalCode: formData.postalCode,
+      phoneNumber: formData.phoneNumber,
+      email: formData.email,
+    };
 
     try {
-      await axiosInstance.put(
-        `/colleges/${collegeId}/students/contact-data`,
-        payload
-      );
+      await studentProfileService.updateContactData(payload);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import axiosInstance from '@/lib/axios';
+import { authService } from '@/services/auth.service';
 import type { ResetPasswordRequest } from '@/types/auth';
 
 export default function ResetPasswordPage() {
@@ -43,12 +43,10 @@ export default function ResetPasswordPage() {
                 newPassword: formData.newPassword,
             };
 
-            const response = await axiosInstance.patch('/Auth/reset-password', payload);
+            await authService.resetPassword(payload);
 
-            if (response.status === 200) {
-                alert('Password reset successful!');
-                router.push('/auth/login');
-            }
+            alert('Password reset successful!');
+            router.push('/auth/login');
         } catch (err: any) {
             const errorData = err.response?.data;
             if (errorData?.errors) {

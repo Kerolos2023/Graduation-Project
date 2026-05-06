@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type MilitaryFormData = {
   militaryStatus: number | "";
@@ -31,27 +30,20 @@ export default function MilitaryData() {
 
 
 
-  // FETCH
+// FETCH
   useEffect(() => {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const res = await axiosInstance.get(
-        `/colleges/${collegeId}/students/military-data`,
-        {
-          params:{
-            studentId,
-          }
-        }
-      );
+      const data = await studentProfileService.getMilitaryDataForStudent(studentId);
 
       setFormData({
-        militaryStatus: res.data.militaryStatus ?? "",
-        militaryNumber: res.data.militaryNumber || "",
-        decisionNumber: res.data.decisionNumber || "",
-        decisionDate: res.data.decisionDate?.split("T")[0] || "",
-        enrollmentDate: res.data.enrollmentDate?.split("T")[0] || "",
-        endDate: res.data.endDate?.split("T")[0] || "",
+        militaryStatus: data.militaryStatus ?? "",
+        militaryNumber: data.militaryNumber || "",
+        decisionNumber: data.decisionNumber || "",
+        decisionDate: data.decisionDate?.split("T")[0] || "",
+        enrollmentDate: data.enrollmentDate?.split("T")[0] || "",
+        endDate: data.endDate?.split("T")[0] || "",
       });
     };
 
@@ -67,19 +59,16 @@ export default function MilitaryData() {
     setLoading(true);
     setResponseMessage("");
     const payload = {
-  studentId,
-  militaryStatus: formData.militaryStatus,
-  militaryNumber: formData.militaryNumber,
-  decisionNumber: formData.decisionNumber,
-  decisionDate: formData.decisionDate,
-  enrollmentDate: formData.enrollmentDate,
-  endDate: formData.endDate,
-};
+      studentId,
+      militaryStatus: formData.militaryStatus,
+      militaryNumber: formData.militaryNumber,
+      decisionNumber: formData.decisionNumber,
+      decisionDate: formData.decisionDate,
+      enrollmentDate: formData.enrollmentDate,
+      endDate: formData.endDate,
+    };
     try {
-      await axiosInstance.put(
-        `/colleges/${collegeId}/students/military-data`,
-        payload
-      );
+      await studentProfileService.updateMilitaryData(payload);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);

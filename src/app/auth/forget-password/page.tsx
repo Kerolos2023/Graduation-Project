@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,16 +49,12 @@ export default function ForgetPasswordPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      await authService.sendResetPassword({ email: values.email });
 
-      const response = await axiosInstance.post("/Auth/send-reset-password", values);
-
-      if (response.status === 200 || response.status === 201) {
-        // Persist temporarily for the verification step
-        sessionStorage.setItem('resetEmail', values.email);
-        sessionStorage.setItem('resetUserName', values.userName);
-        alert("Reset link sent successfully!");
-        router.replace("/auth/verification-password");
-      }
+      sessionStorage.setItem('resetEmail', values.email);
+      sessionStorage.setItem('resetUserName', values.userName);
+      alert("Reset link sent successfully!");
+      router.replace("/auth/verification-password");
     } catch (error: any) {
 
       const errorMessage = error.response?.data?.message || "Something went wrong";

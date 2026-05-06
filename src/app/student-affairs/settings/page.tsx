@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { roleRoutes, roleLabels, roleModuleAccess, SETTINGS_ROUTE } from "@/lib/roles";
 import { Building2, ClipboardList, Users, LogOut, CheckCircle2, ChevronRight } from "lucide-react";
-import axiosInstance from "@/lib/axios";
+import { authService } from "@/services/auth.service";
 import Image from "next/image";
 
 // ─── Module card definitions ───────────────────────────────────────────────────
@@ -52,7 +52,7 @@ export default function StudentAffairsSettingsPage() {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/Auth/revoke-refresh-token");
+      await authService.logout();
     } catch { /* ignore */ }
     logout();
     router.replace("/auth/login");

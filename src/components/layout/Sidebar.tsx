@@ -26,7 +26,8 @@ import { FiSliders } from "react-icons/fi";
 import { MdOutlinePendingActions } from "react-icons/md";
 
 import { cn } from '@/lib/utils';
-import axiosInstance from '@/lib/axios';
+import { authService } from '@/services/auth.service';
+import { academicService } from '@/services/academic.service';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
 import { COLLEGE_ID } from '@/lib/constants';
 import { useAuth, getInitials } from '@/hooks/useAuth';
@@ -89,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.post('/Auth/revoke-refresh-token');
+            await authService.logout();
         } catch { /* ignore */ }
         logout();
         router.replace('/auth/login');
@@ -97,9 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const fetchAcademicYears = async () => {
         try {
-            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years`);
-            const items = res.data?.items || [];
-            const list = Array.isArray(items) ? items : [];
+            const list = await academicService.getAllAcademicYears();
             setAcademicYears(list);
             if (!selectedYear && list.length > 0) {
                 const fallbackYearId = list[0].id;
@@ -114,8 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const fetchCurrentYear = async () => {
         try {
-            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years/current`);
-            const year = res.data;
+            const year = await academicService.getCurrentAcademicYear();
             if (year?.id) {
                 setSelectedYear(year.id);
                 setSelectedYearId(year.id);
@@ -128,10 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const fetchCurrentSemester = async (yearId: string) => {
         try {
-            const res = await axiosInstance.get(
-                `/colleges/${COLLEGE_ID}/academic-years/${yearId}/current-semester`
-            );
-            const semester = res.data;
+            const semester = await academicService.getCurrentSemester(yearId);
             if (semester?.id) {
                 setCurrentSemester({ id: semester.id, name: semester.name || "Current" });
                 setSelectedSemesterId(semester.id);
@@ -157,9 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
     const fetchPrograms = async () => {
         try {
-            const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-programs`);
-            const items = res.data?.items || [];
-            const list = Array.isArray(items) ? items : [];
+            const list = await academicService.getAllPrograms();
             setPrograms(list);
             if (!selectedProgram && list.length > 0) {
                 setSelectedProgram(list[0].id);

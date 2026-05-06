@@ -12,6 +12,7 @@ import {
   StudentControlInfo,
 } from "@/services/staffControlService";
 import { levelService } from "@/services/levelsServices";
+import { academicService } from "@/services/academic.service";
 import { COLLEGE_ID } from "@/lib/constants";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -227,21 +228,13 @@ export default function CourseResultPage() {
   useEffect(() => {
     const fetchCurrentYear = async () => {
       try {
-        const res = await axiosInstance.get(
-          `/colleges/${COLLEGE_ID}/academic-years/current`
-        );
-        // Handle both nested and flat response shapes
-        const raw = res.data?.data ?? res.data;
-        const id = raw?.id ?? raw?.Id ?? null;
+        const year = await academicService.getCurrentAcademicYear();
+        const id = year?.id ?? null;
         if (id) {
           setAcademicYearId(id);
         } else {
-          // Fallback: try fetching all years and pick first
-          const listRes = await axiosInstance.get(
-            `/colleges/${COLLEGE_ID}/academic-years`
-          );
-          const items = listRes.data?.items ?? listRes.data ?? [];
-          const first = Array.isArray(items) ? items[0] : null;
+          const list = await academicService.getAllAcademicYears();
+          const first = Array.isArray(list) ? list[0] : null;
           if (first?.id) setAcademicYearId(first.id);
         }
       } catch (err) {

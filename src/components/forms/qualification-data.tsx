@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios";
+import { studentProfileService } from "@/services/studentProfile.service";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type PreviousQualificationFormData = {
   schoolName: string;
@@ -33,27 +32,22 @@ export default function PreviousQualificationData() {
 
 
 
-  // FETCH
+// FETCH
   useEffect(() => {
     if (!studentId) return;
 
     const fetchData = async () => {
       try {
-        const res = await axiosInstance.get(
-          `/colleges/${collegeId}/students/previous-qualification-data`,
-          {
-            params: { studentId },
-          }
-        );
+        const data = await studentProfileService.getQualificationDataForStudent(studentId);
 
         setFormData({
-          schoolName: res.data.schoolName || "",
-          enrollmentYear: res.data.enrollmentYear || "",
-          seatNumber: res.data.seatNumber || "",
-          qualification: res.data.qualification || "",
-          graduationYear: res.data.graduationYear || "",
-          totalGrade: res.data.totalGrade || "",
-          admissionType: res.data.admissionType ?? "",
+          schoolName: data.schoolName || "",
+          enrollmentYear: data.enrollmentYear || "",
+          seatNumber: data.seatNumber || "",
+          qualification: data.qualification || "",
+          graduationYear: data.graduationYear || "",
+          totalGrade: data.totalGrade || "",
+          admissionType: data.admissionType ?? "",
         });
       } catch (err) {
         console.error(err);
@@ -72,7 +66,6 @@ export default function PreviousQualificationData() {
     setResponseMessage("");
 
     const payload = {
-
       schoolName: formData.schoolName,
       enrollmentYear: formData.enrollmentYear.toString(),
       seatNumber: formData.seatNumber,
@@ -87,10 +80,7 @@ export default function PreviousQualificationData() {
     };
 
     try {
-      await axiosInstance.put(
-        `/colleges/${collegeId}/students/previous-qualification-data`,
-        payload
-      );
+      await studentProfileService.updateQualificationData(payload);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
