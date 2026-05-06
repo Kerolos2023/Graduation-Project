@@ -5,7 +5,7 @@ import { Search, Printer, Pencil, Trash2 } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
 
-const API_BASE = "/Building";
+const API_BASE = "/buildings";
 
 export default function BuildingsPage() {
   const [buildings, setBuildings] = useState<any[]>([]);
@@ -14,16 +14,21 @@ export default function BuildingsPage() {
   const [searchValue, setSearchValue] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", code: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+  });
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${API_BASE}/all?PageNumber=${pageNumber}&PageSize=${pageSize}${searchValue ? `&SearchValue=${searchValue}` : ""
-        }`;
+      const url = `${API_BASE}?PageNumber=${pageNumber}&PageSize=${pageSize}${
+        searchValue ? `&SearchValue=${searchValue}` : ""
+      }`;
+
       const response = await axiosInstance.get(url);
+
       setBuildings(response.data?.items || []);
       setTotalPages(response.data?.totalPages || 1);
     } catch (err) {
@@ -40,7 +45,11 @@ export default function BuildingsPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const resetForm = () => {
@@ -56,7 +65,10 @@ export default function BuildingsPage() {
       return;
     }
 
-    const payload = { name: formData.name.trim(), code: formData.code.trim() };
+    const payload = {
+      name: formData.name.trim(),
+      code: formData.code.trim(),
+    };
 
     try {
       if (editingId) {
@@ -64,10 +76,12 @@ export default function BuildingsPage() {
       } else {
         await axiosInstance.post(API_BASE, payload);
       }
+
       resetForm();
       fetchData();
     } catch (err: any) {
       const status = err.response?.status;
+
       if (status === 409) {
         alert("This building name or code already exists!");
       } else if (status === 401) {
@@ -83,12 +97,17 @@ export default function BuildingsPage() {
 
   const handleEdit = (building: any) => {
     setEditingId(building.id);
-    setFormData({ name: building.name, code: building.code });
+    setFormData({
+      name: building.name,
+      code: building.code,
+    });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this building?")) return;
+
     try {
       await axiosInstance.delete(`${API_BASE}/${id}`);
       fetchData();
@@ -98,9 +117,16 @@ export default function BuildingsPage() {
     }
   };
 
-  const renderInputField = (label: string, name: keyof typeof formData, placeholder: string) => (
+  const renderInputField = (
+    label: string,
+    name: keyof typeof formData,
+    placeholder: string
+  ) => (
     <div className="flex flex-col gap-1.5 w-full">
-      <label className="text-[13px] font-bold text-gray-900 ml-1">{label}</label>
+      <label className="text-[13px] font-bold text-gray-900 ml-1">
+        {label}
+      </label>
+
       <input
         type="text"
         name={name}
@@ -114,7 +140,6 @@ export default function BuildingsPage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
-
       <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
         <h1 className="text-xl font-bold text-gray-900 mb-6">
           {editingId ? "Edit Building" : "Adding Buildings"}
@@ -136,10 +161,12 @@ export default function BuildingsPage() {
       </div>
 
       <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] font-bold text-gray-900 leading-none">Buildings</h2>
+            <h2 className="text-[22px] font-bold text-gray-900 leading-none">
+              Buildings
+            </h2>
+
             <span className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100">
               {buildings.length} Buildings
             </span>
@@ -148,6 +175,7 @@ export default function BuildingsPage() {
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-[280px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
               <input
                 type="text"
                 placeholder="Search"
@@ -169,13 +197,22 @@ export default function BuildingsPage() {
 
         <div className="hidden md:flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl">
           <div className="flex items-center gap-4 flex-1">
-            <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
-            <span className="text-[13px] font-bold text-gray-800 w-1/3">Code</span>
+            <span className="text-[13px] font-bold text-gray-800 w-1/3">
+              Name
+            </span>
+
+            <span className="text-[13px] font-bold text-gray-800 w-1/3">
+              Code
+            </span>
           </div>
         </div>
 
         <div className="flex flex-col gap-3 mb-8">
-          {isLoading && <div className="text-center p-4 text-gray-500 text-sm">Loading...</div>}
+          {isLoading && (
+            <div className="text-center p-4 text-gray-500 text-sm">
+              Loading...
+            </div>
+          )}
 
           {!isLoading && buildings.length === 0 && (
             <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed">
@@ -183,23 +220,39 @@ export default function BuildingsPage() {
             </div>
           )}
 
-          {!isLoading && buildings.map((building) => (
-            <div key={building.id} className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
-                <span className="text-[14px] font-bold text-gray-900 w-full sm:w-1/3 truncate">{building.name}</span>
-                <span className="text-[14px] font-bold text-gray-500 sm:text-gray-900 w-full sm:w-1/3 truncate ml-7">{building.code}</span>
-              </div>
+          {!isLoading &&
+            buildings.map((building) => (
+              <div
+                key={building.id}
+                className="flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
+                  <span className="text-[14px] font-bold text-gray-900 w-full sm:w-1/3 truncate">
+                    {building.name}
+                  </span>
 
-              <div className="flex items-center justify-end gap-2 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
-                <button onClick={() => handleEdit(building)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer">
-                  <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                </button>
-                <button onClick={() => handleDelete(building.id)} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer">
-                  <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                </button>
+                  <span className="text-[14px] font-bold text-gray-500 sm:text-gray-900 w-full sm:w-1/3 truncate ml-7">
+                    {building.code}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 transition-opacity absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
+                  <button
+                    onClick={() => handleEdit(building)}
+                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
+                  >
+                    <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(building.id)}
+                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
+                  >
+                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {totalPages > 1 && (
