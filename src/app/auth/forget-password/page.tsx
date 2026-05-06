@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 
 import {
   Card,
@@ -38,7 +37,6 @@ const formSchema = z.object({
 export default function ForgetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { setEmail, setUserName } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,8 +53,9 @@ export default function ForgetPasswordPage() {
       const response = await axiosInstance.post("/Auth/send-reset-password", values);
 
       if (response.status === 200 || response.status === 201) {
-        setEmail(values.email);
-        setUserName(values.userName);
+        // Persist temporarily for the verification step
+        sessionStorage.setItem('resetEmail', values.email);
+        sessionStorage.setItem('resetUserName', values.userName);
         alert("Reset link sent successfully!");
         router.replace("/auth/verification-password");
       }

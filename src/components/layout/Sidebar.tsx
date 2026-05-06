@@ -29,6 +29,8 @@ import { cn } from '@/lib/utils';
 import axiosInstance from '@/lib/axios';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
 import { COLLEGE_ID } from '@/lib/constants';
+import { useAuth, getInitials } from '@/hooks/useAuth';
+import { SETTINGS_ROUTE, roleLabels } from '@/lib/roles';
 
 interface NavItemProps {
     icon: React.ElementType;
@@ -66,6 +68,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         setSelectedYearId,
         setSelectedTermId,
     } = useAcademicContext();
+    const { user, logout } = useAuth();
+    const initials = user?.name ? getInitials(user.name) : "?";
+    const badge = user?.roles?.filter(r => r !== "Student")[0] ?? "AcademicAdvising";
 
 
 
@@ -85,15 +90,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const handleLogout = async () => {
         try {
             await axiosInstance.post('/Auth/revoke-refresh-token');
-        } catch (error) {
-            console.error("Logout error:", error);
-        } finally {
-            if (typeof window !== 'undefined') {
-                localStorage.clear();
-                sessionStorage.clear();
-            }
-            router.replace('/auth/login');
-        }
+        } catch { /* ignore */ }
+        logout();
+        router.replace('/auth/login');
     };
 
     const fetchAcademicYears = async () => {
@@ -370,16 +369,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             <div className="p-4 mt-auto border-t border-gray-100/50 flex flex-col gap-2">
                 {/* Profile Card */}
                 <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center text-gray-400 font-bold bg-gradient-to-tr from-gray-100 to-gray-200 cursor-pointer">
-                        MO
-                    </div>
+                    {user?.profilePictureUrl ? (
+                        <Image
+                            src={user.profilePictureUrl}
+                            alt="Profile"
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-full object-cover border border-gray-100 shrink-0"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 border border-gray-100 flex items-center justify-center text-gray-600 font-bold bg-gradient-to-tr from-gray-100 to-gray-200 cursor-pointer">
+                            {initials}
+                        </div>
+                    )}
                     <div className="flex flex-col cursor-pointer">
-                        <span className="text-[14px] font-bold text-gray-900">Mohamed Osama</span>
-                        <span className="bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded w-fit uppercase tracking-wider mt-0.5">Admin</span>
+                        <span className="text-[14px] font-bold text-gray-900">{user?.name || "—"}</span>
+                        <span className="bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded w-fit uppercase tracking-wider mt-0.5">
+                            {roleLabels[badge] ?? badge}
+                        </span>
                     </div>
                 </div>
 
-                <Link href="/settings" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer">
+                <Link href={SETTINGS_ROUTE} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer">
                     <Settings className="w-5 h-5 text-gray-500 group-hover:text-gray-800" strokeWidth={1.5} />
                     Settings
                 </Link>

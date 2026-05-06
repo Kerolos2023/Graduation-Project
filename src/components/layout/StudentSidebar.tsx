@@ -11,7 +11,6 @@ import {
   GraduationCap,
   IdCard,
   LogOut,
-  Settings,
   ShoppingBag,
   ClipboardList,
   TrendingUp,
@@ -20,6 +19,8 @@ import {
 
 import { cn } from "@/lib/utils";
 import axiosInstance from "@/lib/axios";
+import { useAuth, getInitials } from "@/hooks/useAuth";
+import { isMultiRole } from "@/lib/roles";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -120,19 +121,17 @@ const STATIC_PROFILE = {
 export const StudentSidebar: React.FC<StudentSidebarProps> = ({ onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const initials = user?.name ? getInitials(user.name) : "?";
+  const hasMultipleRoles = user ? isMultiRole(user.roles) : false;
 
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/Auth/revoke-refresh-token");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      if (typeof window !== "undefined") {
-        localStorage.clear();
-        sessionStorage.clear();
-      }
-      router.replace("/auth/login");
-    }
+    } catch { /* ignore */ }
+    logout();
+    router.replace("/auth/login");
   };
 
   const isRootStudent = pathname === "/student";
@@ -179,36 +178,41 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ onClose }) => {
 
       {/* ── Footer ── */}
       <div className="p-4 mt-auto border-t border-gray-100/50 flex flex-col gap-2 shrink-0">
-        {/* Static Profile */}
+        {/* Profile → links to profile picture page */}
         <Link
           href="/student/profile-picture"
           onClick={onClose}
           className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-2"
         >
-          <div className="w-10 h-10 rounded-full shrink-0 border border-blue-100 bg-gradient-to-tr from-blue-400 to-violet-500 flex items-center justify-center text-white text-[13px] font-bold">
-            {STATIC_PROFILE.initials}
-          </div>
+          {user?.profilePictureUrl ? (
+            <Image
+              src={user.profilePictureUrl}
+              alt="Profile"
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover border border-blue-100 shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full shrink-0 border border-blue-100 bg-gradient-to-tr from-blue-400 to-violet-500 flex items-center justify-center text-white text-[13px] font-bold">
+              {initials}
+            </div>
+          )}
           <div className="flex flex-col">
-            <span className="text-[14px] font-bold text-gray-900">
-              {STATIC_PROFILE.name}
-            </span>
-            <span className="text-[12px] text-gray-500">
-              {STATIC_PROFILE.code}
-            </span>
+            <span className="text-[14px] font-bold text-gray-900">{user?.name || "—"}</span>
+            <span className="text-[12px] text-gray-500">Student</span>
           </div>
         </Link>
 
-        <Link
-          href="/settings"
-          onClick={onClose}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer"
-        >
-          <Settings
-            className="w-5 h-5 text-gray-500 group-hover:text-gray-800 shrink-0"
-            strokeWidth={1.5}
-          />
-          Settings
-        </Link>
+        {/* Settings — only for multi-role users */}
+        {hasMultipleRoles && (
+          <Link
+            href="/student-affairs/settings"
+            onClick={onClose}
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer"
+          >
+            Settings
+          </Link>
+        )}
 
         <button
           onClick={handleLogout}

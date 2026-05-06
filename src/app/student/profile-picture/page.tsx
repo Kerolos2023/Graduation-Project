@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Camera, Trash2, Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { profilePictureService } from "@/services/profilePictureService";
+import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const MAX_SIZE_MB = 2;
@@ -16,8 +17,10 @@ interface Toast {
 }
 
 export default function ProfilePicturePage() {
+  const { user, updateUser } = useAuth();
+
   // ── State ─────────────────────────────────────────────────────────────────
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(user?.profilePictureUrl ?? null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -41,7 +44,7 @@ export default function ProfilePicturePage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const getInitials = () => "TA";
+  const getInitialsLocal = () => user?.name ? getInitials(user.name) : "??";
 
   // ── File Selection ─────────────────────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +85,7 @@ export default function ProfilePicturePage() {
       }
 
       setImageUrl(newUrl);
+      updateUser({ profilePictureUrl: newUrl });
       clearSelection();
     } catch {
       showToast("error", "Failed to upload image. Please try again.");
@@ -99,6 +103,7 @@ export default function ProfilePicturePage() {
     try {
       await profilePictureService.removeImage(imageUrl);
       setImageUrl(null);
+      updateUser({ profilePictureUrl: null });
       clearSelection();
       showToast("success", "Profile picture removed successfully.");
     } catch {
@@ -152,7 +157,7 @@ export default function ProfilePicturePage() {
                   />
                 ) : (
                   <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-blue-500 to-violet-500 flex items-center justify-center text-white text-sm font-bold ring-2 ring-[#e9ebf1]">
-                    {getInitials()}
+                    {getInitialsLocal()}
                   </div>
                 )}
 

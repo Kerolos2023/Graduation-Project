@@ -4,12 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import axiosInstance from '@/lib/axios';
-import { useAuth } from '@/hooks/useAuth';
 import type { ResetPasswordRequest } from '@/types/auth';
 
 export default function ResetPasswordPage() {
     const router = useRouter();
-    const { email } = useAuth();
+    const email = typeof window !== 'undefined' ? sessionStorage.getItem('resetEmail') ?? '' : '';
     const [formData, setFormData] = useState({
         newPassword: '',
         repeatPassword: '',

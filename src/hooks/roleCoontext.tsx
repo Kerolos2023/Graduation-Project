@@ -1,7 +1,61 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { roleRoutes } from "@/lib/roles";
+
+// ─── Guard logic ───────────────────────────────────────────────────────────────
+//
+// ACCESS MATRIX (based on activeModule):
+//
+//  activeModule      │ Accessible paths
+//  ──────────────────┼──────────────────────────────────────────────
+//  Student           │ /student/*
+//  Staff             │ /staff/*, /student-advisor/*
+//  StudentAdvisor    │ /student-advisor/*
+//  AcademicAdvising  │ /student-affairs/*, /staff/*
+//                    │   (/student-advisor requires switching to Staff module)
+//
+// MULTI-ROLE ["AcademicAdvising", "Staff"]:
+//  → 3 module cards in settings: Student Affairs / Staff Portal / Student Advisor
+//  → activeModule="AcademicAdvising" → student-affairs + staff paths
+//  → activeModule="Staff"            → staff + student-advisor paths
+//  → activeModule="StudentAdvisor"   → student-advisor paths
+//
+// UNAUTHENTICATED: any non-neutral path → /auth/login
+// NEUTRAL PATHS  : /auth/*, /settings, /student-affairs/settings
+
+function isPathAllowedForRole(pathname: string, role: string): boolean {
+  const isStudent = pathname.startsWith("/student/") || pathname === "/student";
+  const isStaff   = pathname.startsWith("/staff");
+  const isAffairs = pathname.startsWith("/student-affairs");
+  const isAdvisor = pathname.startsWith("/student-advisor");
+
+  switch (role) {
+    case "Student":
+      // Student-only module
+      return isStudent;
+
+    case "Staff":
+      // Staff module: staff pages + student-advisor pages
+      return isStaff || isAdvisor;
+
+    case "StudentAdvisor":
+      // Student Advisor sub-module: student-advisor pages only
+      return isAdvisor;
+
+    case "AcademicAdvising":
+      // Student Affairs module: student-affairs + staff pages
+      // NOTE: /student-advisor requires switching to Staff or StudentAdvisor module
+      return isAffairs || isStaff;
+
+    default:
+      return false;
+  }
+}
+
+// ─── Context (kept for backward-compat; wraps AuthContext) ────────────────────
 
 type RoleContextType = {
   roles: string[];
@@ -18,59 +72,43 @@ const RoleContext = createContext<RoleContextType>({
 });
 
 export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
-  const [roles, setRoles] = useState<string[]>([]);
-  const [activeRole, setActiveRoleState] = useState<string | null>(null);
+  const { user, isLoading, updateUser, switchModule } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
-    const storedRoles = localStorage.getItem("roles");
-    const storedActive = localStorage.getItem("activeRole");
-
-    if (storedRoles) setRoles(JSON.parse(storedRoles));
-    if (storedActive) setActiveRoleState(storedActive);
-  }, []);
-
-  const setSessionRoles = (newRoles: string[]) => {
-    setRoles(newRoles);
-    localStorage.setItem("roles", JSON.stringify(newRoles));
-  };
-
-  const setActiveRole = (role: string) => {
-    setActiveRoleState(role);
-    localStorage.setItem("activeRole", role);
-  };
-
-  let isUnauthorized = false;
-  if (activeRole && pathname) {
-    const isStaffPath = pathname.startsWith("/staff");
-    const isStudentPath = pathname.startsWith("/student/") || pathname === "/student";
-    const isStudentAffairsPath = pathname.startsWith("/student-affairs");
-
-    if (activeRole === "Student" && (isStaffPath || isStudentAffairsPath)) {
-      isUnauthorized = true;
-    } else if (activeRole === "Staff" && (isStudentPath || isStudentAffairsPath)) {
-      isUnauthorized = true;
-    } else if (activeRole === "AcademicAdvising" && (isStaffPath || isStudentPath)) {
-      isUnauthorized = true;
-    }
-  }
+  const roles      = user?.roles ?? [];
+  const activeRole = user?.activeModule ?? null;
 
   useEffect(() => {
-    if (!isUnauthorized || !activeRole) return;
+    if (isLoading || !pathname) return;
 
-    if (activeRole === "Student") {
-      router.replace("/student/basic-data-profile");
-    } else if (activeRole === "Staff") {
-      router.replace("/staff/course-result");
-    } else if (activeRole === "AcademicAdvising") {
-      router.replace("/student-affairs/college-data/courses");
+    // Neutral paths — always accessible regardless of auth state
+    const isNeutral =
+      pathname.startsWith("/auth") ||
+      pathname === "/settings" ||
+      pathname === "/student-affairs/settings";
+
+    if (isNeutral) return;
+
+    // ── Not logged in → send to login ─────────────────────────────────────────
+    if (!user || !activeRole) {
+      router.replace("/auth/login");
+      return;
     }
-  }, [isUnauthorized, activeRole, router]);
+
+    // ── Wrong module → redirect to active module's home ───────────────────────
+    if (!isPathAllowedForRole(pathname, activeRole)) {
+      const fallback = roleRoutes[activeRole] ?? "/auth/login";
+      router.replace(fallback);
+    }
+  }, [isLoading, user, activeRole, pathname, router]);
+
+  const setSessionRoles = (newRoles: string[]) => updateUser({ roles: newRoles });
+  const setActiveRole   = (role: string)       => switchModule(role);
 
   return (
     <RoleContext.Provider value={{ roles, activeRole, setActiveRole, setSessionRoles }}>
-      {isUnauthorized ? <div className="min-h-screen bg-gray-50 flex items-center justify-center"></div> : children}
+      {children}
     </RoleContext.Provider>
   );
 };

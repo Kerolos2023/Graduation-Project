@@ -5,26 +5,11 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-import { useRole } from '@/hooks/roleCoontext';
+import { useAuth } from '@/hooks/useAuth';
+import { roleRoutes, getFirstRole } from '@/lib/roles';
 import axiosInstance from '@/lib/axios';
 
-// role mapping
-const roleRoutes: Record<string, string> = {
-    Student: "/student/basic-data-profile",
-    Staff: "/staff/course-result",
-    AcademicAdvising: "/student-affairs/college-data/courses",
-};
-
-// choose main role
-const getMainRole = (roles: string[]) => {
-    if (roles.includes("AcademicAdvising")) return "AcademicAdvising";
-    if (roles.includes("Staff")) return "Staff";
-    if (roles.includes("Student")) return "Student";
-    return roles[0] || "";
-};
-
-export default function Loginpag() {
-
+export default function LoginPage() {
     const [userName, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -33,26 +18,15 @@ export default function Loginpag() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const router = useRouter();
-    const { setActiveRole, setSessionRoles } = useRole();
+    const { user, setUser, isLoading } = useAuth();
 
-    // Safe redirect
+    // Redirect if already logged in
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        const activeRole = localStorage.getItem("activeRole");
-
-        // لو البيانات ناقصة → مفيش redirect
-        if (!token || !activeRole) return;
-
-        // لو role مش معروف → امسحه
-        if (!roleRoutes[activeRole]) {
-            localStorage.removeItem("activeRole");
-            return;
-        }
-
-        // redirect آمن
-        router.replace(roleRoutes[activeRole]);
-
-    }, [router]);
+        if (isLoading) return;
+        if (!user?.activeModule) return;
+        const route = roleRoutes[user.activeModule];
+        if (route) router.replace(route);
+    }, [user, isLoading, router]);
 
     const handlesubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,37 +41,36 @@ export default function Loginpag() {
             });
 
             if (response.status === 200) {
+                const data = response.data;
 
-                const roles: string[] = Array.isArray(response.data.roles)
-                    ? response.data.roles
-                    : [];
+                const roles: string[] = Array.isArray(data.roles) ? data.roles : [];
+                const firstRole = getFirstRole(roles);
 
-                const token = response.data.token;
-
-                // store
-                localStorage.setItem("token", token);
-                setSessionRoles(roles);
-
-                const selectedRole = getMainRole(roles);
-
-                if (selectedRole && roleRoutes[selectedRole]) {
-                    setActiveRole(selectedRole);
-
-                    // redirect آمن
-                    router.replace(roleRoutes[selectedRole]);
-                } else {
-                    setErrorMessage("No valid role found");
+                if (!firstRole || !roleRoutes[firstRole]) {
+                    setErrorMessage("No valid role found.");
+                    return;
                 }
+
+                // Store everything in AuthContext (persisted to localStorage)
+                // Token is managed by the backend via httpOnly cookie (withCredentials: true)
+                setUser({
+                    id:                 data.id ?? '',
+                    name:               data.name ?? '',
+                    email:              data.email ?? null,
+                    roles,
+                    activeModule:       firstRole,
+                    profilePictureUrl:  data.imageUrl ?? null,
+                });
+
+                router.replace(roleRoutes[firstRole]);
             }
 
         } catch (error: any) {
-
             if (error.response?.status === 401) {
                 setErrorMessage('Invalid username or password');
             } else {
                 setErrorMessage('Something went wrong. Please try again.');
             }
-
         } finally {
             setLoading(false);
         }

@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Loader } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 
 import {
     Card,
@@ -37,7 +36,9 @@ export default function VerificationPage() {
     const [isResending, setIsResending] = useState(false);
     const [timeLeft, setTimeLeft] = useState(60);
     const router = useRouter();
-    const { email, userName } = useAuth();
+    // Read temp reset data stored by forget-password page
+    const email    = typeof window !== 'undefined' ? sessionStorage.getItem('resetEmail')    ?? '' : '';
+    const userName = typeof window !== 'undefined' ? sessionStorage.getItem('resetUserName') ?? '' : '';
 
     useEffect(() => {
         if (timeLeft <= 0) return;
