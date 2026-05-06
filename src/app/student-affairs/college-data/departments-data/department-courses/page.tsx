@@ -260,11 +260,11 @@ const extractSemesterMapping = (rawYear: unknown): Partial<Record<SemesterType, 
 
     const type = normalizeSemesterType(
       semesterRecord.termType ??
-        semesterRecord.TermType ??
-        semesterRecord.name ??
-        semesterRecord.Name ??
-        semesterRecord.semesterType ??
-        semesterRecord.SemesterType
+      semesterRecord.TermType ??
+      semesterRecord.name ??
+      semesterRecord.Name ??
+      semesterRecord.semesterType ??
+      semesterRecord.SemesterType
     );
     const id = readString(
       semesterRecord.id,
@@ -635,9 +635,9 @@ export default function DepartmentCoursesPage() {
       prev.map((item) =>
         item.type === type
           ? {
-              ...item,
-              maxScore: Number(value) || 0,
-            }
+            ...item,
+            maxScore: Number(value) || 0,
+          }
           : item
       )
     );
@@ -1312,9 +1312,8 @@ export default function DepartmentCoursesPage() {
                       return (
                         <div
                           key={`${level.id}-${semester.value}`}
-                          className={`rounded-2xl border ${
-                            isSemesterOpen ? "border-blue-600 bg-white" : "border-slate-200 bg-white"
-                          }`}
+                          className={`rounded-2xl border ${isSemesterOpen ? "border-blue-600 bg-white" : "border-slate-200 bg-white"
+                            }`}
                         >
                           <button
                             onClick={() => toggleSemester(level.id, semester.value)}

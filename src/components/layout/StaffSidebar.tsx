@@ -11,8 +11,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { authService } from "@/services/auth.service";
-import { academicService } from "@/services/academic.service";
+import { authService } from "@/services/authServices";
+import { academicService } from "@/services/academicServices";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { COLLEGE_ID } from "@/lib/constants";
 import { useAuth, getInitials } from "@/hooks/useAuth";

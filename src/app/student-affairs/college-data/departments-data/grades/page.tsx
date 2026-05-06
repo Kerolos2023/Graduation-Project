@@ -16,7 +16,7 @@ export default function GradesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  
+
   const { register, handleSubmit, reset, setValue } = useForm<GradeRequest>();
 
   const fetchGrades = useCallback(async () => {
@@ -31,13 +31,13 @@ export default function GradesPage() {
     }
   }, []);
 
-  useEffect(() => { 
-    fetchGrades(); 
+  useEffect(() => {
+    fetchGrades();
   }, [fetchGrades]);
 
   const filteredGrades = useMemo(() => {
-    return grades.filter(g => 
-      g.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    return grades.filter(g =>
+      g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       g.code.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [grades, searchTerm]);
@@ -61,10 +61,10 @@ export default function GradesPage() {
         alert("Grade added successfully!");
       }
       cancelEdit();
-      await fetchGrades(); 
+      await fetchGrades();
     } catch (error: any) {
       const errorData = error.response?.data;
-       const msg = errorData?.errors?.[0] || errorData?.title || "Something went wrong. Please check your data.";
+      const msg = errorData?.errors?.[0] || errorData?.title || "Something went wrong. Please check your data.";
       alert(`Error: ${msg}`);
     }
   };
@@ -100,13 +100,13 @@ export default function GradesPage() {
   return (
     <div className="p-4 md:p-10 bg-[#F9FAFB] min-h-screen font-sans">
       <CollegeDataTabs />
-      
-       <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10 transition-all">
+
+      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10 transition-all">
         <div className="flex justify-between items-center mb-8 md:mb-10">
           <h1 className="text-xl md:text-2xl font-bold text-[#0A0D12]">
             {editingId ? "Update Grade" : "Adding Grade"}
           </h1>
-          
+
           {editingId && (
             <button onClick={cancelEdit} className="flex items-center gap-1 text-red-500 hover:text-red-600 text-xs md:text-sm font-bold transition-colors">
               <X className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default function GradesPage() {
         </form>
       </div>
 
-       <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-[#E9EAEB] shadow-sm">
+      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-[#E9EAEB] shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-[#0A0D12]">Grades List</h2>
@@ -167,7 +167,7 @@ export default function GradesPage() {
             <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-slate-200"><MoreHorizontal className="h-5 w-5 text-slate-400" /></Button>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="hidden md:grid grid-cols-[60px_1.5fr_1.5fr_1fr_1fr_100px] items-center gap-4 px-10 py-5 bg-[#F8FAFC] rounded-2xl text-[11px] font-black text-[#181D27] uppercase tracking-widest">
             <div className="flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-lg" /></div>
@@ -187,24 +187,24 @@ export default function GradesPage() {
                 editingId === item.id ? "border-blue-500 bg-blue-50/30" : "border-slate-100"
               )}>
                 <div className="hidden md:flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-xl" /></div>
-                
+
                 <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Name:</span> 
+                  <span className="md:hidden font-black text-slate-400">Name:</span>
                   <div className="font-bold text-[#181D27]">{item.name}</div>
                 </div>
 
                 <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Code:</span> 
+                  <span className="md:hidden font-black text-slate-400">Code:</span>
                   <div className="text-[#181D27]">{item.code}</div>
                 </div>
 
                 <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Min:</span> 
+                  <span className="md:hidden font-black text-slate-400">Min:</span>
                   <div className="text-[#181D27]">{item.minScore}%</div>
                 </div>
 
                 <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Max:</span> 
+                  <span className="md:hidden font-black text-slate-400">Max:</span>
                   <div className="text-[#181D27]">{item.maxScore}%</div>
                 </div>
 
@@ -221,4 +221,4 @@ export default function GradesPage() {
   );
 }
 
- 
+

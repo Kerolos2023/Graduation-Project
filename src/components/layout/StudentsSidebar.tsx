@@ -4,9 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Settings, LogOut, Users,UserPen } from 'lucide-react';
+import { Settings, LogOut, Users, UserPen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { authService } from '@/services/auth.service';
+import { authService } from '@/services/authServices';
 
 interface NavItemProps {
     icon: React.ElementType;

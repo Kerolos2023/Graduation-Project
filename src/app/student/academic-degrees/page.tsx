@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { studentProfileService } from "@/services/studentProfile.service";
+import { studentProfileService } from "@/services/studentProfileServices";
 
 export default function AcademicHistory() {
   const [data, setData] = useState<any[]>([]);

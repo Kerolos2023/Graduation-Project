@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { studentProfileService } from "@/services/studentProfile.service";
+import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 
 type PreviousQualificationFormData = {
@@ -32,7 +32,7 @@ export default function PreviousQualificationData() {
 
 
 
-// FETCH
+  // FETCH
   useEffect(() => {
     if (!studentId) return;
 

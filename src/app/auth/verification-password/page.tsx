@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Loader } from "lucide-react";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/authServices";
 import { useRouter } from "next/navigation";
 
 import {
@@ -37,7 +37,7 @@ export default function VerificationPage() {
     const [timeLeft, setTimeLeft] = useState(60);
     const router = useRouter();
     // Read temp reset data stored by forget-password page
-    const email    = typeof window !== 'undefined' ? sessionStorage.getItem('resetEmail')    ?? '' : '';
+    const email = typeof window !== 'undefined' ? sessionStorage.getItem('resetEmail') ?? '' : '';
     const userName = typeof window !== 'undefined' ? sessionStorage.getItem('resetUserName') ?? '' : '';
 
     useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { studentProfileService } from "@/services/studentProfile.service";
+import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 
 export default function ContactInformation() {
@@ -70,42 +70,42 @@ export default function ContactInformation() {
   };
 
   return (
-      <div className="bg-white p-9 shadow-sm rounded-[20px]"> 
-    <form
-      onSubmit={handleSubmit}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-    >
-      {Object.entries(formData).map(([key, value]) => (
-        <div key={key} className="flex flex-col gap-1">
-          <label className="text-[13px] text-gray-500 capitalize">
-            {key.replace(/([A-Z])/g, " $1")}
-          </label>
-
-          <input
-            type={key === "email" ? "email" : "text"}
-            value={value}
-            onChange={(e) =>
-              setFormData({ ...formData, [key]: e.target.value })
-            }
-            className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-          />
-        </div>
-      ))}
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
+    <div className="bg-white p-9 shadow-sm rounded-[20px]">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {loading ? "Updating..." : "Update"}
-      </button>
+        {Object.entries(formData).map(([key, value]) => (
+          <div key={key} className="flex flex-col gap-1">
+            <label className="text-[13px] text-gray-500 capitalize">
+              {key.replace(/([A-Z])/g, " $1")}
+            </label>
 
-      {responseMessage && (
-        <p className="col-span-full text-center text-green-600 text-sm">
-          {responseMessage}
-        </p>
-      )}
-    </form>
+            <input
+              type={key === "email" ? "email" : "text"}
+              value={value}
+              onChange={(e) =>
+                setFormData({ ...formData, [key]: e.target.value })
+              }
+              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+            />
+          </div>
+        ))}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
+        >
+          {loading ? "Updating..." : "Update"}
+        </button>
+
+        {responseMessage && (
+          <p className="col-span-full text-center text-green-600 text-sm">
+            {responseMessage}
+          </p>
+        )}
+      </form>
     </div>
   );
 }

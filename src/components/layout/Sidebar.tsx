@@ -1,4 +1,4 @@
- 
+
 
 "use client";
 
@@ -6,16 +6,16 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-    BookOpen, 
-    Building2, 
-    Settings, 
-    LogOut, 
-    BookAIcon, 
-    ChevronDown, 
-    CalendarDays, 
-    Users, 
-    ClipboardList, 
+import {
+    BookOpen,
+    Building2,
+    Settings,
+    LogOut,
+    BookAIcon,
+    ChevronDown,
+    CalendarDays,
+    Users,
+    ClipboardList,
     Clock,
     LayoutGrid
 } from 'lucide-react';
@@ -26,8 +26,8 @@ import { FiSliders } from "react-icons/fi";
 import { MdOutlinePendingActions } from "react-icons/md";
 
 import { cn } from '@/lib/utils';
-import { authService } from '@/services/auth.service';
-import { academicService } from '@/services/academic.service';
+import { authService } from '@/services/authServices';
+import { academicService } from '@/services/academicServices';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
 import { COLLEGE_ID } from '@/lib/constants';
 import { useAuth, getInitials } from '@/hooks/useAuth';
@@ -284,7 +284,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         isActive={pathname?.includes('/view-acc-rej-service')}
                         onClick={onClose}
                     />
-                    
+
                 </nav>
 
 
@@ -415,4 +415,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
 
 
 
- 

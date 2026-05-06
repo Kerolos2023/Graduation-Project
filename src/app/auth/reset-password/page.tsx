@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { authService } from '@/services/auth.service';
+import { authService } from '@/services/authServices';
 import type { ResetPasswordRequest } from '@/types/auth';
 
 export default function ResetPasswordPage() {

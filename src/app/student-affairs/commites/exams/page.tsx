@@ -158,8 +158,8 @@ export default function ExamTermsPage() {
       {/* Alert System */}
       {statusMessage.type && (
         <div className={`flex items-center justify-between p-4 rounded-2xl border ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
-            statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
-              'bg-emerald-50 border-emerald-200 text-emerald-800'
+          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+            'bg-emerald-50 border-emerald-200 text-emerald-800'
           }`}>
           <div className="flex items-center gap-3">
             {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}

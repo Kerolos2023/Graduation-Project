@@ -152,12 +152,12 @@ const SESSION_TYPE_MAP: Record<string, string> = {
 const SESSION_COLORS: Record<string, string> = {
   Lecture: "bg-blue-50 border-blue-200 text-blue-900",
   Section: "bg-amber-50 border-amber-200 text-amber-900",
-  Lab:     "bg-purple-50 border-purple-200 text-purple-900",
+  Lab: "bg-purple-50 border-purple-200 text-purple-900",
 };
 const SESSION_BADGES: Record<string, string> = {
   Lecture: "bg-blue-100 text-blue-700",
   Section: "bg-amber-100 text-amber-700",
-  Lab:     "bg-purple-100 text-purple-700",
+  Lab: "bg-purple-100 text-purple-700",
 };
 const getSessionColor = (type: string) =>
   SESSION_COLORS[type] ?? "bg-gray-50 border-gray-200 text-gray-800";
@@ -338,23 +338,23 @@ export default function SchedulePage() {
       const data = res.data?.items || res.data?.data || res.data || [];
       const items: CourseOffering[] = Array.isArray(data)
         ? data
-            .map((c: { id?: string; Id?: string; courseOfferingId?: string; courseOfferingID?: string; courseOfferingGuid?: string; courseId?: string; CourseId?: string; courseOffering?: { id?: string }; name?: string; Name?: string; courseName?: string; CourseName?: string; code?: string; Code?: string; numberOfGroups?: number; NumberOfGroups?: number }) => ({
-              id: (
-                c.id ||
-                c.Id ||
-                c.courseOfferingId ||
-                c.courseOfferingID ||
-                c.courseOfferingGuid ||
-                c.courseId ||
-                c.CourseId ||
-                c.courseOffering?.id ||
-                ""
-              ) as string,
-              name: c.name || c.Name || c.courseName || c.CourseName || "Unnamed",
-              code: (c.code || c.Code) as string | undefined,
-              numberOfGroups: c.numberOfGroups || c.NumberOfGroups || 1,
-            }))
-            .filter((item) => Boolean(item.id))
+          .map((c: { id?: string; Id?: string; courseOfferingId?: string; courseOfferingID?: string; courseOfferingGuid?: string; courseId?: string; CourseId?: string; courseOffering?: { id?: string }; name?: string; Name?: string; courseName?: string; CourseName?: string; code?: string; Code?: string; numberOfGroups?: number; NumberOfGroups?: number }) => ({
+            id: (
+              c.id ||
+              c.Id ||
+              c.courseOfferingId ||
+              c.courseOfferingID ||
+              c.courseOfferingGuid ||
+              c.courseId ||
+              c.CourseId ||
+              c.courseOffering?.id ||
+              ""
+            ) as string,
+            name: c.name || c.Name || c.courseName || c.CourseName || "Unnamed",
+            code: (c.code || c.Code) as string | undefined,
+            numberOfGroups: c.numberOfGroups || c.NumberOfGroups || 1,
+          }))
+          .filter((item) => Boolean(item.id))
         : [];
       setCourseOfferings(items);
       if (items.length > 0) {

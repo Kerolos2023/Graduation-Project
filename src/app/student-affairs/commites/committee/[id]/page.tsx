@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useAcademicContext } from "@/hooks/useAcademicContext"; 
+import { useAcademicContext } from "@/hooks/useAcademicContext";
 import { committeeService } from "@/services/committeeServices";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ export default function CommitteesPage() {
   useEffect(() => {
     const init = async () => {
       if (!examTermId || examTermId === 'undefined') return;
-      
+
       try {
         setIsLoading(true);
         setErrorMsg(null);
@@ -72,19 +72,19 @@ export default function CommitteesPage() {
 
   const handleBuildingChange = async (bId: string) => {
     if (!examTermId || examTermId === 'undefined') return;
-    
+
     setForm((prev) => ({ ...prev, buildingId: bId, roomId: "" }));
     setRooms([]);
     setErrorMsg(null);
-    setIsLoadingRooms(true); 
-    
+    setIsLoadingRooms(true);
+
     try {
       const res = await committeeService.getAvailableRooms(bId, examTermId);
       setRooms(res?.items || []);
     } catch (error) {
       toast.error("Error loading rooms for this building");
     } finally {
-      setIsLoadingRooms(false);   
+      setIsLoadingRooms(false);
     }
   };
 
@@ -132,8 +132,8 @@ export default function CommitteesPage() {
     setForm({
       number: item.committeeNumber.toString(),
       capacity: item.maxCapacity.toString(),
-      buildingId: "", 
-      roomId: "" 
+      buildingId: "",
+      roomId: ""
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -193,11 +193,11 @@ export default function CommitteesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 flex flex-col">
               <label className="text-sm font-semibold text-[#090909] ml-1">Committee Number</label>
-              <Input value={form.number} onChange={(e) => setForm({...form, number: e.target.value})} placeholder="Ex: 17" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
+              <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Ex: 17" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
             </div>
             <div className="space-y-2 flex flex-col">
               <label className="text-sm font-semibold text-[#090909] ml-1">Capacity</label>
-              <Input value={form.capacity} onChange={(e) => setForm({...form, capacity: e.target.value})} placeholder="Ex: 5" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
+              <Input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Ex: 5" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
             </div>
             {!editingId && (
               <>
@@ -214,18 +214,18 @@ export default function CommitteesPage() {
                 </div>
                 <div className="space-y-2 flex flex-col">
                   <label className="text-sm font-semibold text-[#090909] ml-1">Room</label>
-                  <Select onValueChange={(v) => setForm({...form, roomId: v})} value={form.roomId} disabled={isLoadingRooms || !form.buildingId}>
+                  <Select onValueChange={(v) => setForm({ ...form, roomId: v })} value={form.roomId} disabled={isLoadingRooms || !form.buildingId}>
                     <SelectTrigger className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl">
-                      <SelectValue 
+                      <SelectValue
                         placeholder={
-                          isLoadingRooms 
-                            ? "Loading rooms..." 
-                            : !form.buildingId 
-                              ? "Select Building First" 
-                              : rooms.length === 0 
-                                ? "No rooms available" 
+                          isLoadingRooms
+                            ? "Loading rooms..."
+                            : !form.buildingId
+                              ? "Select Building First"
+                              : rooms.length === 0
+                                ? "No rooms available"
                                 : "Select Room"
-                        } 
+                        }
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -258,8 +258,8 @@ export default function CommitteesPage() {
         </CardContent>
       </Card>
 
-       <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-[#0A0D12]">Committees</h2>
             <span className="bg-blue-50 text-[#2B59FF] text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
@@ -293,8 +293,8 @@ export default function CommitteesPage() {
             </div>
           ) : (
             filteredCommittees.map((item) => (
-              <div 
-                key={item.id} 
+              <div
+                key={item.id}
                 className={`grid grid-cols-1 lg:grid-cols-[50px_1.5fr_1.5fr_1fr_150px] items-center p-4 lg:px-6 lg:py-5 border rounded-2xl transition-all bg-white gap-3 lg:gap-0 ${selectedIds.includes(item.id) ? 'border-[#2B59FF] shadow-sm bg-blue-50/5' : 'border-[#E2E8F0] hover:shadow-md hover:border-blue-200'}`}
               >
                 <div className="flex items-center justify-between lg:contents">

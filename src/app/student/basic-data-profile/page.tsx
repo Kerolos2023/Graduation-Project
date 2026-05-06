@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { studentProfileService } from "@/services/studentProfile.service";
+import { studentProfileService } from "@/services/studentProfileServices";
 import { COLLEGE_ID as collegeId } from "@/lib/constants";
 
 type FieldProps = {

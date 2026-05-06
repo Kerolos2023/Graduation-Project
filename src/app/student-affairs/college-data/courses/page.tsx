@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { collegeCoursesService, type Course, type CoursePayload } from '@/services/collegeCoursesService';
+import { collegeCoursesService, type Course, type CoursePayload } from '@/services/collegeCoursesServices';
 
 export default function CoursesPage() {
     // ── Table / Pagination state ────────────────────────────────────────────

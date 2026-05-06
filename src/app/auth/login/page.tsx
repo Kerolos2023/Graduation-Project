@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { roleRoutes, getFirstRole } from '@/lib/roles';
-import { authService } from '@/services/auth.service';
+import { authService } from '@/services/authServices';
 
 export default function LoginPage() {
     const [userName, setUsername] = useState('');
@@ -49,12 +49,12 @@ export default function LoginPage() {
             }
 
             setUser({
-                id:                 data.id ?? '',
-                name:               data.name ?? '',
-                email:              data.email ?? null,
+                id: data.id ?? '',
+                name: data.name ?? '',
+                email: data.email ?? null,
                 roles,
-                activeModule:       firstRole,
-                profilePictureUrl:  data.imageUrl ?? null,
+                activeModule: firstRole,
+                profilePictureUrl: data.imageUrl ?? null,
             });
 
             router.replace(roleRoutes[firstRole]);

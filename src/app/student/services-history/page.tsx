@@ -7,7 +7,7 @@ import { Pagination } from "@/components/ui/pagination";
 import {
   studentServicesService,
   type ServiceHistoryItem,
-} from "@/services/studentServicesService";
+} from "@/services/studentServicesServics";
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 

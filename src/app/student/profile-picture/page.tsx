@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Camera, Trash2, Upload, X, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { profilePictureService } from "@/services/profilePictureService";
+import { profilePictureService } from "@/services/profilePictureServices";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];

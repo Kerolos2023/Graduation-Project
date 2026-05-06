@@ -10,9 +10,9 @@ import {
   CourseOffering,
   AssessmentHeader,
   StudentControlInfo,
-} from "@/services/staffControlService";
+} from "@/services/staffControlServices";
 import { levelService } from "@/services/levelsServices";
-import { academicService } from "@/services/academic.service";
+import { academicService } from "@/services/academicServices";
 import { COLLEGE_ID } from "@/lib/constants";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -188,11 +188,10 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
             disabled={saving}
-            className={`w-16 text-center text-[13px] font-semibold border rounded-lg px-1 py-1 focus:outline-none focus:ring-2 transition-all ${
-              error
-                ? "border-red-400 focus:ring-red-500/20"
-                : "border-blue-400 focus:ring-blue-500/20"
-            }`}
+            className={`w-16 text-center text-[13px] font-semibold border rounded-lg px-1 py-1 focus:outline-none focus:ring-2 transition-all ${error
+              ? "border-red-400 focus:ring-red-500/20"
+              : "border-blue-400 focus:ring-blue-500/20"
+              }`}
           />
           {saving && (
             <Loader2 className="absolute -right-5 w-4 h-4 text-blue-500 animate-spin" />
@@ -271,7 +270,7 @@ export default function CourseResultPage() {
     if (!selectedProgramId) return;
     const load = async () => {
       try {
-      const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
+        const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
         const items = response.items;
         setLevels(items);
         setSelectedLevelId("");
@@ -316,9 +315,9 @@ export default function CourseResultPage() {
   );
   const groupOptions: SelectOption[] = selectedCourse
     ? Array.from({ length: selectedCourse.numberOfGroups }, (_, i) => ({
-        value: String(i + 1),
-        label: `Group ${i + 1}`,
-      }))
+      value: String(i + 1),
+      label: `Group ${i + 1}`,
+    }))
     : [];
 
   // ── Fetch Students ────────────────────────────────────────────────────────
@@ -355,9 +354,9 @@ export default function CourseResultPage() {
       };
       setError(
         axiosError?.response?.data?.message ||
-          axiosError?.response?.data?.title ||
-          axiosError?.message ||
-          "Failed to load students"
+        axiosError?.response?.data?.title ||
+        axiosError?.message ||
+        "Failed to load students"
       );
     } finally {
       setIsLoading(false);
@@ -752,17 +751,16 @@ export default function CourseResultPage() {
                     {/* Letter Grade */}
                     <td className="px-4 py-3.5 text-center">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[12px] font-bold ${
-                          student.letterDegree?.startsWith("A")
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                            : student.letterDegree?.startsWith("B")
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[12px] font-bold ${student.letterDegree?.startsWith("A")
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                          : student.letterDegree?.startsWith("B")
                             ? "bg-blue-50 text-blue-700 border border-blue-100"
                             : student.letterDegree?.startsWith("C")
-                            ? "bg-amber-50 text-amber-700 border border-amber-100"
-                            : student.letterDegree?.startsWith("D")
-                            ? "bg-orange-50 text-orange-700 border border-orange-100"
-                            : "bg-red-50 text-red-700 border border-red-100"
-                        }`}
+                              ? "bg-amber-50 text-amber-700 border border-amber-100"
+                              : student.letterDegree?.startsWith("D")
+                                ? "bg-orange-50 text-orange-700 border border-orange-100"
+                                : "bg-red-50 text-red-700 border border-red-100"
+                          }`}
                       >
                         {student.letterDegree ?? "—"}
                       </span>
@@ -771,11 +769,10 @@ export default function CourseResultPage() {
                     {/* Failed */}
                     <td className="px-4 py-3.5 text-center">
                       <span
-                        className={`text-[13px] font-semibold ${
-                          student.numberOfFailed > 0
-                            ? "text-red-500"
-                            : "text-gray-400"
-                        }`}
+                        className={`text-[13px] font-semibold ${student.numberOfFailed > 0
+                          ? "text-red-500"
+                          : "text-gray-400"
+                          }`}
                       >
                         {student.numberOfFailed}
                       </span>

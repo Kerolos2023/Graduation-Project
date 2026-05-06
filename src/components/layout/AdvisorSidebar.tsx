@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { ClipboardList, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/authServices";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { SETTINGS_ROUTE, roleLabels } from "@/lib/roles";
 

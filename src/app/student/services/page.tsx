@@ -6,7 +6,7 @@ import { Pagination } from "@/components/ui/pagination";
 import {
   studentServicesService,
   type ServiceItem,
-} from "@/services/studentServicesService";
+} from "@/services/studentServicesServics";
 
 const PAGE_SIZE = 10;
 

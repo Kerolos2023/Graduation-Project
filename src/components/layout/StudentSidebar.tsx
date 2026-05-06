@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/authServices";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { isMultiRole } from "@/lib/roles";
 

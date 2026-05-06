@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Printer, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
-import { departmentsService, type Department, type DepartmentPayload } from '@/services/departmentsService';
+import { departmentsService, type Department, type DepartmentPayload } from '@/services/departmentsServices';
 
 export default function DepartmentsPage() {
     // ── Table / Pagination state ────────────────────────────────────────────

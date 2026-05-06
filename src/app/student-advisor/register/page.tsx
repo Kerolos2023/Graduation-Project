@@ -124,12 +124,12 @@ const normalizeType = (t: unknown): string => {
 const SESSION_COLORS: Record<string, string> = {
   Lecture: "bg-blue-50 border-blue-200 text-blue-900",
   Section: "bg-amber-50 border-amber-200 text-amber-900",
-  Lab:     "bg-purple-50 border-purple-200 text-purple-900",
+  Lab: "bg-purple-50 border-purple-200 text-purple-900",
 };
 const SESSION_BADGES: Record<string, string> = {
   Lecture: "bg-blue-100 text-blue-700",
   Section: "bg-amber-100 text-amber-700",
-  Lab:     "bg-purple-100 text-purple-700",
+  Lab: "bg-purple-100 text-purple-700",
 };
 const getSessionColor = (type: string) =>
   SESSION_COLORS[type] ?? "bg-gray-50 border-gray-200 text-gray-800";

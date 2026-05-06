@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth, getInitials } from "@/hooks/useAuth";
 import { roleRoutes, roleLabels, roleModuleAccess, SETTINGS_ROUTE } from "@/lib/roles";
 import { Building2, ClipboardList, Users, LogOut, CheckCircle2, ChevronRight } from "lucide-react";
-import { authService } from "@/services/auth.service";
+import { authService } from "@/services/authServices";
 import Image from "next/image";
 
 // ─── Module card definitions ───────────────────────────────────────────────────
@@ -96,11 +96,10 @@ export default function StudentAffairsSettingsPage() {
             {user?.roles.map((r) => (
               <span
                 key={r}
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                  r === user.activeModule
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-500"
-                }`}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${r === user.activeModule
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-500"
+                  }`}
               >
                 {roleLabels[r] ?? r}
               </span>
@@ -125,11 +124,10 @@ export default function StudentAffairsSettingsPage() {
                 <button
                   key={moduleKey}
                   onClick={() => handleSwitch(moduleKey)}
-                  className={`relative w-full text-left p-5 rounded-2xl border-2 transition-all group cursor-pointer ${
-                    isActive
-                      ? "border-blue-500 bg-blue-50/60 shadow-sm"
-                      : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-sm"
-                  }`}
+                  className={`relative w-full text-left p-5 rounded-2xl border-2 transition-all group cursor-pointer ${isActive
+                    ? "border-blue-500 bg-blue-50/60 shadow-sm"
+                    : "border-gray-100 bg-white hover:border-blue-200 hover:shadow-sm"
+                    }`}
                 >
                   {/* Active checkmark */}
                   {isActive && (

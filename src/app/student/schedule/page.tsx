@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { studentScheduleService } from "@/services/studentSchedule.service";
+import { studentScheduleService } from "@/services/studentScheduleServices";
 import { cn } from "@/lib/utils";
 
 type Session = {
@@ -14,12 +14,12 @@ type Session = {
 };
 
 const DAYS = [
-  "Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday",
+  "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
 ];
 
 const slots = [
-  "08:00","09:00","10:00","11:00","12:00",
-  "13:00","14:00","15:00","16:00","17:00","18:00","19:00"
+  "08:00", "09:00", "10:00", "11:00", "12:00",
+  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
 ];
 
 const toMinutes = (t: string) => {
@@ -75,7 +75,7 @@ export default function SchedulePage() {
               <div className="p-3 font-medium text-gray-600">Day</div>
               {slots.map((h, i) => (
                 <div key={i} className="p-3 text-center text-gray-500">
-                  {h}-{String(Number(h.split(":")[0]) + 1).padStart(2,"0")}:00
+                  {h}-{String(Number(h.split(":")[0]) + 1).padStart(2, "0")}:00
                 </div>
               ))}
             </div>
@@ -102,7 +102,7 @@ export default function SchedulePage() {
                       const slotMin = toMinutes(slot);
 
                       const session = daySessions.find((s) => {
-                        return toMinutes(s.startTime.slice(0,5)) === slotMin;
+                        return toMinutes(s.startTime.slice(0, 5)) === slotMin;
                       });
 
                       if (!session) {
@@ -115,8 +115,8 @@ export default function SchedulePage() {
                         continue;
                       }
 
-                      const start = toMinutes(session.startTime.slice(0,5));
-                      const end = toMinutes(session.endTime.slice(0,5));
+                      const start = toMinutes(session.startTime.slice(0, 5));
+                      const end = toMinutes(session.endTime.slice(0, 5));
 
                       const span = slots.filter((s) => {
                         const m = toMinutes(s);
@@ -124,7 +124,7 @@ export default function SchedulePage() {
                       }).length;
 
                       cells.push(
-                        <div 
+                        <div
                           key={session.sessionId}
                           className={cn(
                             "relative p-2 m-1 rounded-lg text-[11px] flex flex-col justify-center",
@@ -139,7 +139,7 @@ export default function SchedulePage() {
                             {session.type}
                           </div>
                           <div className="opacity-70 text-[10px]">
-                            {session.startTime.slice(0,5)} - {session.endTime.slice(0,5)}
+                            {session.startTime.slice(0, 5)} - {session.endTime.slice(0, 5)}
                           </div>
                         </div>
                       );

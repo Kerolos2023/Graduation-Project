@@ -1,4 +1,4 @@
- 
+
 
 
 "use client"
@@ -15,7 +15,7 @@ import { Pagination } from '@/components/ui/pagination';
 
 import { levelService, AcademicLevel } from "@/services/levelsServices";
 import CollegeDataTabs from "@/components/departmentsTabs";
-   export default function AcademicLevelsPage() {
+export default function AcademicLevelsPage() {
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
@@ -112,17 +112,17 @@ import CollegeDataTabs from "@/components/departmentsTabs";
   };
 
   return (
-    
-    
+
+
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen ">
       <CollegeDataTabs />
-      
-      
+
+
       <div className="max-w-6xl mx-auto space-y-6">
-        
- 
-        
-         
+
+
+
+
         <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
@@ -178,7 +178,7 @@ import CollegeDataTabs from "@/components/departmentsTabs";
           </Button>
         </div>
 
-         
+
         <div className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div className="flex items-center gap-3">
@@ -204,7 +204,7 @@ import CollegeDataTabs from "@/components/departmentsTabs";
             </div>
           </div>
 
-           
+
           <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-slate-50 rounded-xl mb-4 text-sm font-semibold text-[#181D27] uppercase tracking-wider">
             <div className="flex justify-center"><Checkbox className="rounded" /></div>
             <div>Name</div>
@@ -213,7 +213,7 @@ import CollegeDataTabs from "@/components/departmentsTabs";
             <div className="text-right">Actions</div>
           </div>
 
-           
+
           <div className="space-y-4 md:space-y-2">
             {loading ? (
               <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={32} /></div>
@@ -227,7 +227,7 @@ import CollegeDataTabs from "@/components/departmentsTabs";
                   key={level.id}
                   className="flex flex-col md:grid md:grid-cols-[50px_2fr_1fr_1fr_120px] items-start md:items-center px-4 md:px-6 py-4 border border-slate-100 md:border-transparent md:hover:bg-slate-50 rounded-2xl transition-all gap-3 md:gap-0 bg-white md:bg-transparent shadow-sm md:shadow-none"
                 >
-                   
+
                   <div className="flex justify-between items-center w-full md:w-auto md:justify-center">
                     <Checkbox className="rounded" />
                     <div className="md:hidden flex gap-1">
@@ -240,25 +240,25 @@ import CollegeDataTabs from "@/components/departmentsTabs";
                     </div>
                   </div>
 
-                   
+
                   <div className="flex flex-col md:block">
                     <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Level Name</span>
                     <div className="font-bold md:font-medium text-slate-800 text-base md:text-sm truncate">{level.name}</div>
                   </div>
 
-                   
+
                   <div className="flex flex-col md:text-center w-full md:w-auto">
                     <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Min Credit Hours</span>
                     <div className="text-slate-600 text-sm">{level.minHours}</div>
                   </div>
 
-                   
+
                   <div className="flex flex-col md:text-center w-full md:w-auto">
                     <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Max Credit Hours</span>
                     <div className="text-slate-600 text-sm">{level.maxHours}</div>
                   </div>
 
-                  
+
                   <div className="hidden md:flex justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => handleEditInit(level)} className="h-8 w-8 cursor-pointer text-blue-500 hover:bg-blue-100 hover:text-blue-700 transition-colors">
                       <Edit2 size={16} />
