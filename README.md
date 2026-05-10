@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 University Management System
 
-## Getting Started
+## 📌 Overview
 
-First, run the development server:
+A full-featured university management system built with modern frontend technologies.
+The platform helps manage students, staff, courses, and service requests with secure role-based access control.
+
+---
+
+## 🚀 Features
+
+* 🔐 Authentication & Authorization (Role-Based Access)
+* 👨‍🎓 Student Management
+* 🧑‍🏫 Staff Management
+* 📚 Courses & Academic Data
+* 🏢 Buildings & Rooms Management
+* 📝 Service Requests System
+* 🔎 Search & Pagination
+* 📊 Clean Dashboard UI
+
+---
+
+## 🛠 Tech Stack
+
+* **Frontend:** Next.js, React
+* **Styling:** Tailwind CSS
+* **State Management:** React Hooks
+* **API Handling:** Axios
+* **Architecture:** Modular & Scalable Structure
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+ ├── app/
+ ├── components/
+ ├── lib/
+ ├── services/
+ └── types/
+```
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1) Clone the repository
+
+```bash
+git clone https://github.com/Kerolos2023/Graduation-Project.git
+cd Graduation-Project
+```
+
+### 2) Install dependencies
+
+```bash
+npm install
+```
+
+### 3) Run the project
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 API Integration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project depends on external REST APIs.
+Make sure the backend server is running and update API base URL if needed.
 
-## Learn More
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📈 Future Improvements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* Notifications system
+* Real-time updates
+* Advanced analytics dashboard
+* Mobile responsiveness enhancements
 
-## Deploy on Vercel
+---
+Host
+https://playful-torrone-6e1691.netlify.app
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 👤 Author
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Kerolos Saleh**
+
+---
+
+## ⭐ Notes
+
+This project was developed as a graduation project and demonstrates real-world frontend architecture, API integration, and role-based systems.
