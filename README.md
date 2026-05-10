@@ -40,7 +40,9 @@ src/
  ├── services/
  └── types/
 ```
+Host
 
+https://playful-torrone-6e1691.netlify.app
 ---
 
 ## ⚙️ Installation & Setup
@@ -83,8 +85,7 @@ Make sure the backend server is running and update API base URL if needed.
 * Mobile responsiveness enhancements
 
 ---
-Host
-https://playful-torrone-6e1691.netlify.app
+
 
 ## 👤 Author
 
