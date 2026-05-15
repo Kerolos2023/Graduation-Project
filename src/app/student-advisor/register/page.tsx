@@ -21,9 +21,14 @@ type StudentResult = {
 };
 
 type EnrollmentSession = {
-  enrollemntId: string;
+  enrollemntId?: string;
   sessionId: string;
   courseOfferingId: string;
+  courseName?: string;
+  instructorName?: string;
+  buildingName?: string;
+  roomNumber?: number;
+  groupNumber?: number;
   type: string;
   startTime: string;
   endTime: string;
@@ -39,6 +44,7 @@ type CourseSession = {
   start: string;
   end: string;
   availableSeats: number;
+  isRegistered: boolean;
 };
 
 type Course = {
@@ -47,7 +53,7 @@ type Course = {
   courseName: string;
   courseCode: string;
   isOptional: boolean;
-  creaditHours: number;
+  creditHours: number;
   isEnrolled: boolean;
   sessions: CourseSession[];
 };
@@ -64,7 +70,7 @@ type StudentInfo = {
 
 type EnrollmentData = {
   student: StudentInfo;
-  levelInfo: { levelName: string; courses: Course[] };
+  courses: Course[];
   enrollmentInfos: EnrollmentSession[];
 };
 
@@ -305,12 +311,13 @@ export default function AdvisorRegisterPage() {
 
     // 1. Update accumulated session details cache
     const cache = sessionDetailsCacheRef.current;
-    (enrollmentData.levelInfo?.courses || []).forEach((course) => {
+    (enrollmentData.courses || []).forEach((course) => {
       course.sessions.forEach((session) => {
         cache.set(session.sessionId, {
-          enrollemntId: session.sessionId,
           sessionId: session.sessionId,
           courseOfferingId: course.courseOfferingId,
+          courseName: course.courseName,
+          instructorName: session.instructorName,
           type: session.type,
           startTime: session.start,
           endTime: session.end,
@@ -319,7 +326,8 @@ export default function AdvisorRegisterPage() {
       });
     });
     (enrollmentData.enrollmentInfos || []).forEach((ei) => {
-      cache.set(ei.sessionId, ei);
+      // enrollmentInfos has richer data (buildingName, roomNumber) — merge on top
+      cache.set(ei.sessionId, { ...cache.get(ei.sessionId), ...ei });
     });
 
     // 2. Merge: add new enrollmentInfos sessions not already in draft and not explicitly removed
@@ -410,13 +418,23 @@ export default function AdvisorRegisterPage() {
     if (!selectedStudent || !currentSemesterId) return;
     setIsSaving(true);
     try {
-      await axiosInstance.put(
+      const res = await axiosInstance.put(
         "/enrollments",
         { newSessions: draftSessions },
         { params: { SemesterId: currentSemesterId, StudentId: selectedStudent.id } }
       );
+      // PUT returns the updated enrollmentInfos[] — apply directly to avoid a round-trip
+      const updatedInfos: EnrollmentSession[] = Array.isArray(res.data) ? res.data : [];
+      const cache = sessionDetailsCacheRef.current;
+      updatedInfos.forEach((ei) => {
+        cache.set(ei.sessionId, { ...cache.get(ei.sessionId), ...ei });
+      });
+      removedIdsRef.current = new Set();
+      setRemovedIds([]);
+      setDraftSessions(updatedInfos.map((ei) => ({ sessionId: ei.sessionId, courseOfferingId: ei.courseOfferingId })));
+      setIsDirty(false);
       toast.success("Enrollment saved successfully.");
-      fetchEnrollment(); // refresh from server — also resets isDirty via useEffect
+      fetchEnrollment(); // still refresh to get latest student hours / course states
     } catch (e: any) {
       const errMsg =
         e?.response?.data?.errors?.join("\n") ||
@@ -428,7 +446,7 @@ export default function AdvisorRegisterPage() {
     }
   };
 
-  const courses = enrollmentData?.levelInfo?.courses || [];
+  const courses = enrollmentData?.courses || [];
   const studentInfo = enrollmentData?.student;
 
   // Use the accumulated cache (covers all visited levels) for session details
@@ -600,8 +618,8 @@ export default function AdvisorRegisterPage() {
             <div className="flex items-center gap-2 min-w-0">
               <BookOpen className="w-5 h-5 text-blue-600 shrink-0" />
               <h2 className="text-base font-bold text-gray-900">Courses</h2>
-              {enrollmentData?.levelInfo?.levelName && (
-                <span className="text-xs text-gray-400 font-medium truncate">— {enrollmentData.levelInfo.levelName}</span>
+              {enrollmentData?.student?.levelName && (
+                <span className="text-xs text-gray-400 font-medium truncate">— {enrollmentData.student.levelName}</span>
               )}
             </div>
             {isDirty && (
@@ -665,7 +683,7 @@ export default function AdvisorRegisterPage() {
                             {course.isOptional ? "Optional" : "Compulsory"}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-gray-500">{course.creaditHours}</td>
+                        <td className="py-3 px-3 text-gray-500">{course.creditHours}</td>
                         <td colSpan={6} className="py-3 px-3 text-gray-400 text-xs italic">No sessions available</td>
                       </tr>
                     ) : (
@@ -693,7 +711,7 @@ export default function AdvisorRegisterPage() {
                                   {course.isOptional ? "Optional" : "Compulsory"}
                                 </span>
                               </td>
-                              <td rowSpan={course.sessions.length} className="py-3 px-3 text-gray-500 align-middle">{course.creaditHours}</td>
+                              <td rowSpan={course.sessions.length} className="py-3 px-3 text-gray-500 align-middle">{course.creditHours}</td>
                             </>
                           )}
                           <td className="py-3 px-3 text-gray-600">{session.type}</td>
@@ -800,9 +818,15 @@ export default function AdvisorRegisterPage() {
                                   const colorClass = getSessionColor(sessionType);
                                   const badgeClass = getSessionBadge(sessionType);
                                   return (
-                                    <div key={s.enrollemntId} className={cn("relative group rounded-[10px] border px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5", colorClass)}>
-                                      <div className="font-bold truncate max-w-[120px]">{getCourseNameById(s.courseOfferingId)}</div>
+                                    <div key={s.sessionId} className={cn("relative group rounded-[10px] border px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5", colorClass)}>
+                                      <div className="font-bold truncate max-w-[120px]">{s.courseName || getCourseNameById(s.courseOfferingId)}</div>
                                       <span className={cn("inline-block self-start px-1.5 py-0.5 rounded-full text-[10px] font-semibold", badgeClass)}>{sessionType}</span>
+                                      {s.buildingName && (
+                                        <div className="text-[10px] opacity-70 truncate max-w-[120px]">{s.buildingName}{s.roomNumber != null ? ` · Room ${s.roomNumber}` : ""}</div>
+                                      )}
+                                      {s.instructorName && (
+                                        <div className="text-[10px] opacity-60 truncate max-w-[120px]">{s.instructorName}</div>
+                                      )}
                                       <div className="text-[10px] opacity-60 mt-0.5">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
                                       {/* X button — removes the whole course offering from draft */}
                                       <button
@@ -818,7 +842,7 @@ export default function AdvisorRegisterPage() {
                                 })}
                                 {/* Ghost sessions — removed from draft, can be restored */}
                                 {slotRemoved.map((s) => (
-                                  <div key={`ghost-${s.enrollemntId}`} className="relative group rounded-[10px] border border-dashed border-gray-300 bg-gray-50 px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5 opacity-50">
+                                  <div key={`ghost-${s.sessionId}`} className="relative group rounded-[10px] border border-dashed border-gray-300 bg-gray-50 px-2 py-1.5 text-[11px] leading-tight flex flex-col gap-0.5 opacity-50">
                                     <div className="font-bold truncate max-w-[120px] text-gray-500 line-through">{getCourseNameById(s.courseOfferingId)}</div>
                                     <div className="text-gray-400">{s.type}</div>
                                     <div className="text-[10px] text-gray-400">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
