@@ -2,16 +2,16 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Printer, UserPlus, Pencil, Trash2 } from 'lucide-react';
+import { Search, Printer, UserPlus, Pencil, Trash2, BookOpen } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
-import { COLLEGE_ID } from '@/lib/constants';
 import { Pagination } from '@/components/ui/pagination';
 import { useStudentContext } from '@/hooks/useStudentContext';
+import { useAcademicContext } from '@/hooks/useAcademicContext';
 import StudentFormsPopup from "@/components/forms";
 import PopupForm from './adding-student';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const API_BASE = `/colleges/${COLLEGE_ID}/students`;
+const API_BASE = `/students`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Student {
@@ -80,14 +80,17 @@ export default function StudentsPage() {
     
     // ── Context States ─────────────────────────────────────────────────────────
     const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, isAddPopupOpen, setActiveTab } = useStudentContext();
+    const { selectedProgramId } = useAcademicContext();
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
+        if (!selectedProgramId) return;
         setIsLoading(true);
         try {
             const params = new URLSearchParams({
                 PageNumber: String(pageNumber),
                 PageSize: String(pageSize),
+                academicProgramId: selectedProgramId,
             });
             if (searchValue) params.append('SearchValue', searchValue);
 
@@ -105,7 +108,7 @@ export default function StudentsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [pageNumber, pageSize, searchValue]);
+    }, [pageNumber, pageSize, searchValue, selectedProgramId]);
 
     useEffect(() => {
         fetchStudents();
@@ -136,9 +139,24 @@ export default function StudentsPage() {
             <PopupForm
                 open={isAddPopupOpen}
                 setOpen={setIsAddPopupOpen}
-                />
+            />
+
+            {/* ── No program selected guard ── */}
+            {!selectedProgramId && (
+                <div className="bg-white rounded-[24px] p-10 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] flex flex-col items-center justify-center gap-3 min-h-[260px]">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-1">
+                        <BookOpen className="w-7 h-7 text-blue-400" strokeWidth={1.5} />
+                    </div>
+                    <p className="text-[15px] font-semibold text-gray-700">No Program Selected</p>
+                    <p className="text-[13px] text-gray-400 text-center max-w-xs">
+                        Please select an academic program from the sidebar to view students.
+                    </p>
+                </div>
+            )}
+
             {/* ── Table Card ── */}
-            <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
+            {selectedProgramId && (
+                <div className="bg-white rounded-[24px] p-4 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
 
                 {/* ── Card Header ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6">
@@ -295,6 +313,7 @@ export default function StudentsPage() {
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 }
