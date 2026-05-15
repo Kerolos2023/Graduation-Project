@@ -6,7 +6,7 @@ import axiosInstance from "@/lib/axios";
 import { COLLEGE_ID as collegeId } from "@/lib/constants";
 import { Pagination } from "@/components/ui/pagination";
 
-const API_BASE = "/services";
+const API_BASE = "/colleges";
 
 export default function ServicesPage() {
   const [services, setServices] = useState<any[]>([]);
@@ -28,7 +28,7 @@ export default function ServicesPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const url = `${API_BASE}?pageNumber=${pageNumber}&pageSize=${pageSize}&collegeId=${collegeId}${
+      const url = `${API_BASE}/${collegeId}/services?pageNumber=${pageNumber}&pageSize=${pageSize}${
         searchValue ? `&searchValue=${searchValue}` : ""
       }`;
 
@@ -75,12 +75,12 @@ export default function ServicesPage() {
     try {
       if (editingId) {
         await axiosInstance.put(
-          `${API_BASE}/${editingId}?collegeId=${collegeId}`,
+          `${API_BASE}/${collegeId}/services/${editingId}`,
           payload
         );
       } else {
         await axiosInstance.post(
-          `${API_BASE}?collegeId=${collegeId}`,
+          `${API_BASE}/${collegeId}/services`,
           payload
         );
       }
@@ -108,7 +108,7 @@ export default function ServicesPage() {
     if (!window.confirm("Are you sure you want to delete?")) return;
 
     try {
-      await axiosInstance.delete(`${API_BASE}/${id}`);
+      await axiosInstance.delete(`${API_BASE}/${collegeId}/services/${id}`);
       fetchData();
     } catch (err) {
       console.error("Error deleting:", err);
