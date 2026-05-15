@@ -14,7 +14,8 @@ import {
   ShoppingBag,
   ClipboardList,
   TrendingUp,
-  ChartBarIncreasing
+  ChartBarIncreasing,
+  FileText,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -109,6 +110,11 @@ const NAV_ITEMS = [
     icon: ChartBarIncreasing,
     label: "Service Status",
     href: "/student/service-request",
+  },
+  {
+    icon: FileText,
+    label: "Student Exams",
+    href: "/student/student-exams",
   },
 ] as const;
 
