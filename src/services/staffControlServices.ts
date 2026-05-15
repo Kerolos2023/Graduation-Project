@@ -9,48 +9,59 @@ export interface CourseOffering {
   numberOfGroups: number;
 }
 
+/** Single assessment definition returned by the assessments endpoint */
+export interface CourseAssessment {
+  id: string;
+  type: string;   // e.g. "FinalExam" | "Quiz" | "Midterm"
+  maxScore: number;
+}
+
+/** Response shape of GET /programs/{programId}/course-offerings/{id}/assessments */
+export interface CourseAssessmentsResponse {
+  assessments: CourseAssessment[];
+  courseTotalGrade: number;
+}
+
+/** Legacy header shape used by the table (mapped from CourseAssessment) */
 export interface AssessmentHeader {
   assessmentId: string;
-  name: string;
-  maxDegree: number;
+  name: string;       // mapped from CourseAssessment.type
+  maxDegree: number;  // mapped from CourseAssessment.maxScore
 }
 
 export interface StudentDegree {
   courseAssessmentId: string;
-  studentAssessmentId: string;
-  degreeValue: number;
+  degreeValue: number | null;
 }
 
 export interface StudentControlInfo {
   studentId: string;
   name: string;
   code: string;
-  levelName: string;
+  studentLevelName: string;  // field name from new API
   numberOfFailed: number;
   totalDegree: number;
   letterDegree: string;
   studentDegrees: StudentDegree[];
 }
 
+/** Paginated response from GET /control/{AcademicProgramId} */
 export interface StudentsControlResponse {
-  assessmentHeaders: AssessmentHeader[];
-  courseTotalGrade: number;
-  studentsInformation: {
-    items: StudentControlInfo[];
-    pageNumber: number;
-    totalPages: number;
-    hasPreviousPage: boolean;
-    hasNextPage: boolean;
-  };
+  items: StudentControlInfo[];
+  pageNumber: number;
+  totalPages: number;
+  totalCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export interface GetStudentsControlParams {
-  CourseOfferingId?: string;
+  CourseOfferingId: string;
   GroupNumber?: number;
-  "Filter.SearchValue"?: string;
-  "Filter.PageNumber"?: number;
-  "Filter.PageSize"?: number;
-  "Filter.SortColumn"?: string;
+  PageNumber?: number;
+  PageSize?: number;
+  SearchValue?: string;
+  SortColumn?: string;
 }
 
 export interface UpdateDegreeBody {
@@ -68,8 +79,20 @@ export interface UpdateDegreeResponse {
 
 export const staffControlService = {
   /**
+   * GET /programs/{programId}/course-offerings/{id}/assessments
+   * Fetch assessment definitions for a course offering (once per course selection).
+   */
+  getCourseAssessments: (
+    programId: string,
+    courseOfferingId: string
+  ) =>
+    axiosInstance.get<CourseAssessmentsResponse[]>(
+      `/programs/${programId}/course-offerings/${courseOfferingId}/assessments`
+    ),
+
+  /**
    * GET /control/{AcademicProgramId}
-   * Get students with their degrees for a specific program/course/group
+   * Paginated student grades for a specific course/group.
    */
   getStudents: (
     academicProgramId: string,
@@ -82,7 +105,7 @@ export const staffControlService = {
 
   /**
    * PATCH /control/{AcademicProgramId}
-   * Update a single student's degree for a specific assessment
+   * Update a single student's degree for a specific assessment.
    */
   updateDegree: (
     academicProgramId: string,

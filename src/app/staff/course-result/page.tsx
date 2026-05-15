@@ -10,10 +10,11 @@ import {
   CourseOffering,
   AssessmentHeader,
   StudentControlInfo,
+  CourseAssessment,
+  GetStudentsControlParams,
 } from "@/services/staffControlServices";
 import { levelService } from "@/services/levelsServices";
 import { academicService } from "@/services/academicServices";
-import { COLLEGE_ID } from "@/lib/constants";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
@@ -258,6 +259,7 @@ export default function CourseResultPage() {
   // ── Table State ──────────────────────────────────────────────────────────
   const [assessmentHeaders, setAssessmentHeaders] = useState<AssessmentHeader[]>([]);
   const [courseTotalGrade, setCourseTotalGrade] = useState<number>(0);
+  const [isLoadingAssessments, setIsLoadingAssessments] = useState(false);
   const [students, setStudents] = useState<StudentControlInfo[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -309,6 +311,42 @@ export default function CourseResultPage() {
     load();
   }, [selectedProgramId, academicYearId, selectedLevelId, semesterType]);
 
+  // ── Fetch Assessments — once per course selection ─────────────────────────
+  useEffect(() => {
+    if (!selectedProgramId || !selectedCourseOfferingId) {
+      setAssessmentHeaders([]);
+      setCourseTotalGrade(0);
+      return;
+    }
+    const load = async () => {
+      setIsLoadingAssessments(true);
+      try {
+        const res = await staffControlService.getCourseAssessments(
+          selectedProgramId,
+          selectedCourseOfferingId
+        );
+        // Response is an array; take the first item
+        const first = Array.isArray(res.data) ? res.data[0] : res.data;
+        const assessments = first?.assessments ?? [];
+        // Map CourseAssessment → AssessmentHeader for table compatibility
+        const headers: AssessmentHeader[] = assessments.map((a: CourseAssessment) => ({
+          assessmentId: a.id,
+          name: a.type,
+          maxDegree: a.maxScore,
+        }));
+        setAssessmentHeaders(headers);
+        setCourseTotalGrade(first?.courseTotalGrade ?? 0);
+      } catch (err) {
+        console.error("Error fetching assessments:", err);
+        setAssessmentHeaders([]);
+        setCourseTotalGrade(0);
+      } finally {
+        setIsLoadingAssessments(false);
+      }
+    };
+    load();
+  }, [selectedProgramId, selectedCourseOfferingId]);
+
   // ── Derived: group options from selected course ────────────────────────────
   const selectedCourse = courseOfferings.find(
     (c) => c.id === selectedCourseOfferingId
@@ -322,29 +360,26 @@ export default function CourseResultPage() {
 
   // ── Fetch Students ────────────────────────────────────────────────────────
   const fetchStudents = useCallback(async () => {
-    // CourseOfferingId is required by the control API to return meaningful data
     if (!selectedProgramId || !selectedCourseOfferingId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const params: Record<string, string | number> = {
-        "Filter.PageNumber": pageNumber,
-        "Filter.PageSize": PAGE_SIZE,
+      const params: GetStudentsControlParams = {
         CourseOfferingId: selectedCourseOfferingId,
+        PageNumber: pageNumber,
+        PageSize: PAGE_SIZE,
+        ...(groupNumber ? { GroupNumber: Number(groupNumber) } : {}),
+        ...(searchValue ? { SearchValue: searchValue } : {}),
+        ...(sortColumn ? { SortColumn: sortColumn } : {}),
       };
-      if (groupNumber) params.GroupNumber = Number(groupNumber);
-      if (searchValue) params["Filter.SearchValue"] = searchValue;
-      if (sortColumn) params["Filter.SortColumn"] = sortColumn;
 
       const res = await staffControlService.getStudents(
         selectedProgramId,
-        params as Parameters<typeof staffControlService.getStudents>[1]
+        params
       );
       const data = res.data;
-      setAssessmentHeaders(data.assessmentHeaders ?? []);
-      setCourseTotalGrade(data.courseTotalGrade ?? 0);
-      setStudents(data.studentsInformation?.items ?? []);
-      setTotalPages(data.studentsInformation?.totalPages ?? 1);
+      setStudents(data.items ?? []);
+      setTotalPages(data.totalPages ?? 1);
       setHasFetched(true);
     } catch (err: unknown) {
       console.error("Error fetching students:", err);
@@ -555,6 +590,9 @@ export default function CourseResultPage() {
                 Total: {courseTotalGrade}
               </span>
             )}
+            {isLoadingAssessments && (
+              <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+            )}
           </div>
 
           {/* Search */}
@@ -707,7 +745,7 @@ export default function CourseResultPage() {
                     {/* Level */}
                     <td className="px-4 py-3.5">
                       <span className="text-[12px] text-gray-500 whitespace-nowrap">
-                        {student.levelName}
+                        {student.studentLevelName}
                       </span>
                     </td>
 
@@ -716,17 +754,18 @@ export default function CourseResultPage() {
                       const deg = student.studentDegrees.find(
                         (d) => d.courseAssessmentId === h.assessmentId
                       );
+                      const val = deg?.degreeValue ?? null;
                       return (
                         <td
                           key={h.assessmentId}
                           className="px-4 py-3.5 text-center"
                         >
-                          {deg ? (
+                          {val !== null ? (
                             <div className="flex justify-center">
                               <DegreeCell
                                 studentId={student.studentId}
                                 courseAssessmentId={h.assessmentId}
-                                degreeValue={deg.degreeValue}
+                                degreeValue={val}
                                 maxDegree={h.maxDegree}
                                 academicProgramId={selectedProgramId!}
                                 onUpdated={handleDegreeUpdated}
