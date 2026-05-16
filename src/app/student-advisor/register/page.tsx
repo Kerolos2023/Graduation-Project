@@ -789,25 +789,59 @@ export default function AdvisorRegisterPage() {
                 {DAYS.map((day) => {
                   const daySessions = sessionsByDay[day] || [];
                   const dayRemovedSessions = removedByDay[day] || [];
+                  // Track which slot indices are already covered by a spanning session
+                  const skipSlots = new Set<number>();
+
                   return (
                     <tr key={day} className="border-t border-gray-100">
                       <td className="sticky left-0 z-10 px-3 sm:px-4 py-3 font-semibold text-gray-700 bg-[#fbfbfe] whitespace-nowrap">{day}</td>
-                      {slots.map((slot) => {
+                      {slots.map((slot, slotIdx) => {
+                        // This slot is already covered by a previous session's colSpan
+                        if (skipSlots.has(slotIdx)) return null;
+
+                        const slotStart = toMinutes(slot.start);
+                        const slotEnd = toMinutes(slot.end);
+
                         const slotSessions = daySessions.filter((s) => {
                           const start = normalizeTime(s.startTime);
                           if (!start) return false;
                           const sm = toMinutes(start);
-                          return sm >= toMinutes(slot.start) && sm < toMinutes(slot.end);
+                          return sm >= slotStart && sm < slotEnd;
                         });
                         const slotRemoved = dayRemovedSessions.filter((s) => {
                           const start = normalizeTime(s.startTime);
                           if (!start) return false;
                           const sm = toMinutes(start);
-                          return sm >= toMinutes(slot.start) && sm < toMinutes(slot.end);
+                          return sm >= slotStart && sm < slotEnd;
                         });
                         const hasContent = slotSessions.length > 0 || slotRemoved.length > 0;
+
+                        // Calculate colSpan based on the longest session ending in this group
+                        let colSpan = 1;
+                        if (hasContent) {
+                          const allSlotItems = [...slotSessions, ...slotRemoved];
+                          const maxEndMin = Math.max(
+                            ...allSlotItems.map((s) => toMinutes(normalizeTime(s.endTime)))
+                          );
+                          let span = 1;
+                          for (let i = slotIdx + 1; i < slots.length; i++) {
+                            const nextSlotEnd = toMinutes(slots[i].end);
+                            if (nextSlotEnd <= maxEndMin) {
+                              span++;
+                              skipSlots.add(i);
+                            } else {
+                              break;
+                            }
+                          }
+                          colSpan = span;
+                        }
+
                         return (
-                          <td key={`${day}-${slot.label}`} className="px-2 py-2 align-top">
+                          <td
+                            key={`${day}-${slot.label}`}
+                            colSpan={colSpan}
+                            className="px-2 py-2 align-top"
+                          >
                             {!hasContent ? (
                               <div className="text-center text-gray-300">•</div>
                             ) : (
