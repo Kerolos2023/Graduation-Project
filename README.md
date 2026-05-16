@@ -90,6 +90,7 @@ Make sure the backend server is running and update API base URL if needed.
 ## 👤 Author
 
 **Kerolos Saleh**
+**Mohamed Osama**
 
 ---
 
