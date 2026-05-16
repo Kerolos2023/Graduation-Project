@@ -714,13 +714,21 @@ export default function SchedulePage() {
             </thead>
             <tbody>
               {DAYS.map((day) => {
+                const daySessions = sessionsByDay[day] || [];
+                // Track which slot indices are already covered by a spanning session
+                const skipSlots = new Set<number>();
+
                 return (
                   <tr key={day} className="border-t border-gray-100">
                     <td className="px-4 py-3 font-semibold text-gray-700 bg-[#fbfbfe]">{day}</td>
-                    {slots.map((slot) => {
-                      const daySessions = sessionsByDay[day] || [];
+                    {slots.map((slot, slotIdx) => {
+                      // This slot is already covered by a previous session's colSpan
+                      if (skipSlots.has(slotIdx)) return null;
+
                       const slotStart = toMinutes(slot.start);
                       const slotEnd = toMinutes(slot.end);
+
+                      // Find sessions that START in this slot
                       const slotSessions = daySessions.filter((session) => {
                         const start = normalizeTime(session.startTime);
                         if (!start) return false;
@@ -728,8 +736,33 @@ export default function SchedulePage() {
                         return startMin >= slotStart && startMin < slotEnd;
                       });
 
+                      // Calculate how many slots this cell should span
+                      // (based on the session with the longest duration that starts here)
+                      let colSpan = 1;
+                      if (slotSessions.length > 0) {
+                        const maxEndMin = Math.max(
+                          ...slotSessions.map((s) => toMinutes(normalizeTime(s.endTime)))
+                        );
+                        // Count how many slots are fully covered up to maxEndMin
+                        let span = 1;
+                        for (let i = slotIdx + 1; i < slots.length; i++) {
+                          const nextSlotEnd = toMinutes(slots[i].end);
+                          if (nextSlotEnd <= maxEndMin) {
+                            span++;
+                            skipSlots.add(i);
+                          } else {
+                            break;
+                          }
+                        }
+                        colSpan = span;
+                      }
+
                       return (
-                        <td key={`${day}-${slot.label}`} className="px-2 py-2 align-top">
+                        <td
+                          key={`${day}-${slot.label}`}
+                          colSpan={colSpan}
+                          className="px-2 py-2 align-top"
+                        >
                           {slotSessions.length === 0 ? (
                             <div className="text-center text-gray-300">•</div>
                           ) : (
