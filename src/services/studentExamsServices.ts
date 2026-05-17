@@ -91,6 +91,6 @@ export const MOCK_STUDENT_EXAMS: StudentExamSemester[] = [
 export const studentExamsService = {
   getStudentExams: async (): Promise<StudentExamSemester[]> => {
     const res = await axiosInstance.get(`/students/student-exams`);
-    return res.data || [];
+    return res.data?.exams ?? [];
   },
 };
