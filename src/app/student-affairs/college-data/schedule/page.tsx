@@ -782,8 +782,9 @@ export default function SchedulePage() {
                                   )}>
                                     {normalizeTime(session.startTime)} – {normalizeTime(session.endTime)}
                                   </span>
-                                  <div className="text-[10px] text-gray-500 mt-0.5">
-                                    {session.instructorName || "—"} · {session.roomName || "—"}
+                                  <div className="flex flex-col text-[10px] text-gray-500 mt-0.5">
+                                    <span>{session.instructorName || "—"}</span>
+                                    <span>{session.roomName || "—"}</span>
                                   </div>
                                   <button
                                     onClick={() => handleDeleteSession(session.id)}
