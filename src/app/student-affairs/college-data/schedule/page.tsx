@@ -456,18 +456,16 @@ export default function SchedulePage() {
 
   useEffect(() => {
     fetchScheduleDefinition();
-  }, [selectedProgramId, selectedSemesterId]);
+  }, [selectedProgramId, selectedSemesterId, selectedSemesterName]);
 
   useEffect(() => {
-    fetchCourseOfferings();
-  }, [selectedProgramId, selectedSemesterId, selectedLevelId]);
-
-  useEffect(() => {
+    // Clear stale data first, then fetch fresh course offerings
     setCourseOfferings([]);
     setSelectedCourseOfferingId("");
     setSelectedGroupNumber(1);
     setSessions([]);
-  }, [selectedProgramId, selectedSemesterId, selectedLevelId]);
+    fetchCourseOfferings();
+  }, [selectedProgramId, selectedSemesterId, selectedSemesterName, selectedLevelId]);
 
   useEffect(() => {
     if (groupNumbers.length > 0 && !groupNumbers.includes(selectedGroupNumber)) {
