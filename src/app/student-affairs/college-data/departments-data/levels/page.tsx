@@ -1,8 +1,9 @@
+ 
 
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Trash2, Edit2, Loader2, X, Search } from "lucide-react";
+import { Trash2, Edit2, Loader2, X, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
@@ -48,16 +49,15 @@ export default function AcademicLevelsPage() {
     } finally {
       setLoading(false);
     }
-  }, [pageNumber, pageSize, selectedProgramId]);
+  }, [pageNumber, pageSize, selectedProgramId, searchValue]);
 
-  
   useEffect(() => {
     if (isAcademicReady && selectedProgramId) {
       loadLevels();
     }
   }, [loadLevels, isAcademicReady, academicVersion, selectedProgramId]);
 
-   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
     setPageNumber(1); 
   };
@@ -136,23 +136,26 @@ export default function AcademicLevelsPage() {
   
   if (!selectedProgramId) {
     return (
-      <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans">
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
         <CollegeDataTabs />
-        <div className="text-center py-20 text-slate-500 bg-white rounded-2xl border shadow-sm">
-          Please select an academic program first to view or manage levels.
+        <div className="bg-white rounded-[20px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-blue-400" strokeWidth={1.5} />
+          </div>
+          <p className="text-[15px] font-semibold text-gray-700">No Program Selected</p>
+          <p className="text-[13px] text-gray-400">Please select an academic program first to view or manage levels.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
       <CollegeDataTabs />
 
-      {/* Form Section */}
-       <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
+       <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">
             {editingId ? "Update Level" : "Levels"}
           </h2>
           {editingId && (
@@ -162,51 +165,52 @@ export default function AcademicLevelsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Level</label>
-            <Input
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Level One"
-              className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
-            />
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-[#090909]">Level</label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Level One"
+                className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-[#090909]">Minimum Credit Hours</label>
+              <Input
+                type="number"
+                value={formData.minHours}
+                onChange={(e) => setFormData({ ...formData, minHours: e.target.value })}
+                className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-[#090909]">Maximum Credit Hours</label>
+              <Input
+                type="number"
+                value={formData.maxHours}
+                onChange={(e) => setFormData({ ...formData, maxHours: e.target.value })}
+                className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Minimum Credit Hours</label>
-            <Input
-              type="number"
-              value={formData.minHours}
-              onChange={(e) => setFormData({ ...formData, minHours: e.target.value })}
-              className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Maximum Credit Hours</label>
-            <Input
-              type="number"
-              value={formData.maxHours}
-              onChange={(e) => setFormData({ ...formData, maxHours: e.target.value })}
-              className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white"
-            />
-          </div>
-        </div>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting}
-          className={cn(
-            "w-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white",
-            editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
-          )}
-        >
-          {submitting ? <Loader2 className="animate-spin" /> : editingId ? "Save Changes" : "Add Level"}
-        </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className={cn(
+              "w-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white",
+              editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
+            )}
+          >
+            {submitting ? <Loader2 className="animate-spin" /> : editingId ? "Save Changes" : "Add Level"}
+          </Button>
+        </div>
       </div>
 
-      {/* List Section */}
-       <div className="bg-[#FFFFFF] p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+       <div className="bg-white p-6 rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Levels</h2>
             <Badge className="bg-[#EFF8FF] text-[#2463F0] border-[#BEDAFF] px-3 py-1 rounded-full text-xs font-bold">
@@ -227,7 +231,7 @@ export default function AcademicLevelsPage() {
           </div>
         </div>
 
-         <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 text-[11px] font-bold text-[#181D27] tracking-wider">
+        <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 text-[11px] font-bold text-[#181D27] tracking-wider">
           <div className="flex justify-center"></div>
           <div>Level Name</div>
           <div className="text-center">Min Hours</div>
@@ -235,7 +239,7 @@ export default function AcademicLevelsPage() {
           <div className="text-right px-2">Actions</div>
         </div>
 
-         <div className="space-y-4 md:space-y-2">
+        <div className="space-y-4 md:space-y-2">
           {loading ? (
             <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
           ) : filteredLevels.length === 0 ? (
@@ -291,7 +295,7 @@ export default function AcademicLevelsPage() {
           )}
         </div>
 
-         {totalPages > 1 && !searchValue && (
+        {totalPages > 1 && !searchValue && (
           <div className="flex justify-center mt-8 pt-4 border-t border-slate-50">
             <Pagination currentPage={pageNumber} totalPages={totalPages} onPageChange={setPageNumber} />
           </div>
