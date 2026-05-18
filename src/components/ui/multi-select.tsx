@@ -85,7 +85,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             {isOpen && (
                 <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-100 bg-white p-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                     {/* Search Bar inside Select */}
-                    <div className="sticky top-0 bg-white px-2 py-2">
+                    <div className="sticky top-0 z-10 bg-white px-2 py-2">
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                             <input
