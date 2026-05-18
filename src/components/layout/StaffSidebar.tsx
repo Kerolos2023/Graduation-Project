@@ -9,6 +9,7 @@ import {
   Settings,
   ClipboardList,
   ChevronDown,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authServices";
@@ -143,6 +144,13 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
           label="Course Result"
           href="/staff/course-result"
           isActive={pathname?.startsWith("/staff/course-result")}
+          onClick={onClose}
+        />
+        <NavItem
+          icon={CalendarDays}
+          label="My Schedule"
+          href="/staff/schedule"
+          isActive={pathname?.startsWith("/staff/schedule")}
           onClick={onClose}
         />
       </nav>

@@ -457,7 +457,7 @@ export default function CourseResultPage() {
 
   // ─────────────────────────────────────────────────────────────────────────
   const sortOptions: SelectOption[] = [
-    { value: "name", label: "Sort by Name" },
+    { value: "Name", label: "Sort by Name" },
     { value: "StudentCode", label: "Sort by Code" },
   ];
 
