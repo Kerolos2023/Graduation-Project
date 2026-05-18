@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
             const list = await academicService.getAllAcademicYears();
             setAcademicYears(list);
             if (!selectedYear && list.length > 0) {
-                const fallbackYearId = list[0].id;
+                const fallbackYearId = list[list.length - 1].id;
                 setSelectedYear(fallbackYearId);
                 setSelectedYearId(fallbackYearId);
                 await fetchCurrentSemester(fallbackYearId);

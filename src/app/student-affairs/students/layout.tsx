@@ -15,11 +15,9 @@ export default function RootLayout({
 }>) {
     return (
         <StudentProvider>
-                <AcademicProvider>
             <div>
                 {children}
             </div>
-            </AcademicProvider>
         </StudentProvider>
     );
 }

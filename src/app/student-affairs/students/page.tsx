@@ -73,6 +73,7 @@ const AvatarPlaceholder: React.FC<{ name: string }> = ({ name }) => {
 export default function StudentsPage() {
     const [students, setStudents] = useState<Student[]>([]);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [pageNumber, setPageNumber] = useState(1);
     const pageSize = 10;
     const [searchValue, setSearchValue] = useState('');
@@ -99,9 +100,11 @@ export default function StudentsPage() {
 
             const items: Student[] = data?.items ?? data?.data ?? [];
             const pages: number = data?.totalPages ?? data?.meta?.totalPages ?? 1;
+            const count: number = data?.totalCount ?? data?.meta?.totalCount ?? items.length;
 
             setStudents(Array.isArray(items) ? items : []);
             setTotalPages(pages);
+            setTotalCount(count);
         } catch (err) {
             console.error('Error fetching students:', err);
             alert(parseErrorMessage(err));
@@ -165,7 +168,7 @@ export default function StudentsPage() {
                     <div className="flex items-center gap-3 shrink-0">
                         <h1 className="text-xl font-bold text-gray-900 leading-none">Students</h1>
                         <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100 whitespace-nowrap">
-                            100 Students
+                            {totalCount} Students
                         </span>
                     </div>
 
