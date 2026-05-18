@@ -86,7 +86,9 @@ export const RoleProvider = ({ children }: { children: React.ReactNode }) => {
     const isNeutral =
       pathname.startsWith("/auth") ||
       pathname === "/settings" ||
-      pathname === "/student-affairs/settings";
+      pathname === "/student-affairs/settings" ||
+      pathname === "/staff/settings" ||
+      pathname === "/student-advisor/settings";
 
     if (isNeutral) return;
 

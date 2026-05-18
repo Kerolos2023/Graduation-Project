@@ -17,7 +17,7 @@ import { academicService } from "@/services/academicServices";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { COLLEGE_ID } from "@/lib/constants";
 import { useAuth, getInitials } from "@/hooks/useAuth";
-import { SETTINGS_ROUTE, roleLabels } from "@/lib/roles";
+import { roleSettingsRoutes, roleLabels } from "@/lib/roles";
 
 
 
@@ -205,7 +205,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
         </div>
 
         <Link
-          href={SETTINGS_ROUTE}
+          href={roleSettingsRoutes["Staff"]}
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer"
         >
           <Settings

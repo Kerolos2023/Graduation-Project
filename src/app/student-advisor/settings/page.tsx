@@ -2,6 +2,6 @@
 
 import { SettingsPageContent } from "@/components/settings/SettingsPageContent";
 
-export default function StudentAffairsSettingsPage() {
+export default function StudentAdvisorSettingsPage() {
   return <SettingsPageContent />;
 }

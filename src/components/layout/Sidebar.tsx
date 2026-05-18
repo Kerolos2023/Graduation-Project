@@ -32,7 +32,7 @@ import { academicService } from '@/services/academicServices';
 import { useAcademicContext } from '@/hooks/useAcademicContext';
 import { COLLEGE_ID } from '@/lib/constants';
 import { useAuth, getInitials } from '@/hooks/useAuth';
-import { SETTINGS_ROUTE, roleLabels } from '@/lib/roles';
+import { roleSettingsRoutes, roleLabels } from '@/lib/roles';
 
 interface NavItemProps {
     icon: React.ElementType;
@@ -417,7 +417,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     Change Password
                 </Link>
 
-                <Link href={SETTINGS_ROUTE} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer">
+                <Link href={roleSettingsRoutes["AcademicAdvising"]} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer">
                     <Settings className="w-5 h-5 text-gray-500 group-hover:text-gray-800" strokeWidth={1.5} />
                     Settings
                 </Link>

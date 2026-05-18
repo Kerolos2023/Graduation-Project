@@ -9,6 +9,14 @@ export const roleRoutes: Record<string, string> = {
 // ─── Settings page for multi-role users ───────────────────────────────────────
 export const SETTINGS_ROUTE = "/student-affairs/settings";
 
+// ─── Per-role settings routes (each within its own layout) ────────────────────
+export const roleSettingsRoutes: Record<string, string> = {
+  AcademicAdvising: "/student-affairs/settings",
+  Staff:            "/staff/settings",
+  StudentAdvisor:   "/student-advisor/settings",
+  Student:          "/student/settings",
+};
+
 // ─── Role display labels ───────────────────────────────────────────────────────
 export const roleLabels: Record<string, string> = {
   Student:          "Student",
