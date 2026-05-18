@@ -900,12 +900,6 @@ export default function DepartmentCoursesPage() {
     }
   };
 
-  const getLevelCoursesCount = (levelId: string) =>
-    SEMESTER_OPTIONS.reduce((sum, semester) => {
-      const key = getOfferingsKey(levelId, semester.value);
-      return sum + (offeringsByKey[key]?.items.length || 0);
-    }, 0);
-
   const isMissingContext = !selectedProgramId;
   const isLoadingHeaderData = loadingCourses || loadingAcademicYear;
 
@@ -1279,7 +1273,6 @@ export default function DepartmentCoursesPage() {
         <div className="space-y-4">
           {levels.map((level) => {
             const isLevelOpen = openLevelId === level.id;
-            const levelCount = getLevelCoursesCount(level.id);
 
             return (
               <div key={level.id} className="rounded-2xl border border-slate-200 bg-[#FCFCFD]">
@@ -1289,9 +1282,6 @@ export default function DepartmentCoursesPage() {
                 >
                   <div className="flex items-center gap-3">
                     <h3 className="text-2xl font-bold text-[#0A0D12]">{level.name}</h3>
-                    <span className="px-2.5 py-1 rounded-full bg-[#EBF2FF] text-[#2563EB] text-xs font-medium border border-blue-100">
-                      {levelCount} Course{levelCount === 1 ? "" : "s"}
-                    </span>
                   </div>
                   <div className="w-10 h-10 rounded-xl border border-slate-200 bg-white grid place-items-center">
                     {isLevelOpen ? (
@@ -1321,9 +1311,6 @@ export default function DepartmentCoursesPage() {
                           >
                             <div className="flex items-center gap-3">
                               <h4 className="text-xl font-bold text-[#0A0D12]">{semester.label}</h4>
-                              <span className="px-2.5 py-1 rounded-full bg-[#EBF2FF] text-[#2563EB] text-xs font-medium border border-blue-100">
-                                {bucket.items.length} Course{bucket.items.length === 1 ? "" : "s"}
-                              </span>
                             </div>
                             <div className="w-10 h-10 rounded-xl border border-slate-200 bg-white grid place-items-center">
                               {isSemesterOpen ? (
