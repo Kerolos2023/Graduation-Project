@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { BiHide, BiSolidShow } from "react-icons/bi";
 import { COLLEGE_ID } from "@/lib/constants";
-
+import { useAcademicContext } from "@/hooks/useAcademicContext";
 export default function PopupForm({
   open,
   setOpen,
@@ -23,9 +23,9 @@ export default function PopupForm({
     username: "",
     password: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+const {selectedProgramId} = useAcademicContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -54,8 +54,10 @@ export default function PopupForm({
 
     try {
       await axiosInstance.post(
-        `colleges/${COLLEGE_ID}/students`,
+        `/students`,
         {
+          academicProgramId: selectedProgramId,
+          collegeId: COLLEGE_ID,
           name: formData.name,
           studentCode: formData.studentCode,
           nationalIdOrPassport: formData.nationalId,
