@@ -396,6 +396,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                     </div>
                 </div>
 
+                <Link
+                    href="/student-affairs/change-password"
+                    className={cn(
+                        "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors group font-semibold text-[14px] cursor-pointer",
+                        pathname?.startsWith("/student-affairs/change-password")
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    )}
+                >
+                    <Settings
+                        className={cn(
+                            "w-5 h-5",
+                            pathname?.startsWith("/student-affairs/change-password")
+                                ? "text-blue-600"
+                                : "text-gray-400 group-hover:text-gray-800"
+                        )}
+                        strokeWidth={1.5}
+                    />
+                    Change Password
+                </Link>
+
                 <Link href={SETTINGS_ROUTE} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer">
                     <Settings className="w-5 h-5 text-gray-500 group-hover:text-gray-800" strokeWidth={1.5} />
                     Settings

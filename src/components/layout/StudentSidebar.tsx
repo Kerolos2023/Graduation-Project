@@ -11,6 +11,7 @@ import {
   GraduationCap,
   IdCard,
   LogOut,
+  Settings,
   ShoppingBag,
   ClipboardList,
   TrendingUp,
@@ -203,14 +204,35 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({ onClose }) => {
           </div>
         </Link>
 
-        {/* Settings — only for multi-role users */}
+        {/* Settings — always visible for students */}
+        <Link
+          href="/student/settings"
+          onClick={onClose}
+          className={cn(
+            "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors font-semibold text-[14px] cursor-pointer",
+            pathname?.startsWith("/student/settings")
+              ? "bg-blue-50 text-blue-600"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          )}
+        >
+          <Settings
+            className={cn(
+              "w-5 h-5 shrink-0",
+              pathname?.startsWith("/student/settings") ? "text-blue-600" : "text-gray-400"
+            )}
+            strokeWidth={1.5}
+          />
+          Settings
+        </Link>
+
+        {/* Settings — only for multi-role users → staff settings */}
         {hasMultipleRoles && (
           <Link
             href="/student-affairs/settings"
             onClick={onClose}
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors group font-semibold text-[14px] cursor-pointer"
           >
-            Settings
+            Staff Settings
           </Link>
         )}
 
