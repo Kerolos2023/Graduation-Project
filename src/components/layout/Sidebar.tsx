@@ -17,7 +17,8 @@ import {
     Users,
     ClipboardList,
     Clock,
-    LayoutGrid
+    LayoutGrid,
+    UserCheck,
 } from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
@@ -272,6 +273,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         label="Staff"
                         href="/student-affairs/college-data/stuff"
                         isActive={pathname?.includes('/stuff')}
+                        onClick={onClose}
+                    />
+                    <NavItem
+                        icon={UserCheck}
+                        label="Assign Academic Advisor"
+                        href="/student-affairs/college-data/assign-advisor"
+                        isActive={pathname?.includes('/assign-advisor')}
                         onClick={onClose}
                     />
                     <NavItem
