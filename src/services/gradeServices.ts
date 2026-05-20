@@ -22,7 +22,7 @@ export interface Grade {
 export const gradeService = {
   getAllGrades: async (programId: string, page = 1, size = 100) => {
     const response = await axiosInstance.get(
-      `/programs/${programId}/grades/all`,
+      `/programs/${programId}/grades`,
       {
         params: { PageNumber: page, PageSize: size },
       }

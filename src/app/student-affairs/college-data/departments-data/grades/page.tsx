@@ -1,15 +1,18 @@
-"use client"
+ 
+
+
+"use client";
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { gradeService, GradeRequest } from '@/services/gradeServices';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Pencil, Trash2, MoreHorizontal, Loader2, X, Printer } from "lucide-react";
+import { Search, Pencil, Trash2, MoreHorizontal, Loader2, X, Printer, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import CollegeDataTabs from "@/components/departmentsTabs";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 
 export default function GradesPage() {
@@ -35,8 +38,10 @@ export default function GradesPage() {
   }, [selectedProgramId]);
 
   useEffect(() => {
-    fetchGrades();
-  }, [fetchGrades, academicVersion]);
+    if (isAcademicReady && selectedProgramId) {
+      fetchGrades();
+    }
+  }, [fetchGrades, isAcademicReady, academicVersion, selectedProgramId]);
 
   const filteredGrades = useMemo(() => {
     return grades.filter(g =>
@@ -67,7 +72,7 @@ export default function GradesPage() {
       await fetchGrades();
     } catch (error: any) {
       const errorData = error.response?.data;
-      const msg = errorData?.errors?.[0] || errorData?.title || "Something went wrong. Please check your data.";
+      const msg = errorData?.errors?.[0] || errorData?.title || "Something went wrong.";
       alert(`Error: ${msg}`);
     }
   };
@@ -98,122 +103,175 @@ export default function GradesPage() {
     }
   };
 
-  const inputClass = "h-14 border-slate-200 rounded-2xl px-5 focus-visible:ring-blue-400";
+   const handlePrint = () => {
+    window.print();
+  };
+
+  const inputClass = "h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white";
+
+   if (!selectedProgramId) {
+    return (
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
+        <CollegeDataTabs />
+        <div className="bg-white rounded-[20px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-blue-400" strokeWidth={1.5} />
+          </div>
+          <p className="text-[15px] font-semibold text-gray-700">No Program Selected</p>
+          <p className="text-[13px] text-gray-400">Please select an academic program first to view or manage grades.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-10 bg-[#F9FAFB] min-h-screen font-sans">
-      <CollegeDataTabs />
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6 print:p-0 print:bg-white">
+      <div className="print:hidden">
+        <CollegeDataTabs />
+      </div>
 
-      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10 transition-all">
-        <div className="flex justify-between items-center mb-8 md:mb-10">
-          <h1 className="text-xl md:text-2xl font-bold text-[#0A0D12]">
-            {editingId ? "Update Grade" : "Adding Grade"}
-          </h1>
-
+     
+      <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden print:hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-[#0A0D12]">
+            {editingId ? "Update Grade" : "Grade"}
+          </h2>
           {editingId && (
-            <button onClick={cancelEdit} className="flex items-center gap-1 text-red-500 hover:text-red-600 text-xs md:text-sm font-bold transition-colors">
-              <X className="h-4 w-4" />
-              <span>Cancel Edit</span>
-            </button>
+            <Button variant="ghost" size="sm" onClick={cancelEdit} className="text-red-500 hover:bg-red-50 h-8">
+              <X size={14} className="mr-1" /> <span className="text-xs font-bold">Cancel Edit</span>
+            </Button>
           )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Grade Name</label>
-            <Input {...register("name")} placeholder="Name" required className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Equivalent Grade (Code)</label>
-            <Input {...register("code")} placeholder="Code" required className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Percentage From</label>
-            <Input type="number" {...register("minScore")} placeholder="0" className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Percentage To</label>
-            <Input type="number" {...register("maxScore")} placeholder="100" className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Points From</label>
-            <Input type="number" step="0.01" {...register("minGradePoint")} placeholder="0.00" className={inputClass} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#090909]">Points To</label>
-            <Input type="number" step="0.01" {...register("maxGradePoint")} placeholder="4.00" className={inputClass} />
-          </div>
+        <div className="p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">Grade Name</label>
+              <Input {...register("name")} placeholder="e.g. Excellent" required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">Equivalent Grade (Code)</label>
+              <Input {...register("code")} placeholder="e.g. A+" required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">Percentage From</label>
+              <Input type="number" {...register("minScore")} placeholder="0" className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">To</label>
+              <Input type="number" {...register("maxScore")} placeholder="100" className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">Points From</label>
+              <Input type="number" step="0.01" {...register("minGradePoint")} placeholder="0.00" className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#090909]">To</label>
+              <Input type="number" step="0.01" {...register("maxGradePoint")} placeholder="4.00" className={inputClass} />
+            </div>
 
-          <Button type="submit" className={cn(
-            "col-span-full h-14 rounded-2xl font-bold shadow-lg transition-all",
-            editingId ? "bg-red-600 hover:bg-red-700" : "bg-[#2463F0] hover:bg-[#1D4ED8]"
-          )}>
-            {editingId ? "Save Changes" : "Add Grade"}
-          </Button>
-        </form>
+            <Button type="submit" className={cn(
+              "col-span-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white",
+              editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-[#2463F0] hover:bg-blue-700"
+            )}>
+              {editingId ? "Save Changes" : "Add Grade"}
+            </Button>
+          </form>
+        </div>
       </div>
 
-      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-[#E9EAEB] shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+     
+      <div className="bg-white p-6 rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden print:border-none print:shadow-none print:p-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4 print:mb-8">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[#0A0D12]">Grades List</h2>
-            <Badge className="bg-[#EFF8FF] text-[#2463F0] border border-[#BEDAFF] rounded-full px-4 py-0.5 text-xs font-semibold">
-              {filteredGrades.length} Items
+            <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Grades</h2>
+            <Badge className="bg-blue-50 text-blue-600 border-none px-3 py-1 rounded-full text-xs font-bold print:hidden">
+              {filteredGrades.length} Grades
             </Badge>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input placeholder="Search" className="pl-12 h-12 w-full md:w-[300px] bg-[#F9FAFB] border-slate-200 rounded-xl" onChange={(e) => setSearchTerm(e.target.value)} />
+          <div className="flex items-center gap-2 w-full sm:w-auto print:hidden">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Search" 
+                className="pl-10 h-10 border-slate-200 rounded-xl focus-visible:ring-slate-300 w-full" 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
             </div>
-            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-blue-100"><Printer className="h-5 w-5 text-blue-600" /></Button>
-            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-slate-200"><MoreHorizontal className="h-5 w-5 text-slate-400" /></Button>
+            
+            <Button 
+              type="button"
+              variant="outline" 
+              size="icon" 
+              onClick={handlePrint}
+              className="h-10 w-10 rounded-xl border-slate-200 text-blue-600 shrink-0 cursor-pointer hover:bg-blue-50 transition-colors"
+            >
+              <Printer className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="hidden md:grid grid-cols-[60px_1.5fr_1.5fr_1fr_1fr_100px] items-center gap-4 px-10 py-5 bg-[#F8FAFC] rounded-2xl text-[11px] font-black text-[#181D27] uppercase tracking-widest">
-            <div className="flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-lg" /></div>
-            <div>Name</div>
-            <div>Code</div>
-            <div>Min</div>
-            <div>Max</div>
-            <div className="text-right">Actions</div>
-          </div>
+         <div className="hidden md:grid grid-cols-[50px_1.5fr_1fr_1fr_1fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  font-semibold text-[#181D27]  tracking-wider print:grid print:bg-slate-100 print:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div className="flex justify-center print:hidden"></div>
+          <div>Name</div>
+          <div className="text-center">Code</div>
+          <div className="text-center">Min</div>
+          <div className="text-center">Max</div>
+          <div className="text-right px-2 print:hidden">Actions</div>
+        </div>
 
+         <div className="space-y-4 md:space-y-2">
           {loading ? (
-            <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
+            <div className="py-20 flex justify-center print:hidden"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
+          ) : filteredGrades.length === 0 ? (
+            <div className="text-center py-16 text-slate-400 border-2 border-dashed border-slate-50 rounded-2xl">
+              No grades found.
+            </div>
           ) : (
             filteredGrades.map((item) => (
               <div key={item.id} className={cn(
-                "grid grid-cols-1 md:grid-cols-[60px_1.5fr_1.5fr_1fr_1fr_100px] items-center gap-4 px-6 md:px-10 py-6 bg-white rounded-[2rem] border transition-all text-sm group",
-                editingId === item.id ? "border-blue-500 bg-blue-50/30" : "border-slate-100"
+                "flex flex-col md:grid md:grid-cols-[50px_1.5fr_1fr_1fr_1fr_100px] items-start md:items-center px-4 md:px-6 py-4 border border-slate-100 md:border-transparent md:hover:bg-slate-50 rounded-2xl transition-all gap-3 md:gap-0 bg-white md:bg-transparent shadow-sm md:shadow-none print:grid print:grid-cols-[1.5fr_1fr_1fr_1fr] print:border-b print:border-slate-100 print:rounded-none print:px-2 print:py-3 print:shadow-none",
+                editingId === item.id && "bg-blue-50/50 md:bg-blue-50/50 border-blue-200 print:bg-transparent"
               )}>
-                <div className="hidden md:flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-xl" /></div>
-
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Name:</span>
-                  <div className="font-bold text-[#181D27]">{item.name}</div>
+                <div className="flex justify-between items-center w-full md:w-auto md:justify-center print:hidden">
+                  <div className="w-4 h-4" /> 
+                  <div className="md:hidden flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50">
+                      <Pencil size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-9 w-9 text-red-500 bg-red-50/50">
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Code:</span>
-                  <div className="text-[#181D27]">{item.code}</div>
+                <div className="flex flex-col md:block">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden print:hidden mb-1">Grade Name</span>
+                  <div className="font-bold md:font-semibold  text-[#181D27] text-base md:text-sm truncate">{item.name}</div>
                 </div>
 
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Min:</span>
-                  <div className="text-[#181D27]">{item.minScore}%</div>
+                <div className="flex flex-col md:text-center w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden print:hidden mb-1">Code</span>
+                  <div className="text-[#181D27] font-semibold ">{item.code}</div>
                 </div>
 
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Max:</span>
-                  <div className="text-[#181D27]">{item.maxScore}%</div>
+                <div className="flex flex-col md:text-center w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden print:hidden mb-1">Min Score</span>
+                  <div className="text-[#181D27] font-semibold">{item.minScore}</div>
                 </div>
 
-                <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-9 w-9 text-slate-400 hover:text-blue-600"><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-9 w-9 text-slate-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex flex-col md:text-center w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden print:hidden mb-1">Max Score</span>
+                  <div className="text-[#181D27] font-semibold">{item.maxScore}</div>
+                </div>
+
+                <div className="hidden md:flex justify-end gap-1 print:hidden">
+                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-8 w-8 cursor-pointer text-blue-500 hover:bg-blue-100 transition-colors">
+                    <Pencil size={16} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-8 w-8 cursor-pointer text-red-500 hover:bg-red-100 transition-colors">
+                    <Trash2 size={16} />
+                  </Button>
                 </div>
               </div>
             ))
@@ -223,5 +281,3 @@ export default function GradesPage() {
     </div>
   );
 }
-
-
