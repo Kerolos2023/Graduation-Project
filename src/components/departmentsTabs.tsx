@@ -9,9 +9,9 @@ export default function CollegeDataTabs() {
    
   const tabs = [
     { id: 'departments', label: 'Department Data', path: '/student-affairs/college-data/departments-data/department-data' },
-    { id: 'semesters', label: 'Semesters', path: '/student-affairs/college-data/departments-data/levels' },
+    { id: 'levels', label: 'Levels', path: '/student-affairs/college-data/departments-data/levels' },
     { id: 'grades', label: 'Grades', path: '/student-affairs/college-data/departments-data/grades' },
-    { id: 'levels', label: 'Credit Load by Level', path: '/student-affairs/college-data/departments-data/credit' },
+    { id: 'credit', label: 'Credit Load by Level', path: '/student-affairs/college-data/departments-data/credit' },
     { id: 'courses', label: 'Department Courses', path: '/student-affairs/college-data/departments-data/department-courses' },
   ];
 
