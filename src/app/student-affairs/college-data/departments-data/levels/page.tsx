@@ -1,5 +1,6 @@
  
 
+
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
@@ -27,6 +28,11 @@ export default function AcademicLevelsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
+   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
+    text: "",
+    type: null
+  });
+
   const [formData, setFormData] = useState({ name: "", minHours: "", maxHours: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -45,7 +51,8 @@ export default function AcademicLevelsPage() {
       setTotalPages(response.totalPages || 1);
     } catch (error: any) {
       console.error("Load Error:", error.response?.data);
-      toast.error("Failed to load levels");
+       const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Failed to load levels";
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -75,13 +82,16 @@ export default function AcademicLevelsPage() {
 
   const handleSubmit = async () => {
     if (!selectedProgramId) {
-      toast.error("Please select a program first");
+      setStatusMessage({ text: "Please select a program first", type: 'error' });
       return;
     }
     if (!formData.name || formData.minHours === "" || formData.maxHours === "") {
-      toast.warning("All fields are required");
+      setStatusMessage({ text: "All fields are required", type: 'warning' });
       return;
     }
+
+    
+    setStatusMessage({ text: "", type: null });
 
     try {
       setSubmitting(true);
@@ -93,15 +103,18 @@ export default function AcademicLevelsPage() {
 
       if (editingId) {
         await levelService.updateLevel(selectedProgramId, editingId, payload);
+        setStatusMessage({ text: "Level updated successfully", type: 'success' });
         toast.success("Level updated successfully");
       } else {
         await levelService.addLevel(selectedProgramId, payload);
+        setStatusMessage({ text: "Level added successfully", type: 'success' });
         toast.success("Level added successfully");
       }
       cancelEdit();
       loadLevels();
     } catch (error: any) {
-      toast.error(error.response?.data?.Message || "Operation failed");
+       const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Operation failed";
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -128,8 +141,9 @@ export default function AcademicLevelsPage() {
       await levelService.deleteLevel(selectedProgramId, id);
       toast.success("Deleted successfully");
       loadLevels();
-    } catch (error) {
-      toast.error("Failed to delete");
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Failed to delete";
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
@@ -153,9 +167,26 @@ export default function AcademicLevelsPage() {
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
       <CollegeDataTabs />
 
+      
+      {statusMessage.type && (
+        <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+          statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
+          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+          'bg-emerald-50 border-emerald-200 text-emerald-800'
+        }`}>
+          <div className="flex items-center gap-3">
+            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+            <span>{statusMessage.text}</span>
+          </div>
+          <button onClick={() => setStatusMessage({ text: "", type: null })}>
+            <X className="w-4 h-4 opacity-50" />
+          </button>
+        </div>
+      )}
+
        <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Level" : "Levels"}
           </h2>
           {editingId && (
@@ -201,7 +232,7 @@ export default function AcademicLevelsPage() {
             disabled={submitting}
             className={cn(
               "w-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white",
-              editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
+              editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-[#2463F0] hover:bg-blue-700"
             )}
           >
             {submitting ? <Loader2 className="animate-spin" /> : editingId ? "Save Changes" : "Add Level"}
@@ -231,11 +262,11 @@ export default function AcademicLevelsPage() {
           </div>
         </div>
 
-        <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 text-[11px] font-bold text-[#181D27] tracking-wider">
+        <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  font-semibold text-[#181D27] tracking-wider">
           <div className="flex justify-center"></div>
           <div>Level Name</div>
-          <div className="text-center">Min Hours</div>
-          <div className="text-center">Max Hours</div>
+          <div className="text-center">Min</div>
+          <div className="text-center">Max</div>
           <div className="text-right px-2">Actions</div>
         </div>
 
@@ -269,17 +300,17 @@ export default function AcademicLevelsPage() {
 
                 <div className="flex flex-col md:block">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Level Name</span>
-                  <div className="font-bold md:font-medium text-[#181D27] text-base md:text-sm truncate">{level.name}</div>
+                  <div className="font-semibold md:font-medium text-[#181D27] text-base md:text-sm truncate">{level.name}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Min Hours</span>
-                  <div className="text-[#181D27] text-sm font-semibold md:font-normal">{level.minHours}</div>
+                  <div className="text-[#181D27]  font-semibold md:font-normal">{level.minHours}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Max Hours</span>
-                  <div className="text-[#181D27] text-sm font-semibold md:font-normal">{level.maxHours}</div>
+                  <div className="text-[#181D27]  font-semibold md:font-normal">{level.maxHours}</div>
                 </div>
 
                 <div className="hidden md:flex justify-end gap-1">

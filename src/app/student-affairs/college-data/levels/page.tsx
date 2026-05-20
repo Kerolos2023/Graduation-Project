@@ -27,9 +27,7 @@ export default function ControlStatus() {
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
 
   const { selectedProgramId, selectedSemesterId } = useAcademicContext();
-  // const selectedProgramId = "019D5C67-392B-74A6-8E1F-2221FC6BBF0A";
-  // const selectedSemesterId = "019d7980-c25c-7793-b137-248b067f98d5";
-
+  
   const isReady = !!selectedProgramId && !!selectedSemesterId;
 
   // sorting helper
@@ -134,8 +132,7 @@ export default function ControlStatus() {
     }
   };
 
-  // 🔥 SAFE GUARD
-  if (!isReady) {
+   if (!isReady) {
     return <p className="p-4">Select program and semester...</p>;
   }
 

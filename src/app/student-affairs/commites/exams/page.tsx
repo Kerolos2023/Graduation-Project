@@ -16,8 +16,7 @@ import {
   Loader2,
   ExternalLink,
   AlertCircle,
-  MoreVertical
-} from "lucide-react";
+ } from "lucide-react";
 import { examTermsService } from '@/services/examServices';
 import { Badge } from "@/components/ui/badge";
 import { useAcademicContext } from '@/hooks/useAcademicContext';
@@ -169,8 +168,7 @@ export default function ExamTermsPage() {
         </div>
       )}
 
-      {/* Form Card */}
-      <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
+       <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update University Calender" : "University Calender"}
@@ -248,8 +246,7 @@ export default function ExamTermsPage() {
           <div className="text-right px-2">Actions</div>
         </div>
 
-        {/* List Content */}
-        <div className="space-y-4 md:space-y-2">
+         <div className="space-y-4 md:space-y-2">
           {fetching ? (
             <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
           ) : filteredExams.length === 0 ? (
