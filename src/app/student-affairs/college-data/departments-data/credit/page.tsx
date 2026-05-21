@@ -1,9 +1,7 @@
-
-
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Search, Edit2, Trash2, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"; 
+import { Search, Edit2, Trash2, Loader2, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
@@ -20,6 +18,9 @@ import { cn } from "@/lib/utils";
 export default function CreditLoadPage() {
   const { selectedProgramId, selectedYearId, isAcademicReady, academicVersion } = useAcademicContext();
 
+  
+  const formRef = useRef<HTMLDivElement>(null);
+
   const [data, setData] = useState<StudyLoadResponse[]>([]);
   const [availableLevels, setAvailableLevels] = useState<AcademicLevel[]>([]);
   const [search, setSearch] = useState("");
@@ -27,8 +28,12 @@ export default function CreditLoadPage() {
   const [fetching, setFetching] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
+    text: "",
+    type: null
+  });
+
+   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
   const [formData, setFormData] = useState({
@@ -43,8 +48,15 @@ export default function CreditLoadPage() {
     try {
       const res = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 100 });
       setAvailableLevels(res.items || []);
-    } catch (error) { 
+    } catch (error: any) { 
       console.error(error); 
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   }, [selectedProgramId]);
 
@@ -54,8 +66,14 @@ export default function CreditLoadPage() {
     try {
       const result = await StudyLoadService.getAll(selectedProgramId);
       setData(result || []);
-    } catch { 
-      toast.error("Error fetching data"); 
+    } catch (error: any) { 
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally { 
       setFetching(false); 
     }
@@ -87,11 +105,16 @@ export default function CreditLoadPage() {
   }, [filteredData, currentPage, itemsPerPage]);
 
   const handleSave = async () => {
-    if (!selectedProgramId || !selectedYearId) return toast.error("Context missing");
+    if (!selectedProgramId || !selectedYearId) {
+      setStatusMessage({ text: "Context missing: Please check program and year selection", type: 'error' });
+      return;
+    }
     if (!formData.levelId || !formData.semesterType || !formData.minHours || !formData.maxHours) {
-      return toast.warning("Fill all fields");
+      setStatusMessage({ text: "Fill all fields", type: 'warning' });
+      return;
     }
 
+    setStatusMessage({ text: "", type: null });
     setLoading(true);
     try {
       const payload = {
@@ -103,15 +126,26 @@ export default function CreditLoadPage() {
       
       if (editingId) {
         await StudyLoadService.update(selectedProgramId, editingId, payload);
+        setStatusMessage({ text: "Updated Successfully", type: 'success' });
+        toast.success("Updated Successfully");
       } else {
         await StudyLoadService.add(selectedProgramId, formData.levelId, payload);
+        setStatusMessage({ text: "Added Successfully", type: 'success' });
+        toast.success("Added Successfully");
       }
       
-      toast.success(editingId ? "Updated Successfully" : "Added Successfully");
       cancelEdit();
       fetchData();
     } catch (error: any) { 
-      toast.error("Operation failed"); 
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally { 
       setLoading(false); 
     }
@@ -125,7 +159,8 @@ export default function CreditLoadPage() {
       minHours: item.minHours.toString(), 
       maxHours: item.maxHours.toString() 
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const cancelEdit = () => {
@@ -135,16 +170,24 @@ export default function CreditLoadPage() {
 
   const handleDelete = async (id: string) => {
     if (!selectedProgramId || !confirm("Are you sure you want to delete this credit load?")) return;
+    
+    setStatusMessage({ text: "", type: null });
     try {
       await StudyLoadService.remove(selectedProgramId, id);  
       toast.success("Deleted successfully");
       fetchData();
-    } catch (error) {
-      toast.error("Failed to delete");
+    } catch (error: any) {
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
-  // ── Context Check (No Program / Year Selected) ──────────────────────────────
   if (!selectedProgramId || !selectedYearId) {
     return (
       <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
@@ -160,8 +203,23 @@ export default function CreditLoadPage() {
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
       <CollegeDataTabs />
 
-      {/* Form Card */}
-      <div className="bg-white p-6 rounded-[20px] border border-slate-100 shadow-sm transition-all">
+      {statusMessage.type && (
+        <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+          statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
+          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+          'bg-emerald-50 border-emerald-200 text-emerald-800'
+        }`}>
+          <div className="flex items-center gap-3">
+            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+            <span>{statusMessage.text}</span>
+          </div>
+          <button onClick={() => setStatusMessage({ text: "", type: null })}>
+            <X className="w-4 h-4 opacity-50" />
+          </button>
+        </div>
+      )}
+
+       <div ref={formRef} className="bg-white p-6 rounded-[20px] border border-slate-100 shadow-sm transition-all scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">
             {editingId ? "Update Credit Load" : "Credit Load by Level"}
@@ -234,7 +292,7 @@ export default function CreditLoadPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-[#F8FAFC] text-[#181D27] text-[11px] font-black uppercase tracking-[0.15em]">
+            <thead className="bg-[#F8FAFC] text-[#181D27] font-semibold  tracking-wider ">
               <tr>
                 <th className="px-10 py-5 rounded-l-2xl">Name</th>
                 <th className="px-6 py-5 text-center">Min</th>
@@ -251,15 +309,15 @@ export default function CreditLoadPage() {
                 paginatedData.map((row) => (
                   <tr key={row.id} className={cn("group transition-all", editingId === row.id ? "bg-blue-50/30" : "hover:bg-slate-50/50")}>
                     <td className="px-10 py-6">
-                      <div className="font-bold text-[#181D27] text-base">{row.levelName}</div>
+                      <div className="font-semibold text-[#181D27] text-base">{row.levelName}</div>
                       <div className="text-[10px] text-blue-500 font-black uppercase mt-1 tracking-wider">{row.semesterName} Semester</div>
                     </td>
-                    <td className="px-6 py-6 text-center text-[#181D27] font-medium">{row.minHours}</td>
-                    <td className="px-6 py-6 text-center text-[#181D27] font-medium">{row.maxHours}</td>
+                    <td className="px-6 py-6 text-center text-[#181D27] font-semibold">{row.minHours}</td>
+                    <td className="px-6 py-6 text-center text-[#181D27] font-semibold">{row.maxHours}</td>
                     <td className="px-10 py-6 text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(row)} className="h-10 w-10 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer"><Edit2 size={18} /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)} className="h-10 w-10 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer"><Trash2 size={18} /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(row)} className="h-10 w-10 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer"><Edit2 size={18} /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)} className="h-10 w-10 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer"><Trash2 size={18} /></Button>
                       </div>
                     </td>
                   </tr>
@@ -301,9 +359,3 @@ export default function CreditLoadPage() {
     </div>
   );
 }
-
-
-
-
-
- 
