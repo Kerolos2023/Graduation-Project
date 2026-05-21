@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 import { committeeService } from "@/services/committeeServices";
@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Edit2, Trash2, Loader2, X, AlertCircle, MoreVertical, CheckCircle2 } from "lucide-react";
+import { Search, Edit2, Trash2, Loader2, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 export default function CommitteesPage() {
   const params = useParams();
   const examTermId = params.id as string;
   const { selectedProgramId } = useAcademicContext();
+ 
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [committees, setCommittees] = useState<any[]>([]);
   const [buildings, setBuildings] = useState<any[]>([]);
@@ -25,9 +27,7 @@ export default function CommitteesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // حالة لمتابعة ما إذا كان يتم تحميل الغرف حالياً
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
 
   const [form, setForm] = useState({
@@ -135,7 +135,8 @@ export default function CommitteesPage() {
       buildingId: "",
       roomId: ""
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleDelete = async (id: string) => {
@@ -145,15 +146,6 @@ export default function CommitteesPage() {
       setCommittees(p => p.filter(c => c.id !== id));
       toast.success("Committee deleted successfully");
     } catch (e) { toast.error("Delete failed"); }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filteredCommittees.length) setSelectedIds([]);
-    else setSelectedIds(filteredCommittees.map(c => c.id));
   };
 
   if (!examTermId || examTermId === 'undefined') {
@@ -176,7 +168,9 @@ export default function CommitteesPage() {
 
   return (
     <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto bg-[#F5F5F5] min-h-screen font-sans">
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+      
+      {/* Form Card */}
+      <Card ref={formRef} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white scroll-mt-6">
         <CardHeader className="pb-2 pt-8 px-8 border-b border-gray-50">
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl font-bold text-[#0A0D12]">
@@ -213,7 +207,7 @@ export default function CommitteesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2 flex flex-col">
-                  <label className="text-sm font-semibold text-[#090909] ml-1">Room</label>
+                  <label className="text-sm font-semibold text-[#090909]">Room</label>
                   <Select onValueChange={(v) => setForm({ ...form, roomId: v })} value={form.roomId} disabled={isLoadingRooms || !form.buildingId}>
                     <SelectTrigger className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl">
                       <SelectValue
@@ -246,9 +240,11 @@ export default function CommitteesPage() {
               </>
             )}
           </div>
-          <Button onClick={handleSubmit} disabled={isSubmitting} className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-[#2B59FF] hover:bg-blue-700'}`}>
+          
+          <Button onClick={handleSubmit} disabled={isSubmitting} className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all text-white ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-[#2B59FF] hover:bg-blue-700'}`}>
             {isSubmitting ? <Loader2 className="animate-spin w-6 h-6" /> : editingId ? "Save Changes" : "Add Committee"}
           </Button>
+          
           {errorMsg && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-600 font-bold">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -258,30 +254,26 @@ export default function CommitteesPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
+       <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[#0A0D12]">Committees</h2>
-            <span className="bg-blue-50 text-[#2B59FF] text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
+            <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Committees</h2>
+            <Badge className="bg-blue-50 text-[#2463F0] text-xs font-semibold px-3 py-1 rounded-full border border-[#BEDAFF]">
               {filteredCommittees.length} Rooms
-            </span>
+            </Badge>
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input placeholder="Search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-11 h-12 bg-white border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-50" />
             </div>
-            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl text-slate-400 border-[#E2E8F0] hover:bg-slate-50"><MoreVertical className="w-5 h-5" /></Button>
-          </div>
+           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-[50px_1.5fr_1.5fr_1fr_150px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl text-xs font-semibold text-[#181D27] mb-4 border border-gray-50">
-          <div className="flex justify-center">
-            <Checkbox checked={selectedIds.length === filteredCommittees.length && filteredCommittees.length > 0} onCheckedChange={toggleSelectAll} className="h-5 w-5 rounded-lg" />
-          </div>
+        <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_1fr_150px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl  font-semibold text-[#181D27] mb-4 border border-gray-50">
           <div>Name</div>
           <div>Place</div>
-          <div>Capacity</div>
+          <div className="text-center">Capacity</div>
           <div className="text-right pr-4">Actions</div>
         </div>
 
@@ -295,30 +287,29 @@ export default function CommitteesPage() {
             filteredCommittees.map((item) => (
               <div
                 key={item.id}
-                className={`grid grid-cols-1 lg:grid-cols-[50px_1.5fr_1.5fr_1fr_150px] items-center p-4 lg:px-6 lg:py-5 border rounded-2xl transition-all bg-white gap-3 lg:gap-0 ${selectedIds.includes(item.id) ? 'border-[#2B59FF] shadow-sm bg-blue-50/5' : 'border-[#E2E8F0] hover:shadow-md hover:border-blue-200'}`}
+                className="grid grid-cols-1 lg:grid-cols-[1.5fr_1.5fr_1fr_150px] items-center p-4 lg:px-6 lg:py-5 border rounded-2xl transition-all bg-white gap-3 lg:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200"
               >
-                <div className="flex items-center justify-between lg:contents">
-                  <div className="flex items-center gap-3 lg:justify-center">
-                    <Checkbox checked={selectedIds.includes(item.id)} onCheckedChange={() => toggleSelect(item.id)} className="h-5 w-5 rounded-lg" />
-                    <div className="lg:hidden font-bold text-[#1E293B]">Committee {item.committeeNumber}</div>
-                  </div>
+                <div className="flex items-center justify-between lg:block font-semibold text-[#181D27]">
+                  <div className="lg:block font-semibold text-[#181D27]">Committee {item.committeeNumber}</div>
                   <div className="flex lg:hidden gap-1">
                     <Button onClick={() => startEdit(item)} variant="ghost" size="sm" className="h-9 w-9 p-0 text-blue-600 hover:bg-blue-50"><Edit2 className="w-4 h-4" /></Button>
                     <Button onClick={() => handleDelete(item.id)} variant="ghost" size="sm" className="h-9 w-9 p-0 text-red-500 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
                   </div>
                 </div>
-                <div className="hidden lg:block font-bold text-[#1E293B]">Committee {item.committeeNumber}</div>
-                <div className="text-slate-600 font-medium">
+
+                <div className="text-[#181D27] font-semibold">
                   <span className="lg:hidden text-[10px] text-slate-400 uppercase font-bold block mb-1">Place:</span>
                   {item.place || "Not Assigned"}
                 </div>
-                <div className="text-slate-600 font-medium">
+                
+                <div className="text-[#181D27] font-semibold lg:text-center">
                   <span className="lg:hidden text-[10px] text-slate-400 uppercase font-bold block mb-1">Capacity:</span>
                   {item.maxCapacity} Seats
                 </div>
+
                 <div className="hidden lg:flex items-center justify-end gap-2">
-                  <Button onClick={() => startEdit(item)} variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-[#2B59FF] hover:bg-blue-50 rounded-xl transition-all"><Edit2 className="w-5 h-5" /></Button>
-                  <Button onClick={() => handleDelete(item.id)} variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 className="w-5 h-5" /></Button>
+                  <Button onClick={() => startEdit(item)} variant="ghost" size="icon" className="h-10 w-10 text-blue-500 hover:text-[#2B59FF] hover:bg-blue-50 rounded-xl transition-all"><Edit2 className="w-5 h-5" /></Button>
+                  <Button onClick={() => handleDelete(item.id)} variant="ghost" size="icon" className="h-10 w-10 text-red-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 className="w-5 h-5" /></Button>
                 </div>
               </div>
             ))
