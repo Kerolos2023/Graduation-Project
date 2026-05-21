@@ -484,10 +484,6 @@ export default function AdvisorRegisterPage() {
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">Student Registration</h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Search for a student to manage their course enrollment</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer self-start sm:self-auto shrink-0">
-            <Printer className="w-4 h-4" />
-            Print
-          </button>
         </div>
 
         {/* Search */}
