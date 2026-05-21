@@ -2,6 +2,7 @@ import axiosInstance from "@/lib/axios";
 
 export interface InstructorSession {
   id: string;
+  courseName?: string;
   startTime: string;
   endTime: string;
   type: string;

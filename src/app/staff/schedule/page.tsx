@@ -432,8 +432,23 @@ export default function StaffSchedulePage() {
                                       getSessionColor(session.type)
                                     )}
                                   >
-                                    {/* Type + time badge */}
-                                    <div className="font-bold">{session.type}</div>
+                                    {/* Course + type/time badges */}
+                                    {session.courseName && (
+                                      <div
+                                        className="font-bold truncate max-w-[140px]"
+                                        title={session.courseName}
+                                      >
+                                        {session.courseName}
+                                      </div>
+                                    )}
+                                    <span
+                                      className={cn(
+                                        "inline-block self-start px-1.5 py-0.5 rounded-full text-[10px] font-semibold",
+                                        getSessionBadge(session.type)
+                                      )}
+                                    >
+                                      {session.type}
+                                    </span>
                                     <span
                                       className={cn(
                                         "inline-block self-start px-1.5 py-0.5 rounded-full text-[10px] font-semibold",
