@@ -1,19 +1,19 @@
- 
+
 
 
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { gradeService, GradeRequest } from '@/services/gradeServices';
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Pencil, Trash2, MoreHorizontal, Loader2, X, Printer, AlertCircle } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, X, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import CollegeDataTabs from "@/components/departmentsTabs";
 import { Badge } from "@/components/ui/badge";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
+import { toast } from "sonner";
 
 export default function GradesPage() {
   const [grades, setGrades] = useState<any[]>([]);
@@ -21,6 +21,13 @@ export default function GradesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
+
+  const formRef = useRef<HTMLDivElement>(null);
+
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
+    text: "",
+    type: null
+  });
 
   const { register, handleSubmit, reset, setValue } = useForm<GradeRequest>();
 
@@ -30,8 +37,15 @@ export default function GradesPage() {
       setLoading(true);
       const data = await gradeService.getAllGrades(selectedProgramId);
       setGrades(data.items || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -60,20 +74,30 @@ export default function GradesPage() {
       maxGradePoint: Number(data.maxGradePoint),
     };
 
+    setStatusMessage({ text: "", type: null });
+
     try {
       if (editingId) {
         await gradeService.updateGrade(selectedProgramId!, editingId, payload);
-        alert("Grade updated successfully!");
+        setStatusMessage({ text: "Grade updated successfully!", type: 'success' });
+        toast.success("Grade updated successfully!");
       } else {
         await gradeService.createGrade(selectedProgramId!, payload);
-        alert("Grade added successfully!");
+        setStatusMessage({ text: "Grade added successfully!", type: 'success' });
+        toast.success("Grade added successfully!");
       }
       cancelEdit();
       await fetchGrades();
     } catch (error: any) {
-      const errorData = error.response?.data;
-      const msg = errorData?.errors?.[0] || errorData?.title || "Something went wrong.";
-      alert(`Error: ${msg}`);
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
@@ -85,7 +109,8 @@ export default function GradesPage() {
     setValue("maxScore", grade.maxScore);
     setValue("minGradePoint", grade.minGradePoint);
     setValue("maxGradePoint", grade.maxGradePoint);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const cancelEdit = () => {
@@ -95,21 +120,32 @@ export default function GradesPage() {
 
   const onDelete = async (gradeId: string) => {
     if (!selectedProgramId || !confirm("Are you sure?")) return;
+
+    setStatusMessage({ text: "", type: null });
+
     try {
       await gradeService.deleteGrade(selectedProgramId, gradeId);
+      toast.success("Deleted successfully");
       setGrades(prev => prev.filter(g => g.id !== gradeId));
-    } catch (error) {
-      alert("Failed to delete grade");
+    } catch (error: any) {
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
-   const handlePrint = () => {
+  const handlePrint = () => {
     window.print();
   };
 
   const inputClass = "h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white";
 
-   if (!selectedProgramId) {
+  if (!selectedProgramId) {
     return (
       <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
         <CollegeDataTabs />
@@ -130,8 +166,22 @@ export default function GradesPage() {
         <CollegeDataTabs />
       </div>
 
-     
-      <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden print:hidden">
+      {statusMessage.type && (
+        <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
+            statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+              'bg-emerald-50 border-emerald-200 text-emerald-800'
+          }`}>
+          <div className="flex items-center gap-3">
+            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+            <span>{statusMessage.text}</span>
+          </div>
+          <button onClick={() => setStatusMessage({ text: "", type: null })}>
+            <X className="w-4 h-4 opacity-50" />
+          </button>
+        </div>
+      )}
+
+      <div ref={formRef} className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden print:hidden scroll-mt-6">
         <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Grade" : "Grade"}
@@ -180,7 +230,6 @@ export default function GradesPage() {
         </div>
       </div>
 
-     
       <div className="bg-white p-6 rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden print:border-none print:shadow-none print:p-0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4 print:mb-8">
           <div className="flex items-center gap-3">
@@ -192,26 +241,18 @@ export default function GradesPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto print:hidden">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                placeholder="Search" 
-                className="pl-10 h-10 border-slate-200 rounded-xl focus-visible:ring-slate-300 w-full" 
-                onChange={(e) => setSearchTerm(e.target.value)} 
+              <Input
+                placeholder="Search"
+                className="pl-10 h-10 border-slate-200 rounded-xl focus-visible:ring-slate-300 w-full"
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <Button 
-              type="button"
-              variant="outline" 
-              size="icon" 
-              onClick={handlePrint}
-              className="h-10 w-10 rounded-xl border-slate-200 text-blue-600 shrink-0 cursor-pointer hover:bg-blue-50 transition-colors"
-            >
-              <Printer className="h-5 w-5" />
-            </Button>
+
+
           </div>
         </div>
 
-         <div className="hidden md:grid grid-cols-[50px_1.5fr_1fr_1fr_1fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  font-semibold text-[#181D27]  tracking-wider print:grid print:bg-slate-100 print:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="hidden md:grid grid-cols-[50px_1.5fr_1fr_1fr_1fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 font-semibold text-[#181D27] tracking-wider print:grid print:bg-slate-100 print:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="flex justify-center print:hidden"></div>
           <div>Name</div>
           <div className="text-center">Code</div>
@@ -220,7 +261,7 @@ export default function GradesPage() {
           <div className="text-right px-2 print:hidden">Actions</div>
         </div>
 
-         <div className="space-y-4 md:space-y-2">
+        <div className="space-y-4 md:space-y-2">
           {loading ? (
             <div className="py-20 flex justify-center print:hidden"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
           ) : filteredGrades.length === 0 ? (
@@ -234,7 +275,7 @@ export default function GradesPage() {
                 editingId === item.id && "bg-blue-50/50 md:bg-blue-50/50 border-blue-200 print:bg-transparent"
               )}>
                 <div className="flex justify-between items-center w-full md:w-auto md:justify-center print:hidden">
-                  <div className="w-4 h-4" /> 
+                  <div className="w-4 h-4" />
                   <div className="md:hidden flex gap-1">
                     <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50">
                       <Pencil size={16} />
@@ -247,7 +288,7 @@ export default function GradesPage() {
 
                 <div className="flex flex-col md:block">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden print:hidden mb-1">Grade Name</span>
-                  <div className="font-bold md:font-semibold  text-[#181D27] text-base md:text-sm truncate">{item.name}</div>
+                  <div className="font-bold md:font-semibold text-[#181D27] text-base md:text-sm truncate">{item.name}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
