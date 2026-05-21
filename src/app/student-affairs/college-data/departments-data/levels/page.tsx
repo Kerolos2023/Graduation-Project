@@ -1,9 +1,7 @@
- 
-
 
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"; // 1. ضفنا useRef هنا
 import { Trash2, Edit2, Loader2, X, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,6 +17,9 @@ import { cn } from "@/lib/utils";
 
 export default function AcademicLevelsPage() {
   const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
+
+  // 2. عملنا المرجع (Ref) اللي هنشاور بيه على كارت الفورم فوق
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -51,7 +52,13 @@ export default function AcademicLevelsPage() {
       setTotalPages(response.totalPages || 1);
     } catch (error: any) {
       console.error("Load Error:", error.response?.data);
-       const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Failed to load levels";
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+        
       setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
@@ -90,7 +97,6 @@ export default function AcademicLevelsPage() {
       return;
     }
 
-    
     setStatusMessage({ text: "", type: null });
 
     try {
@@ -113,7 +119,14 @@ export default function AcademicLevelsPage() {
       cancelEdit();
       loadLevels();
     } catch (error: any) {
-       const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Operation failed";
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+
       setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setSubmitting(false);
@@ -127,7 +140,9 @@ export default function AcademicLevelsPage() {
       minHours: String(level.minHours),
       maxHours: String(level.maxHours)
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const cancelEdit = () => {
@@ -137,17 +152,25 @@ export default function AcademicLevelsPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!selectedProgramId || !confirm(`Delete ${name}?`)) return;
+    
+    setStatusMessage({ text: "", type: null });
+    
     try {
       await levelService.deleteLevel(selectedProgramId, id);
       toast.success("Deleted successfully");
       loadLevels();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.Message || error.response?.data?.message || "Failed to delete";
+      const errorMsg = 
+        typeof error.response?.data === "string" ? error.response.data :
+        error.response?.data?.errors?.[0] || 
+        error.response?.data?.Message || 
+        error.response?.data?.message || 
+        error.message;
+
       setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
-  
   if (!selectedProgramId) {
     return (
       <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
@@ -167,7 +190,6 @@ export default function AcademicLevelsPage() {
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
       <CollegeDataTabs />
 
-      
       {statusMessage.type && (
         <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
           statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
@@ -184,7 +206,7 @@ export default function AcademicLevelsPage() {
         </div>
       )}
 
-       <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
+        <div ref={formRef} className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden scroll-mt-6">
         <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Level" : "Levels"}
@@ -262,7 +284,7 @@ export default function AcademicLevelsPage() {
           </div>
         </div>
 
-        <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  font-semibold text-[#181D27] tracking-wider">
+        <div className="hidden md:grid grid-cols-[50px_2fr_1fr_1fr_120px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 font-semibold text-[#181D27] tracking-wider">
           <div className="flex justify-center"></div>
           <div>Level Name</div>
           <div className="text-center">Min</div>
@@ -305,12 +327,12 @@ export default function AcademicLevelsPage() {
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Min Hours</span>
-                  <div className="text-[#181D27]  font-semibold md:font-normal">{level.minHours}</div>
+                  <div className="text-[#181D27] font-semibold md:font-normal">{level.minHours}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Max Hours</span>
-                  <div className="text-[#181D27]  font-semibold md:font-normal">{level.maxHours}</div>
+                  <div className="text-[#181D27] font-semibold md:font-normal">{level.maxHours}</div>
                 </div>
 
                 <div className="hidden md:flex justify-end gap-1">
