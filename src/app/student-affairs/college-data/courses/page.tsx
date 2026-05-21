@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Printer, Pencil, Trash2 } from 'lucide-react';
+import { Search, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { collegeCoursesService, type Course, type CoursePayload } from '@/services/collegeCoursesServices';
@@ -10,6 +10,7 @@ export default function CoursesPage() {
     // ── Table / Pagination state ────────────────────────────────────────────
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
@@ -35,8 +36,10 @@ export default function CoursesPage() {
             const data = await collegeCoursesService.getAll(pageNumber, pageSize, searchValue || undefined);
             const items = data.data ?? data.items ?? [];
             const pages = data.totalPages ?? data.meta?.totalPages ?? 1;
+            const count = data.totalCount ?? data.totalNumber ?? items.length;
             setCourses(Array.isArray(items) ? items : []);
             setTotalPages(pages);
+            setTotalCount(count);
         } catch (err) {
             console.error("Error fetching courses:", err);
         } finally {
@@ -211,7 +214,7 @@ export default function CoursesPage() {
                     <div className="flex items-center gap-3">
                         <h2 className="text-xl font-bold text-gray-900 leading-none">Courses</h2>
                         <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100">
-                            {courses.length} Course
+                            {totalCount} Course
                         </span>
                     </div>
 
@@ -229,11 +232,6 @@ export default function CoursesPage() {
                                 className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm"
                             />
                         </div>
-
-                        <button className="flex items-center justify-center gap-2 px-4 py-2 min-w-[100px] rounded-xl border border-blue-200 text-blue-600 font-medium hover:bg-blue-50 transition-colors bg-white cursor-pointer">
-                            <Printer className="w-4 h-4" />
-                            Print
-                        </button>
                     </div>
                 </div>
 

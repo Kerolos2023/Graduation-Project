@@ -24,6 +24,8 @@ export interface CourseListResponse {
   data?: Course[];
   items?: Course[];
   totalPages?: number;
+  totalCount?: number;
+  totalNumber?: number;
   meta?: { totalPages?: number };
 }
 
@@ -31,9 +33,12 @@ export interface CourseListResponse {
 
 export const collegeCoursesService = {
 
-  getAll: async (pageNumber: number, pageSize: number, searchValue?: string): Promise<CourseListResponse> => {
-    const params: Record<string, unknown> = { pageNumber, pageSize };
-    if (searchValue) params.SearchValue = searchValue;
+  getAll: async (pageNumber: number, pageSize: number, searchValue = ""): Promise<CourseListResponse> => {
+    const params = {
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+      SearchValue: searchValue.trim(),
+    };
     const response = await axiosInstance.get<CourseListResponse>(BASE_URL, { params });
     return response.data;
   },
