@@ -1,19 +1,17 @@
-
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Pencil, Trash2, Printer, Search, MoreHorizontal, Loader2, Check, ChevronsUpDown, X } from "lucide-react"
+import { Pencil, Trash2, Printer, Search, MoreHorizontal, Loader2, ChevronsUpDown, X } from "lucide-react"
 import { staffService } from "@/services/stuffServices"
 import { cn } from "@/lib/utils"
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const PERMISSIONS_LIST = [
   { label: "AcademicAdvising", value: "AcademicAdvising" },
@@ -26,9 +24,33 @@ export default function StaffPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  
+   const formRef = useRef<HTMLDivElement>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(["Staff"]);
   const [openSelect, setOpenSelect] = useState(false);
+
+   const scrollToForm = (behavior: "smooth" | "instant" = "smooth") => {
+    if (!formRef.current) return;
+    
+     const scrollParent = formRef.current.closest(".overflow-y-auto") || 
+                         formRef.current.closest("main") || 
+                         window;
+
+    if (scrollParent === window) {
+      const yOffset = -140; 
+      const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior });
+    } else {
+      const parentEl = scrollParent as HTMLElement;
+      
+       const targetTop = formRef.current.getBoundingClientRect().top + parentEl.scrollTop - 40;
+      
+      parentEl.scrollTo({
+        top: targetTop,
+        behavior
+      });
+    }
+  };
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -41,6 +63,16 @@ export default function StaffPage() {
   }, []);
 
   useEffect(() => { loadData() }, [loadData]);
+
+          
+  useEffect(() => {
+    if (!loading && staff.length > 0) {
+      const timer = setTimeout(() => {
+        scrollToForm("instant");
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, staff]);
 
   const filteredStaff = useMemo(() => {
     return staff.filter(s =>
@@ -70,9 +102,7 @@ export default function StaffPage() {
         }
       }
     } catch (error: any) {
-
       const errorData = error.response?.data;
-
       if (error.response?.status === 409 || errorData?.title === "User.DuplicateUserName") {
         const msg = errorData?.errors?.[0] || "Name or UserName Already Exist";
         alert(`Error: ${msg}`);
@@ -83,29 +113,30 @@ export default function StaffPage() {
     }
   };
 
-
   const handleEditClick = (item: any) => {
     setEditingId(item.id);
     setSelectedRoles(item.roles || ["Staff"]);
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (formRef.current) {
-      const form = formRef.current;
-      (form.elements.namedItem("name") as HTMLInputElement).value = item.name || "";
-      (form.elements.namedItem("nationalId") as HTMLInputElement).value = item.nationalId || "";
-      (form.elements.namedItem("userName") as HTMLInputElement).value = item.userName || "";
-      (form.elements.namedItem("email") as HTMLInputElement).value = item.email || "";
-      (form.elements.namedItem("phoneNumber") as HTMLInputElement).value = item.phoneNumber || "";
+    const innerForm = formRef.current?.querySelector("form");
+    if (innerForm) {
+      (innerForm.elements.namedItem("name") as HTMLInputElement).value = item.name || "";
+      (innerForm.elements.namedItem("nationalId") as HTMLInputElement).value = item.nationalId || "";
+      (innerForm.elements.namedItem("userName") as HTMLInputElement).value = item.userName || "";
+      (innerForm.elements.namedItem("email") as HTMLInputElement).value = item.email || "";
+      (innerForm.elements.namedItem("phoneNumber") as HTMLInputElement).value = item.phoneNumber || "";
     }
+
+    setTimeout(() => {
+      scrollToForm("smooth");
+    }, 60);  
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setSelectedRoles(["Staff"]);
-    formRef.current?.reset();
+    const innerForm = formRef.current?.querySelector("form");
+    innerForm?.reset();
   };
-
 
   const onDelete = async (id: string) => {
     if (!confirm("Are you sure?")) return;
@@ -124,60 +155,56 @@ export default function StaffPage() {
   };
 
   return (
-    <div className="p-4 md:p-10 bg-[#F9FAFB] min-h-screen font-sans text-neutral-900">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans text-neutral-900">
 
-
-      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10 transition-all">
-        <div className="flex justify-between items-center mb-8 md:mb-10">
-          <h1 className="text-xl md:text-2xl font-bold text-[#0A0D12]">
-            {editingId ? "Update Staff" : "Adding Staff"}
+       <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-10">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-lg md:text-xl font-bold text-[#0A0D12]">
+            {editingId ? "Update Staff" : "Add Staff"}
           </h1>
 
           {editingId && (
-            <button
-              onClick={cancelEdit}
-              className="flex items-center gap-1 text-red-500 hover:text-red-600 text-xs md:text-sm font-bold transition-colors"
-            >
+            <button onClick={cancelEdit} className="flex items-center gap-1 text-red-500 hover:text-red-600 text-xs md:text-sm font-bold transition-colors">
               <X className="h-4 w-4" />
               <span>Cancel Edit</span>
             </button>
           )}
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Name</label>
-            <Input name="name" placeholder="Name" required className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="name" placeholder="Name" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">National ID</label>
-            <Input name="nationalId" placeholder="National ID" className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="nationalId" placeholder="National ID" className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Username</label>
-            <Input name="userName" placeholder="Username" required className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="userName" placeholder="Username" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Password</label>
-            <Input name="password" type="password" placeholder={editingId ? "Leave empty to keep current" : "Password"} required={!editingId} className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="password" type="password" placeholder={editingId ? "Leave empty to keep current" : "Password"} required={!editingId} className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Email</label>
-            <Input name="email" type="email" placeholder="Email" className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="email" type="email" placeholder="Email" className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Phone Number</label>
-            <Input name="phoneNumber" placeholder="Phone Number" required className="h-14 border-slate-200 rounded-2xl px-5" />
+            <Input name="phoneNumber" placeholder="Phone Number" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
 
-          <div className="col-span-full space-y-2">
+          <div className="col-span-full space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Permissions</label>
             <Popover open={openSelect} onOpenChange={setOpenSelect}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full h-auto min-h-[56px] justify-between rounded-2xl border-slate-200 bg-white px-5 py-2 flex-wrap gap-2">
+                <Button variant="outline" className="w-full h-auto min-h-[44px] justify-between rounded-xl border-slate-200 bg-white px-4 py-2 flex-wrap gap-2 text-slate-500 font-normal">
                   <div className="flex flex-wrap gap-1">
                     {selectedRoles.map((role) => (
-                      <Badge key={role} className="bg-[#E2E8F0] text-[#1E293B] hover:bg-[#E2E8F0] rounded-lg">
+                      <Badge key={role} className="bg-slate-100 text-slate-900 hover:bg-slate-200 rounded-lg font-medium border-none px-2 py-0.5">
                         {role} <X className="ml-1 h-3 w-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); toggleRole(role); }} />
                       </Badge>
                     ))}
@@ -204,74 +231,81 @@ export default function StaffPage() {
           </div>
 
           <Button type="submit" className={cn(
-            "col-span-full h-14 rounded-2xl font-bold shadow-lg transition-all",
-            editingId ? "bg-red-600 hover:bg-blue-400" : "bg-[#2463F0] hover:bg-[#1D4ED8]"
+            "col-span-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white",
+            editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
           )}>
-            {editingId ? "Update Teacher" : "Add Teacher"}
+            {editingId ? "Save Changes" : "Add Staff"}
           </Button>
         </form>
       </div>
 
-      {/* SECTION 2: LIST */}
-      <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-[#E9EAEB] shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+       <div className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[#0A0D12]">Staff List</h2>
-            {/* تم تحديث الـ Count هنا */}
-            <Badge className="bg-[#EFF8FF] text-[#2463F0] border border-[#BEDAFF] rounded-full px-4 py-0.5 text-xs font-semibold">
+            <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Staff List</h2>
+            <Badge className="bg-blue-50 text-blue-600 border-none px-3 py-1 rounded-full text-xs font-bold">
               {filteredStaff.length} Members
             </Badge>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input placeholder="Search" className="pl-12 h-12 w-full md:w-[300px] bg-[#F9FAFB] border-slate-200 rounded-xl" onChange={(e) => setSearchQuery(e.target.value)} />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input placeholder="Search" className="pl-10 h-10 border-slate-200 rounded-xl focus-visible:ring-slate-300 w-full" onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
-            <Button
-              onClick={handlePrint}
-              variant="outline"
-              className="h-[50px] rounded-[15px] border-[#2D60FF] text-[#2D60FF] font-bold px-6"
-            >
-              <Printer className="h-5 w-5 mr-2" /> Print
-            </Button>
-            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-slate-200"><MoreHorizontal className="h-5 w-5 text-slate-400" /></Button>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="hidden md:grid grid-cols-[60px_1.5fr_1.5fr_2fr_100px] items-center gap-4 px-10 py-5 bg-[#F8FAFC] rounded-2xl text-[11px] font-black text-neutral-600 uppercase tracking-widest">
-            <div className="flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-lg" /></div>
-            <div >Name</div>
+        <div className="space-y-3">
+           <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  text-[#181D2] font-semibold tracking-wider border border-[#E9EAEB]">
+            <div>Name</div>
             <div>Username</div>
             <div>Permissions</div>
-            <div className="text-right">Actions</div>
+            <div className="text-right pr-4">Actions</div>
           </div>
 
           {loading ? (
             <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
+          ) : filteredStaff.length === 0 ? (
+            <div className="text-center py-16 text-slate-400 border-2 border-dashed border-slate-50 rounded-2xl">
+              No staff members found.
+            </div>
           ) : (
             filteredStaff.map((item) => (
               <div key={item.id} className={cn(
-                "grid grid-cols-1 md:grid-cols-[60px_1.5fr_1.5fr_2fr_100px] items-center gap-4 px-6 md:px-10 py-6 bg-white rounded-[2rem] border transition-all text-sm group",
-                editingId === item.id ? "border-blue-500 bg-blue-50/30" : "border-slate-100"
+                "flex flex-col md:grid md:grid-cols-[1.5fr_1.5fr_2fr_100px] items-start md:items-center p-4 md:px-6 md:py-5 border rounded-2xl transition-all bg-white gap-3 md:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200",
+                editingId === item.id && "border-blue-200 bg-blue-50/30"
               )}>
-                <div className="hidden md:flex justify-start"><Checkbox className="h-5 w-5 border-slate-300 rounded-xl" /></div>
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Name:</span>
-                  <div className="font-bold text-slate-900">{item.name}</div>
+                
+                <div className="flex flex-col md:block w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Name</span>
+                  <div className="font-bold md:font-medium text-slate-900 text-base md:text-sm truncate">{item.name}</div>
                 </div>
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Username:</span>
-                  <div className="text-slate-600">{item.userName}</div>
+
+                <div className="flex flex-col md:block w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Username</span>
+                  <div className="text-slate-600 text-sm">{item.userName}</div>
                 </div>
-                <div className="flex md:block justify-between items-center">
-                  <span className="md:hidden font-black text-slate-400">Roles:</span>
-                  <ul className="list-disc list-inside text-xs text-slate-500">{item.roles?.map((r: any, i: number) => <li key={i}>{r}</li>)}</ul>
+
+                <div className="flex flex-col md:block w-full md:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Permissions</span>
+                  <div className="flex flex-wrap gap-1">
+                    {item.roles?.map((r: any, i: number) => (
+                      <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 text-[10px] font-medium border-none py-0 px-2">
+                        {r}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-9 w-9 text-slate-400 hover:text-blue-600"><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-9 w-9 text-slate-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
+
+                <div className="w-full md:w-auto flex justify-end items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                    <Pencil size={16} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
+                    <Trash2 size={16} />
+                  </Button>
                 </div>
+
               </div>
             ))
           )}
@@ -280,11 +314,3 @@ export default function StaffPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
