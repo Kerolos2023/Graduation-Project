@@ -57,6 +57,7 @@ export interface DepartmentListResponse {
   data?: Department[];
   totalPages?: number;
   totalCount?: number;
+  totalNumber?: number;
   meta?: { totalPages?: number };
 }
 
@@ -64,9 +65,12 @@ export interface DepartmentListResponse {
 
 export const departmentsService = {
 
-  getAll: async (pageNumber: number, pageSize: number, searchValue?: string): Promise<DepartmentListResponse> => {
-    const params: Record<string, unknown> = { PageNumber: pageNumber, PageSize: pageSize };
-    if (searchValue) params.SearchValue = searchValue;
+  getAll: async (pageNumber: number, pageSize: number, searchValue = ""): Promise<DepartmentListResponse> => {
+    const params = {
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+      SearchValue: searchValue.trim(),
+    };
     const response = await axiosInstance.get<DepartmentListResponse>(BASE_URL, { params });
     return response.data;
   },
