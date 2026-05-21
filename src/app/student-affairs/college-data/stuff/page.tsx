@@ -1,11 +1,23 @@
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Pencil, Trash2, Printer, Search, MoreHorizontal, Loader2, ChevronsUpDown, X } from "lucide-react"
+import { Pencil, Trash2,Search,Loader2, ChevronsUpDown, X } from "lucide-react"
 import { staffService } from "@/services/stuffServices"
-import { cn } from "@/lib/utils"
-
-// Shadcn UI Components
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -25,31 +37,14 @@ export default function StaffPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   
-   const formRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(["Staff"]);
   const [openSelect, setOpenSelect] = useState(false);
 
-   const scrollToForm = (behavior: "smooth" | "instant" = "smooth") => {
-    if (!formRef.current) return;
-    
-     const scrollParent = formRef.current.closest(".overflow-y-auto") || 
-                         formRef.current.closest("main") || 
-                         window;
 
-    if (scrollParent === window) {
-      const yOffset = -140; 
-      const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior });
-    } else {
-      const parentEl = scrollParent as HTMLElement;
-      
-       const targetTop = formRef.current.getBoundingClientRect().top + parentEl.scrollTop - 40;
-      
-      parentEl.scrollTo({
-        top: targetTop,
-        behavior
-      });
-    }
+  const scrollToForm = () => {
+    if (!formRef.current) return;
+    formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const loadData = useCallback(async () => {
@@ -63,16 +58,6 @@ export default function StaffPage() {
   }, []);
 
   useEffect(() => { loadData() }, [loadData]);
-
-          
-  useEffect(() => {
-    if (!loading && staff.length > 0) {
-      const timer = setTimeout(() => {
-        scrollToForm("instant");
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, staff]);
 
   const filteredStaff = useMemo(() => {
     return staff.filter(s =>
@@ -126,9 +111,10 @@ export default function StaffPage() {
       (innerForm.elements.namedItem("phoneNumber") as HTMLInputElement).value = item.phoneNumber || "";
     }
 
+    
     setTimeout(() => {
-      scrollToForm("smooth");
-    }, 60);  
+      scrollToForm();
+    }, 50);  
   };
 
   const cancelEdit = () => {
@@ -157,7 +143,7 @@ export default function StaffPage() {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans text-neutral-900">
 
-       <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-10">
+        <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-lg md:text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Staff" : "Add Staff"}
@@ -256,7 +242,7 @@ export default function StaffPage() {
         </div>
 
         <div className="space-y-3">
-           <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  text-[#181D2] font-semibold tracking-wider border border-[#E9EAEB]">
+           <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  text-[#181D27] font-semibold tracking-wider border border-[#E9EAEB]">
             <div>Name</div>
             <div>Username</div>
             <div>Permissions</div>
@@ -313,4 +299,8 @@ export default function StaffPage() {
       </div>
     </div>
   );
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(' ');
 }
