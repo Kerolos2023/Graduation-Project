@@ -2,14 +2,16 @@
 
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Printer, Edit2, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Search, Edit2, Trash2, Loader2, AlertCircle, X } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import eventService, { AcademicEvent } from '@/services/eventServices';
 import { useAcademicContext } from "@/hooks/useAcademicContext";
+import { toast } from "sonner";
 
 export default function UniversityEventsPage() {
   const [isClient, setIsClient] = useState(false);
@@ -19,19 +21,31 @@ export default function UniversityEventsPage() {
   const [search, setSearch] = useState("");
   const { selectedProgramId, selectedSemesterId, academicVersion } = useAcademicContext();
 
-  // Form State
+  const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
+    text: "",
+    type: null
+  });
+
   const [type, setType] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const loadData = useCallback(async (query = "") => {
+
+  const loadData = useCallback(async () => {
     if (!selectedProgramId || !selectedSemesterId) return;
     setLoading(true);
     try {
-      const data = await eventService.getEvents(selectedProgramId, selectedSemesterId, query);
+      const data = await eventService.getEvents(selectedProgramId, selectedSemesterId, "");
       setEvents(data.items || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch Error:", error);
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -42,25 +56,50 @@ export default function UniversityEventsPage() {
     loadData();
   }, [loadData, academicVersion]);
 
+  const filteredEvents = useMemo(() => {
+    if (!search.trim()) return events;
 
+    return events.filter((event) => {
+      const eventType = event.type?.toLowerCase() || "";
+      const searchTerms = search.toLowerCase();
 
-  const handlePrint = () => {
-    window.print();
-  };
+      return eventType.includes(searchTerms);
+    });
+  }, [search, events]);
 
   const handleAddEvent = async () => {
     if (!selectedProgramId || !selectedSemesterId || !type || !startDate || !endDate) {
-      alert("Please fill in all fields.");
+      setStatusMessage({ text: "Please fill in all fields.", type: 'warning' });
       return;
     }
+
+
+    if (new Date(startDate) > new Date(endDate)) {
+      setStatusMessage({ text: "End Date must be after or equal to Start Date.", type: 'warning' });
+      return;
+    }
+
+    setStatusMessage({ text: "", type: null });
     setActionLoading(true);
     try {
       await eventService.addEvent(selectedProgramId, selectedSemesterId, { type, startDate, endDate });
       setType(""); setStartDate(""); setEndDate("");
-      loadData(search);
+      setStatusMessage({ text: "Event added successfully!", type: 'success' });
+      toast.success("Event added successfully!");
+      loadData();
     } catch (error: any) {
       console.log("Details:", error.response?.data);
-      alert("Error adding event: " + (error.response?.data?.title || "Bad Request"));
+
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.response?.data?.title ||
+          error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -68,27 +107,54 @@ export default function UniversityEventsPage() {
 
   const handleDelete = async (id: string) => {
     if (!selectedProgramId || !selectedSemesterId || !confirm("Are you sure you want to delete this event?")) return;
+
+    setStatusMessage({ text: "", type: null });
     try {
       await eventService.deleteEvent(selectedProgramId, selectedSemesterId, id);
-      loadData(search);
-    } catch (error) {
+      toast.success("Deleted successfully");
+      loadData();
+    } catch (error: any) {
       console.error("Delete Error:", error);
+      const errorMsg =
+        typeof error.response?.data === "string" ? error.response.data :
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+
+      setStatusMessage({ text: errorMsg, type: 'error' });
     }
   };
 
   if (!isClient) return null;
 
   return (
-    <div className="p-6 bg-[#F9FAFB] min-h-screen space-y-8 font-sans print:p-0">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans">
 
-      <Card className="border-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] rounded-[20px] p-4 print:hidden">
-        <CardContent className="pt-4 space-y-6">
-          <h2 className="text-[22px] font-bold text-[#0A0D12]">University calendar</h2>
+
+      {statusMessage.type && (
+        <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
+            statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
+              'bg-emerald-50 border-emerald-200 text-emerald-800'
+          }`}>
+          <div className="flex items-center gap-3">
+            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+            <span>{statusMessage.text}</span>
+          </div>
+          <button onClick={() => setStatusMessage({ text: "", type: null })}>
+            <X className="w-4 h-4 opacity-50" />
+          </button>
+        </div>
+      )}
+
+      <Card className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] print:hidden">
+        <CardContent className="p-0 space-y-6">
+          <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">University calendar</h2>
           <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-[#090909]">Event</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-[#090909]">Event</label>
               <Select onValueChange={setType} value={type}>
-                <SelectTrigger className="h-[55px] rounded-[15px] border-[#E8E8E8] bg-white">
+                <SelectTrigger className="h-11 rounded-xl border-slate-200 focus:ring-blue-600 bg-white">
                   <SelectValue placeholder="Select Event" />
                 </SelectTrigger>
                 <SelectContent>
@@ -98,62 +164,37 @@ export default function UniversityEventsPage() {
               </Select>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-[#090909]">Start Date</label>
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-[55px] rounded-[15px] border-[#E8E8E8]" />
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-[#090909]">Start Date</label>
+                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-11 rounded-xl border-slate-200 bg-white" />
               </div>
-              <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-[#090909]">End Date</label>
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-[55px] rounded-[15px] border-[#E8E8E8]" />
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-[#090909]">End Date</label>
+                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-11 rounded-xl border-slate-200 bg-white" />
               </div>
             </div>
           </div>
-          <Button onClick={handleAddEvent} disabled={actionLoading} className="w-full h-[55px] bg-[#2463F0] hover:bg-blue-700 rounded-[15px] text-[16px] font-bold">
-            {actionLoading ? <Loader2 className="animate-spin mr-2" /> : "Add Event"}
+          <Button onClick={handleAddEvent} disabled={actionLoading} className="w-full h-11 cursor-pointer font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-all">
+            {actionLoading ? <Loader2 className="animate-spin" /> : "Add Event"}
           </Button>
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] rounded-[20px] p-6 print:shadow-none print:p-0">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 print:hidden">
+      <Card className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100 print:shadow-none print:p-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 print:hidden">
           <div className="flex items-center gap-3">
-            <h2 className="text-[24px] font-bold text-[#0A0D12]">Events</h2>
-            <span className="bg-[#E8F0FF] text-[#2D60FF] text-[11px] px-3 py-1 rounded-full font-bold">
-              {events.length} Events
-            </span>
+            <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Events</h2>
+            <Badge className="bg-blue-50 text-blue-600 border-none px-3 py-1 rounded-full text-xs font-bold">
+              {filteredEvents.length} Events
+            </Badge>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-[300px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#888888]" />
-              <Input
-                placeholder="Search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  loadData(e.target.value);
-                }}
-                className="pl-12 h-[50px] rounded-[15px] bg-[#F9FAFB] border-none"
-              />
 
-            </div>
-            <Button
-              onClick={handlePrint}
-              variant="outline"
-              className="h-[50px] rounded-[15px] border-[#2D60FF] text-[#2D60FF] font-bold px-6"
-            >
-              <Printer className="h-5 w-5 mr-2" /> Print
-            </Button>
-            <Button variant="outline" size="icon" className="h-12 w-12 rounded-xl border-slate-200">
-              <MoreHorizontal className="h-5 w-5 text-slate-400" />
-            </Button>
-          </div>
         </div>
 
         <h1 className="hidden print:block text-2xl font-bold mb-4 text-center">University Calendar Events</h1>
 
         <div className="space-y-3">
-          <div className="grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center px-6 py-4 bg-[#F9FAFB] rounded-[15px] text-[14px] font-bold text-[#181D27] print:bg-gray-100">
-            <input type="checkbox" className="h-4 w-4 accent-[#2D60FF] print:hidden" />
+          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 font-semibold text-[#181D27] tracking-wider border border-[#E9EAEB]">
             <div>Event</div>
             <div>Start Date</div>
             <div>End Date</div>
@@ -161,24 +202,36 @@ export default function UniversityEventsPage() {
           </div>
 
           {loading ? (
-            <div className="text-center py-10 text-gray-400">Loading events...</div>
-          ) : events.length > 0 ? events.map((event) => (
-            <div key={event.id} className="grid grid-cols-[50px_2fr_1fr_1fr_100px] items-center px-6 py-4 bg-white border border-[#F2F4F7] rounded-[15px] text-[14px] text-[#181D27] hover:shadow-md transition-all print:border-b print:rounded-none">
-              <input type="checkbox" className="h-4 w-4 accent-[#2D60FF] print:hidden" />
-              <div className="font-semibold text-[#181D27]">{event.type}</div>
-              <div>{new Date(event.startDate).toLocaleDateString()}</div>
-              <div>{new Date(event.endDate).toLocaleDateString()}</div>
-              <div className="flex justify-end gap-2 print:hidden">
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-blue-600">
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)} className="h-9 w-9 text-gray-400 hover:text-red-600">
+            <div className="text-center py-10 text-slate-400"><Loader2 className="animate-spin text-blue-600 h-10 w-10 mx-auto" /></div>
+          ) : filteredEvents.length > 0 ? filteredEvents.map((event) => (
+            <div key={event.id} className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_100px] items-start md:items-center p-4 md:px-6 md:py-5 border rounded-2xl transition-all bg-white gap-3 md:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200 print:border-b print:rounded-none">
+
+              <div className="flex flex-col md:block w-full md:w-auto">
+                <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Event</span>
+                <div className="font-semibold md:font-medium text-[#181D27] text-base md:text-sm truncate">{event.type}</div>
+              </div>
+
+              <div className="flex flex-col md:block w-full md:w-auto">
+                <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Start Date</span>
+                <div className="text-[#181D27] font-semibold">{new Date(event.startDate).toLocaleDateString()}</div>
+              </div>
+
+              <div className="flex flex-col md:block w-full md:w-auto">
+                <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">End Date</span>
+                <div className="text-[#181D27] font-semibold">{new Date(event.endDate).toLocaleDateString()}</div>
+              </div>
+
+              <div className="w-full md:w-auto flex justify-end items-center gap-1 print:hidden">
+                <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)} className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+
             </div>
           )) : (
-            <div className="text-center py-20 text-gray-400">No events found.</div>
+            <div className="text-center py-20 text-slate-400 border-2 border-dashed border-slate-50 rounded-2xl">
+              No events found.
+            </div>
           )}
         </div>
       </Card>
