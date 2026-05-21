@@ -361,46 +361,15 @@ export default function AdvisorRegisterPage() {
     setRemovedIds(Array.from(removedIdsRef.current));
   };
 
-  const handleAddToDraft = (course: Course) => {
-    markRestored(course.sessions.map((s) => s.sessionId));
-    const sessions = course.sessions.map((s) => ({
-      sessionId: s.sessionId,
-      courseOfferingId: course.courseOfferingId,
-    }));
-    setDraftSessions((prev) => [...prev, ...sessions]);
+  const handleAddSessionToDraft = (courseOfferingId: string, sessionId: string) => {
+    markRestored([sessionId]);
+    setDraftSessions((prev) => [...prev, { sessionId, courseOfferingId }]);
     setIsDirty(true);
   };
 
-  const handleRemoveFromDraft = (course: Course) => {
-    markRemoved(course.sessions.map((s) => s.sessionId));
-    setDraftSessions((prev) =>
-      prev.filter((ds) => ds.courseOfferingId !== course.courseOfferingId)
-    );
-    setIsDirty(true);
-  };
-
-  // Remove all sessions of a courseOfferingId from draft (used by schedule cells)
-  const handleRemoveCourseOfferingFromDraft = (courseOfferingId: string) => {
-    const idsToRemove = draftSessions
-      .filter((ds) => ds.courseOfferingId === courseOfferingId)
-      .map((ds) => ds.sessionId);
-    markRemoved(idsToRemove);
-    setDraftSessions((prev) =>
-      prev.filter((ds) => ds.courseOfferingId !== courseOfferingId)
-    );
-    setIsDirty(true);
-  };
-
-  // Restore a course offering (re-adds its sessions from cache)
-  const handleRestoreCourseOffering = (courseOfferingId: string) => {
-    const sessionsToRestore = Array.from(sessionDetailsCacheRef.current.values()).filter(
-      (ei) => ei.courseOfferingId === courseOfferingId
-    );
-    markRestored(sessionsToRestore.map((ei) => ei.sessionId));
-    setDraftSessions((prev) => [
-      ...prev,
-      ...sessionsToRestore.map((ei) => ({ sessionId: ei.sessionId, courseOfferingId: ei.courseOfferingId })),
-    ]);
+  const handleRemoveSessionFromDraft = (sessionId: string) => {
+    markRemoved([sessionId]);
+    setDraftSessions((prev) => prev.filter((ds) => ds.sessionId !== sessionId));
     setIsDirty(true);
   };
 
@@ -436,11 +405,22 @@ export default function AdvisorRegisterPage() {
       toast.success("Enrollment saved successfully.");
       fetchEnrollment(); // still refresh to get latest student hours / course states
     } catch (e: any) {
-      const errMsg =
-        e?.response?.data?.errors?.join("\n") ||
-        e?.response?.data?.message ||
-        "Failed to save enrollment.";
-      toast.error(errMsg);
+      let errMsg = "Failed to save enrollment.";
+      const data = e?.response?.data;
+      if (data) {
+        if (Array.isArray(data.errors)) {
+          errMsg = data.errors.join("\n");
+        } else if (typeof data.errors === "object" && data.errors !== null) {
+          errMsg = Object.values(data.errors).flat().join("\n");
+        } else if (data.message) {
+          errMsg = data.message;
+        } else if (data.title) {
+          errMsg = data.title;
+        } else if (typeof data === "string") {
+          errMsg = data;
+        }
+      }
+      window.alert(errMsg);
     } finally {
       setIsSaving(false);
     }
@@ -687,12 +667,14 @@ export default function AdvisorRegisterPage() {
                         <td colSpan={6} className="py-3 px-3 text-gray-400 text-xs italic">No sessions available</td>
                       </tr>
                     ) : (
-                      course.sessions.map((session, si) => (
+                      course.sessions.map((session, si) => {
+                        const isSessionEnrolled = draftSessions.some((ds) => ds.sessionId === session.sessionId);
+                        return (
                         <tr
                           key={`${course.courseOfferingId}-${session.sessionId}`}
                           className={cn(
                             "border-b border-gray-50 transition-colors",
-                            isEnrolled ? "bg-green-50/40 hover:bg-green-50/70" : "hover:bg-gray-50/50"
+                            isSessionEnrolled ? "bg-green-50/40 hover:bg-green-50/70" : "hover:bg-gray-50/50"
                           )}
                         >
                           {si === 0 && (
@@ -721,30 +703,28 @@ export default function AdvisorRegisterPage() {
                           <td className="py-3 px-3 text-gray-600">Group {session.groupNumber}</td>
                           <td className="py-3 px-3 text-gray-600">{session.availableSeats}</td>
                           <td className="py-3 px-3 text-right align-middle">
-                            {si === 0 && (
-                              isEnrolled ? (
-                                <button
-                                  onClick={() => handleRemoveFromDraft(course)}
-                                  disabled={isSaving}
-                                  className="w-7 h-7 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
-                                  title="Remove from enrollment"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleAddToDraft(course)}
-                                  disabled={isSaving}
-                                  className="w-7 h-7 rounded-full bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
-                                  title="Add to enrollment"
-                                >
-                                  <Plus className="w-3.5 h-3.5" />
-                                </button>
-                              )
+                            {isSessionEnrolled ? (
+                              <button
+                                onClick={() => handleRemoveSessionFromDraft(session.sessionId)}
+                                disabled={isSaving}
+                                className="w-7 h-7 rounded-full bg-red-100 hover:bg-red-200 text-red-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+                                title="Remove session from enrollment"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleAddSessionToDraft(course.courseOfferingId, session.sessionId)}
+                                disabled={isSaving}
+                                className="w-7 h-7 rounded-full bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+                                title="Add session to enrollment"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
                             )}
                           </td>
                         </tr>
-                      ))
+                      )})
                     );
                   })}
                 </tbody>
@@ -862,12 +842,12 @@ export default function AdvisorRegisterPage() {
                                         <div className="text-[10px] opacity-60 truncate max-w-[120px]">{s.instructorName}</div>
                                       )}
                                       <div className="text-[10px] opacity-60 mt-0.5">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
-                                      {/* X button — removes the whole course offering from draft */}
+                                      {/* X button — removes the session from draft */}
                                       <button
-                                        onClick={() => handleRemoveCourseOfferingFromDraft(s.courseOfferingId)}
+                                        onClick={() => handleRemoveSessionFromDraft(s.sessionId)}
                                         disabled={isSaving}
                                         className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:opacity-50"
-                                        title="Remove from enrollment"
+                                        title="Remove session from enrollment"
                                       >
                                         <X className="w-2.5 h-2.5" />
                                       </button>
@@ -881,10 +861,10 @@ export default function AdvisorRegisterPage() {
                                     <div className="text-gray-400">{s.type}</div>
                                     <div className="text-[10px] text-gray-400">{normalizeTime(s.startTime)} – {normalizeTime(s.endTime)}</div>
                                     <button
-                                      onClick={() => handleRestoreCourseOffering(s.courseOfferingId)}
+                                      onClick={() => handleAddSessionToDraft(s.courseOfferingId, s.sessionId)}
                                       disabled={isSaving}
                                       className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:opacity-50"
-                                      title="Restore to enrollment"
+                                      title="Restore session to enrollment"
                                     >
                                       <Plus className="w-2.5 h-2.5" />
                                     </button>
