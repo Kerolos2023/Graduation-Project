@@ -90,7 +90,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 interface DegreeCellProps {
   studentId: string;
   courseAssessmentId: string;
-  degreeValue: number;
+  degreeValue: number | null;
   maxDegree: number;
   academicProgramId: string;
   onUpdated: (
@@ -111,12 +111,17 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
   onUpdated,
 }) => {
   const [editing, setEditing] = useState(false);
-  const [inputVal, setInputVal] = useState(String(degreeValue));
+  const [inputVal, setInputVal] = useState(degreeValue !== null ? String(degreeValue) : "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
+    if (inputVal === "" && degreeValue === null) {
+      setEditing(false);
+      setError(null);
+      return;
+    }
     const numVal = parseFloat(inputVal);
     if (isNaN(numVal) || numVal < 0 || numVal > maxDegree) {
       setError(`Must be 0–${maxDegree}`);
@@ -154,7 +159,7 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
     if (e.key === "Enter") handleSave();
     if (e.key === "Escape") {
       setEditing(false);
-      setInputVal(String(degreeValue));
+      setInputVal(degreeValue !== null ? String(degreeValue) : "");
       setError(null);
     }
   };
@@ -168,7 +173,7 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
 
   // keep in sync when parent data refreshes
   useEffect(() => {
-    if (!editing) setInputVal(String(degreeValue));
+    if (!editing) setInputVal(degreeValue !== null ? String(degreeValue) : "");
   }, [degreeValue, editing]);
 
   if (editing) {
@@ -209,10 +214,18 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
     <button
       onClick={() => setEditing(true)}
       title={`Click to edit (max: ${maxDegree})`}
-      className="group relative w-10 h-10 rounded-full border-2 border-blue-200 bg-blue-50 hover:border-blue-400 hover:bg-blue-100 flex items-center justify-center transition-all cursor-pointer"
+      className={`group relative w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${
+        degreeValue === null
+          ? "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100"
+          : "border-blue-200 bg-blue-50 hover:border-blue-400 hover:bg-blue-100"
+      }`}
     >
-      <span className="text-[13px] font-bold text-blue-700 group-hover:text-blue-800">
-        {degreeValue % 1 === 0 ? degreeValue : degreeValue.toFixed(1)}
+      <span className={`text-[13px] font-bold ${
+        degreeValue === null
+          ? "text-gray-400 group-hover:text-gray-600"
+          : "text-blue-700 group-hover:text-blue-800"
+      }`}>
+        {degreeValue === null ? "—" : (degreeValue % 1 === 0 ? degreeValue : degreeValue.toFixed(1))}
       </span>
     </button>
   );
@@ -263,6 +276,7 @@ export default function CourseResultPage() {
   const [students, setStudents] = useState<StudentControlInfo[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
@@ -380,6 +394,7 @@ export default function CourseResultPage() {
       const data = res.data;
       setStudents(data.items ?? []);
       setTotalPages(data.totalPages ?? 1);
+      setTotalCount(data.totalCount ?? 0);
       setHasFetched(true);
     } catch (err: unknown) {
       console.error("Error fetching students:", err);
@@ -414,6 +429,7 @@ export default function CourseResultPage() {
       setAssessmentHeaders([]);
       setCourseTotalGrade(0);
       setTotalPages(1);
+      setTotalCount(0);
       setHasFetched(false);
     }
   }, [fetchStudents]);
@@ -582,12 +598,7 @@ export default function CourseResultPage() {
             <h2 className="text-[16px] font-bold text-gray-900">Students</h2>
             {!isLoading && hasFetched && (
               <span className="bg-blue-50 text-blue-600 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-blue-100">
-                {students.length} shown
-              </span>
-            )}
-            {courseTotalGrade > 0 && !isLoading && (
-              <span className="bg-gray-50 text-gray-600 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-gray-100">
-                Total: {courseTotalGrade}
+                {totalCount} total students
               </span>
             )}
             {isLoadingAssessments && (
@@ -760,20 +771,16 @@ export default function CourseResultPage() {
                           key={h.assessmentId}
                           className="px-4 py-3.5 text-center"
                         >
-                          {val !== null ? (
-                            <div className="flex justify-center">
-                              <DegreeCell
-                                studentId={student.studentId}
-                                courseAssessmentId={h.assessmentId}
-                                degreeValue={val}
-                                maxDegree={h.maxDegree}
-                                academicProgramId={selectedProgramId!}
-                                onUpdated={handleDegreeUpdated}
-                              />
-                            </div>
-                          ) : (
-                            <span className="text-gray-300 text-sm">—</span>
-                          )}
+                          <div className="flex justify-center">
+                            <DegreeCell
+                              studentId={student.studentId}
+                              courseAssessmentId={h.assessmentId}
+                              degreeValue={val}
+                              maxDegree={h.maxDegree}
+                              academicProgramId={selectedProgramId!}
+                              onUpdated={handleDegreeUpdated}
+                            />
+                          </div>
                         </td>
                       );
                     })}
