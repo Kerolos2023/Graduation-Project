@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -283,6 +283,7 @@ const extractSemesterMapping = (rawYear: unknown): Partial<Record<SemesterType, 
 
 export default function DepartmentCoursesPage() {
   const { selectedProgramId, selectedSemesterId, selectedTermId, selectedYearId } = useAcademicContext();
+  const formRef = useRef<HTMLDivElement>(null);
 
   const defaultSemesterType = useMemo(
     () => termIdToSemesterType(selectedTermId) ?? "Fall",
@@ -842,7 +843,7 @@ export default function DepartmentCoursesPage() {
         [levelId]: responseSemesterType,
       }));
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       console.error(error);
       toast.error("Failed to load course offering details.");
@@ -907,7 +908,7 @@ export default function DepartmentCoursesPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 bg-[#F5F5F5] min-h-screen">
       <CollegeDataTabs />
 
-      <div className="bg-white p-5 md:p-8 rounded-[24px] shadow-sm border border-[#E9EAEB] space-y-6">
+      <div ref={formRef} className="bg-white p-5 md:p-8 rounded-[24px] shadow-sm border border-[#E9EAEB] space-y-6">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Department Course" : "Department Courses"}

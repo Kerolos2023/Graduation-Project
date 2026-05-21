@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -15,6 +15,7 @@ export default function CoursesPage() {
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const formRef = useRef<HTMLDivElement>(null);
 
     // ── Dropdown options ────────────────────────────────────────────────────
     const [allCoursesOpts, setAllCoursesOpts] = useState<{ label: string; value: string }[]>([]);
@@ -114,7 +115,7 @@ export default function CoursesPage() {
             description: course.description ?? '',
             preRequisiteIds: [],
         });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         try {
             const courseData = await collegeCoursesService.getById(course.id);
@@ -175,7 +176,7 @@ export default function CoursesPage() {
         <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
 
             {/* Upper Form Section */}
-            <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
+            <div ref={formRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
                 <h1 className="text-xl font-bold text-gray-900 mb-6">Courses</h1>
                 <form onSubmit={handleAddOrSave}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
