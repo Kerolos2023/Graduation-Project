@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"; // 1. ضفنا useRef هنا
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"; //  
 import { Trash2, Edit2, Loader2, X, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 export default function AcademicLevelsPage() {
   const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
 
-  // 2. عملنا المرجع (Ref) اللي هنشاور بيه على كارت الفورم فوق
+  
   const formRef = useRef<HTMLDivElement>(null);
 
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
