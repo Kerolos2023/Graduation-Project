@@ -1,3 +1,5 @@
+ 
+
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -59,6 +61,16 @@ export default function CommitteesPage() {
     };
     init();
   }, [examTermId]);
+
+   
+  useEffect(() => {
+    if (!isLoading && examTermId && examTermId !== 'undefined') {
+      const timer = setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100); 
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, examTermId]);
 
   const filteredCommittees = useMemo(() => {
     return committees.filter(item => {
@@ -136,17 +148,22 @@ export default function CommitteesPage() {
       roomId: ""
     });
 
-     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure?") || !examTermId) return;
-    try {
-      await committeeService.delete(examTermId, id);
-      setCommittees(p => p.filter(c => c.id !== id));
-      toast.success("Committee deleted successfully");
-    } catch (e) { toast.error("Delete failed"); }
-  };
+  if (!confirm("Are you sure?") || !examTermId) return;
+  try {
+    await committeeService.delete(examTermId, id);
+    
+    // سطر التعديل الصحيح:
+    setCommittees(p => p.filter(c => c.id !== id));
+    
+    toast.success("Committee deleted successfully");
+  } catch (e) { 
+    toast.error("Delete failed"); 
+  }
+};
 
   if (!examTermId || examTermId === 'undefined') {
     return (
@@ -169,8 +186,7 @@ export default function CommitteesPage() {
   return (
     <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto bg-[#F5F5F5] min-h-screen font-sans">
       
-      {/* Form Card */}
-      <Card ref={formRef} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white scroll-mt-6">
+       <Card ref={formRef} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white scroll-mt-6">
         <CardHeader className="pb-2 pt-8 px-8 border-b border-gray-50">
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl font-bold text-[#0A0D12]">
@@ -241,7 +257,7 @@ export default function CommitteesPage() {
             )}
           </div>
           
-          <Button onClick={handleSubmit} disabled={isSubmitting} className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all text-white ${editingId ? 'bg-orange-500 hover:bg-orange-600' : 'bg-[#2B59FF] hover:bg-blue-700'}`}>
+          <Button onClick={handleSubmit} disabled={isSubmitting} className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all text-white ${editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#2B59FF] hover:bg-blue-700'}`}>
             {isSubmitting ? <Loader2 className="animate-spin w-6 h-6" /> : editingId ? "Save Changes" : "Add Committee"}
           </Button>
           
@@ -267,7 +283,7 @@ export default function CommitteesPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input placeholder="Search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-11 h-12 bg-white border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-50" />
             </div>
-           </div>
+          </div>
         </div>
 
         <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_1fr_150px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl  font-semibold text-[#181D27] mb-4 border border-gray-50">
@@ -319,3 +335,12 @@ export default function CommitteesPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+ 
