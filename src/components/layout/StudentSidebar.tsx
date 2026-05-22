@@ -106,11 +106,7 @@ const NAV_ITEMS = [
     label: "Buy Services",
     href: "/student/services",
   },
-  {
-    icon: ChartBarIncreasing,
-    label: "Service Status",
-    href: "/student/service-request",
-  },
+
 ] as const;
 
 const STATIC_PROFILE = {
