@@ -310,7 +310,7 @@ export default function CreditLoadPage() {
                   <tr key={row.id} className={cn("group transition-all", editingId === row.id ? "bg-blue-50/30" : "hover:bg-slate-50/50")}>
                     <td className="px-10 py-6">
                       <div className="font-semibold text-[#181D27] text-base">{row.levelName}</div>
-                      <div className="text-[10px] text-blue-500 font-black uppercase mt-1 tracking-wider">{row.semesterName} Semester</div>
+                      <div className="text-[10px] text-[#2463F0] font-semibold  mt-1 tracking-wider">{row.semesterName} Semester</div>
                     </td>
                     <td className="px-6 py-6 text-center text-[#181D27] font-semibold">{row.minHours}</td>
                     <td className="px-6 py-6 text-center text-[#181D27] font-semibold">{row.maxHours}</td>

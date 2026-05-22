@@ -484,10 +484,6 @@ export default function AdvisorRegisterPage() {
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">Student Registration</h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Search for a student to manage their course enrollment</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer self-start sm:self-auto shrink-0">
-            <Printer className="w-4 h-4" />
-            Print
-          </button>
         </div>
 
         {/* Search */}
@@ -598,9 +594,7 @@ export default function AdvisorRegisterPage() {
             <div className="flex items-center gap-2 min-w-0">
               <BookOpen className="w-5 h-5 text-blue-600 shrink-0" />
               <h2 className="text-base font-bold text-gray-900">Courses</h2>
-              {enrollmentData?.student?.levelName && (
-                <span className="text-xs text-gray-400 font-medium truncate">— {enrollmentData.student.levelName}</span>
-              )}
+
             </div>
             {isDirty && (
               <div className="flex flex-wrap items-center gap-2">

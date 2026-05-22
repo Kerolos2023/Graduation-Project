@@ -148,8 +148,24 @@ const DegreeCell: React.FC<DegreeCellProps> = ({
         res.data.letterDegree
       );
       setEditing(false);
-    } catch {
-      setError("Failed to save");
+    } catch (e: any) {
+      let errMsg = "Failed to save";
+      const data = e?.response?.data;
+      if (data) {
+        if (Array.isArray(data.errors)) {
+          errMsg = data.errors.join("\n");
+        } else if (typeof data.errors === "object" && data.errors !== null) {
+          errMsg = Object.values(data.errors).flat().join("\n");
+        } else if (data.message) {
+          errMsg = data.message;
+        } else if (data.title) {
+          errMsg = data.title;
+        } else if (typeof data === "string") {
+          errMsg = data;
+        }
+      }
+      setError(errMsg);
+      window.alert(errMsg);
     } finally {
       setSaving(false);
     }

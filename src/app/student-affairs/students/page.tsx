@@ -195,12 +195,6 @@ export default function StudentsPage() {
                             <UserPlus className="w-4 h-4 shrink-0" />
                             <span className="hidden xs:inline sm:inline">Add Student</span>
                         </button>
-
-                        {/* Print */}
-                        <button className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl border border-blue-200 text-blue-600 text-sm font-medium hover:bg-blue-50 active:scale-[0.98] transition-all bg-white cursor-pointer">
-                            <Printer className="w-4 h-4 shrink-0" />
-                            <span className="hidden xs:inline sm:inline">Print</span>
-                        </button>
                     </div>
                 </div>
 

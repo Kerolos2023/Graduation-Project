@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Printer, Pencil, Trash2 } from 'lucide-react';
+import { Search, Pencil, Trash2 } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import {
     departmentsService,
@@ -44,7 +44,7 @@ export default function DepartmentsPage() {
             const data = await departmentsService.getAll(pageNumber, pageSize, searchValue || undefined);
             const items = data.items ?? data.data ?? [];
             const pages = data.totalPages ?? data.meta?.totalPages ?? 1;
-            const count = data.totalCount ?? items.length;
+            const count = data.totalCount ?? data.totalNumber ?? items.length;
             setDepartments(Array.isArray(items) ? items : []);
             setTotalPages(pages);
             setTotalCount(count);
@@ -239,10 +239,6 @@ export default function DepartmentsPage() {
                                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium"
                             />
                         </div>
-                        <button className="flex items-center justify-center gap-2 px-4 py-2.5 min-w-[90px] rounded-[12px] border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors bg-white text-sm cursor-pointer">
-                            <Printer className="w-4 h-4" />
-                            Print
-                        </button>
                     </div>
                 </div>
 
