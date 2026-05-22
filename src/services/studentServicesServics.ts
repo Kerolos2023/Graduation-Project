@@ -68,9 +68,9 @@ export const studentServicesService = {
     return response.data;
   },
 
-  /** POST /services/{serviceId}/checkout */
+  /** POST /colleges/{collegeId}/services/{serviceId}/checkout */
   checkout: async (serviceId: string): Promise<CheckoutResponse> => {
-    const response = await axiosInstance.post(`/services/${serviceId}/checkout`);
+    const response = await axiosInstance.post(`/colleges/${COLLEGE_ID}/services/${serviceId}/checkout`);
     return response.data;
   },
 };
