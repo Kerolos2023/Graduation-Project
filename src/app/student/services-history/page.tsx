@@ -79,13 +79,13 @@ export default function ServicesHistoryPage() {
       const res = await studentServicesService.getHistory(currentPage, PAGE_SIZE, search);
       setItems(res.items ?? []);
       setTotalPages(res.totalPages ?? 1);
-      if (totalItems === null) setTotalItems((res.totalPages ?? 1) * PAGE_SIZE);
+      setTotalItems(res.totalCount ?? 0);
     } catch {
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search, totalItems]);
+  }, [currentPage, search]);
 
   useEffect(() => {
     fetchData();
