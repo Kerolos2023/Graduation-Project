@@ -547,7 +547,7 @@ export default function AdvisorRegisterPage() {
             </div>
             <div className="min-w-0">
               <h2 className="text-base sm:text-lg font-bold text-gray-900 truncate">{studentInfo?.studentName || selectedStudent.name}</h2>
-              <p className="text-xs sm:text-sm text-gray-500">{studentInfo?.levelName || ""} · {selectedStudent.studentCode}</p>
+              <p className="text-xs sm:text-sm text-gray-500">Level: <span className="font-medium text-gray-800">{studentInfo?.levelName || "N/A"}</span> · Code: <span className="font-medium text-gray-800">{selectedStudent.studentCode}</span></p>
               {studentInfo && (
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                   <span className="text-xs font-medium text-gray-500">
