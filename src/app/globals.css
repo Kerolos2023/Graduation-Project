@@ -156,6 +156,24 @@ body {
     white-space: normal;
     overflow-wrap: anywhere;
   }
+
+  /* Make all buttons show pointer on hover and have smooth color transitions */
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  .btn {
+    cursor: pointer;
+    transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  }
+
+  /* Respect disabled state */
+  button:disabled,
+  input[disabled],
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 @keyframes popupIn {
