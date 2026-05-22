@@ -62,8 +62,11 @@ export default function ContactInformation() {
       const errorsObject = err?.response?.data?.errors;
 
       if (errorsObject) {
-        const allErrors = Object.values(errorsObject).flat();
-        setErrorMessage(allErrors[0]);
+        const allErrors = Object.values(
+  errorsObject as Record<string, unknown>
+).flat();
+
+setErrorMessage(String(allErrors[0] ?? ""));
       }
     } finally {
       setLoading(false);
