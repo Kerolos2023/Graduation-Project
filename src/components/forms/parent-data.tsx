@@ -31,7 +31,7 @@ export default function StudentParentForm() {
 
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -78,12 +78,16 @@ export default function StudentParentForm() {
       await studentProfileService.updateParentData(payload, studentId);
 
       setResponseMessage("Updated successfully");
-      setIsEditPopupOpen(false);
     } catch (err: any) {
-      setResponseMessage(
-        err.response?.data?.message || "Something went wrong"
-      );
-    } finally {
+      const errorsObject = err?.response?.data?.errors;
+
+      if (errorsObject) {
+        const allErrors = Object.values(errorsObject).flat();
+
+        setErrorMessage(allErrors[0]);
+
+      } 
+    }finally {
       setLoading(false);
     }
   };
@@ -110,7 +114,11 @@ export default function StudentParentForm() {
             />
           </div>
         ))}
-
+      {errorMessage && (
+          <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {errorMessage}
+          </div>
+        )}
         {/* BUTTON */}
         <button
           type="submit"
@@ -125,6 +133,7 @@ export default function StudentParentForm() {
             {responseMessage}
           </p>
         )}
+        
       </form>
     </div>
   );

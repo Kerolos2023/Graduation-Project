@@ -1,5 +1,6 @@
 import axiosInstance from '@/lib/axios';
 import { COLLEGE_ID } from '@/lib/constants';
+import { parseAppSegmentConfig } from 'next/dist/build/segment-config/app/app-segment-config';
 
 export interface AcademicYear {
   id: string;
@@ -37,4 +38,19 @@ export const academicService = {
     const items = res.data?.items || [];
     return Array.isArray(items) ? items : [];
   },
+  
+  changeStudentProgram: async (
+  studentId: string,
+  newProgramId: string
+) => {
+  await axiosInstance.patch(
+    `/students/${studentId}/change-program`,
+    null,
+    {
+      params: {
+        newProgramId,
+      },
+    }
+  );
+},
 };

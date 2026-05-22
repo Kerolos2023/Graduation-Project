@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 import { ADMISSION_TYPE_OPTIONS } from "@/lib/constants";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type PreviousQualificationFormData = {
   schoolName: string;
@@ -30,7 +31,7 @@ export default function PreviousQualificationData() {
 
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
   // FETCH
@@ -86,12 +87,13 @@ export default function PreviousQualificationData() {
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
     } catch (err) {
-      const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
+      const errorsObject = err?.response?.data?.errors;
 
-      setResponseMessage(message || "Something went wrong");
+      if (errorsObject) {
+        const allErrors = Object.values(errorsObject).flat();
+        setErrorMessage(allErrors[0] as string);
+      }
+
     } finally {
       setLoading(false);
     }
@@ -110,24 +112,26 @@ export default function PreviousQualificationData() {
             </label>
 
             {key === "admissionType" ? (
-              <select
-                value={value}
-                onChange={(e) =>
+              <Select
+                value={value === "" ? "" : String(value)}
+                onValueChange={(val) =>
                   setFormData({
                     ...formData,
-                    admissionType:
-                      e.target.value === "" ? "" : Number(e.target.value),
+                    admissionType: val === "" ? "" : Number(val),
                   })
                 }
-                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
               >
-                <option value="">Select Admission Type</option>
-                {ADMISSION_TYPE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <SelectValue placeholder="Select Admission Type" />
+                </SelectTrigger>
+                <SelectContent className="w-full max-w-full min-w-0">
+                  {ADMISSION_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={String(option.value)} title={option.label}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <input
                 type="text"
@@ -143,7 +147,11 @@ export default function PreviousQualificationData() {
             )}
           </div>
         ))}
-
+{errorMessage && (
+          <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {errorMessage}
+          </div>
+        )}
         <button
           type="submit"
           disabled={loading}

@@ -5,6 +5,7 @@ import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 import { MARITAL_STATUS_OPTIONS, RELIGION_OPTIONS } from "@/lib/constants";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const GENDER_OPTIONS = [
   { value: 1, label: "Male" },
@@ -14,6 +15,8 @@ const GENDER_OPTIONS = [
 export default function PersonalData() {
   const { studentId, setIsEditPopupOpen } = useStudentContext();
   const { selectedProgramId } = useAcademicContext();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [responseMessage, setResponseMessage] = useState("");
   type PersonalDataFormData = {
     name: string;
     studentCode: string;
@@ -58,7 +61,8 @@ export default function PersonalData() {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const data = await studentProfileService.getPersonalDataForStudent(studentId);
+      const data =
+        await studentProfileService.getPersonalDataForStudent(studentId);
 
       setFormData({
         name: data.name || "",
@@ -76,29 +80,47 @@ export default function PersonalData() {
     fetchData();
   }, [studentId]);
   console.log({
-  studentId,
-  selectedProgramId,
-});
+    studentId,
+    selectedProgramId,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!studentId || !selectedProgramId) {
-      console.error("Missing studentId or selectedProgramId");
-      return;
+    try {
+      if (!studentId || !selectedProgramId) {
+        return;
+      }
+      setErrorMessage("");
+
+      await studentProfileService.updatePersonalData(
+        formData,
+        studentId,
+        selectedProgramId,
+      );
+
+      setResponseMessage("Updated successfully");
+
+    } catch (error: any) {
+      const errorsObject = error?.response?.data?.errors;
+
+      if (errorsObject) {
+        const allErrors = Object.values(errorsObject).flat();
+
+        if (allErrors.length > 0) {
+          setErrorMessage(allErrors[0] as string);
+        }
+      }
     }
-
-    await studentProfileService.updatePersonalData(formData, studentId, selectedProgramId);
-
-    setIsEditPopupOpen(false);
   };
 
   const numericFields = ["religion", "gender", "maritalStatus"];
-  const selectFieldOptions: Record<string, { value: number; label: string }[]> = {
-    religion: RELIGION_OPTIONS,
-    gender: GENDER_OPTIONS,
-    maritalStatus: MARITAL_STATUS_OPTIONS,
-  };
+  const selectFieldOptions: Record<string, { value: number; label: string }[]> =
+    {
+      religion: RELIGION_OPTIONS,
+      gender: GENDER_OPTIONS,
+      maritalStatus: MARITAL_STATUS_OPTIONS,
+    };
 
   return (
     <div className="bg-white p-9 shadow-sm rounded-[20px]">
@@ -110,39 +132,47 @@ export default function PersonalData() {
           const options = selectFieldOptions[key];
 
           return (
-            <div key={key} className="flex flex-col gap-1">
-
+          <div key={key} className="flex flex-col gap-1 min-w-0">
               {/* FIXED LABEL */}
-              <label className="text-sm text-gray-500">
-                {getLabel(key)}
-              </label>
+              <label className="text-sm text-gray-500">{getLabel(key)}</label>
 
               {options ? (
-                <select
-                  value={value !== 0 ? value : ""}
-                  onChange={(e) =>
+                <Select
+                  value={value !== 0 ? String(value) : ""}
+                  onValueChange={(val) =>
                     setFormData({
                       ...formData,
-                      [key]: e.target.value === "" ? 0 : Number(e.target.value),
+                      [key]: val === "" ? 0 : Number(val),
                     })
                   }
-                  className="border border-gray-200 rounded-xl px-3 py-2"
                 >
-                  <option value="">Select {getLabel(key)}</option>
-                  {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <SelectValue placeholder={`Select ${getLabel(key)}`} />
+                  </SelectTrigger>
+                  <SelectContent className="w-full max-w-full min-w-0">
+                    {options.map((option) => (
+                      <SelectItem key={option.value} value={String(option.value)} title={option.label}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
                 <input
-                  type={numericFields.includes(key) ? "number" : key === "dateOfBirth" ? "date" : "text"}
+                  type={
+                    numericFields.includes(key)
+                      ? "number"
+                      : key === "dateOfBirth"
+                        ? "date"
+                        : "text"
+                  }
                   value={value}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      [key]: numericFields.includes(key) ? parseInt(e.target.value) || 0 : e.target.value,
+                      [key]: numericFields.includes(key)
+                        ? parseInt(e.target.value) || 0
+                        : e.target.value,
                     })
                   }
                   className="border border-gray-200 rounded-xl px-3 py-2"
@@ -151,10 +181,21 @@ export default function PersonalData() {
             </div>
           );
         })}
-
+        {errorMessage && (
+          <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {errorMessage}
+          </div>
+        )}
         <button className="col-span-full bg-blue-600 text-white py-3 mt-2 rounded-xl">
           Update
         </button>
+        {
+          responseMessage && (
+            <p className="col-span-full text-center text-green-600 text-sm">
+              {responseMessage}
+            </p>
+          )
+        }
       </form>
     </div>
   );
