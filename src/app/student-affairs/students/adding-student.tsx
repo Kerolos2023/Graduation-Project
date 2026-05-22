@@ -1,10 +1,11 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { BiHide, BiSolidShow } from "react-icons/bi";
 import { COLLEGE_ID } from "@/lib/constants";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
+
 export default function PopupForm({
   open,
   setOpen,
@@ -23,9 +24,12 @@ export default function PopupForm({
     username: "",
     password: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-const {selectedProgramId} = useAcademicContext();
+  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+
+  const { selectedProgramId } = useAcademicContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -34,11 +38,26 @@ const {selectedProgramId} = useAcademicContext();
     });
   };
 
+  const getErrorMessage = (err: any) => {
+    const data = err?.response?.data;
+
+    console.log("API ERROR:", data);
+
+    return (
+      data?.message ||
+      data?.title ||
+      data?.error ||
+      (data?.errors &&
+        Object.values(data.errors).flat().join(", ")) ||
+      "Something went wrong"
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
+    setMessageType("");
 
-    // validation
     if (
       !formData.name ||
       !formData.studentCode ||
@@ -47,6 +66,7 @@ const {selectedProgramId} = useAcademicContext();
       !formData.password
     ) {
       setMessage("Please fill all fields");
+      setMessageType("error");
       return;
     }
 
@@ -56,17 +76,22 @@ const {selectedProgramId} = useAcademicContext();
       await axiosInstance.post(
         `/students`,
         {
-          academicProgramId: selectedProgramId,
-          collegeId: COLLEGE_ID,
           name: formData.name,
           studentCode: formData.studentCode,
           nationalIdOrPassport: formData.nationalId,
           userName: formData.username,
           password: formData.password,
+        },
+        {
+          params: {
+            academicProgramId: selectedProgramId,
+            collegeId: COLLEGE_ID,
+          },
         }
       );
 
       setMessage("Student added successfully");
+      setMessageType("success");
 
       setFormData({
         name: "",
@@ -79,9 +104,8 @@ const {selectedProgramId} = useAcademicContext();
       setOpen(false);
       onSuccess?.();
     } catch (err: any) {
-      setMessage(
-        err?.response?.data?.message || "Something went wrong"
-      );
+      setMessage(getErrorMessage(err));
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
@@ -91,15 +115,12 @@ const {selectedProgramId} = useAcademicContext();
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      {/* overlay close */}
-      <div
-        className="absolute inset-0"
-        onClick={() => setOpen(false)}
-      />
+      {/* overlay */}
+      <div className="absolute inset-0" onClick={() => setOpen(false)} />
 
       <div className="bg-white w-full max-w-3xl rounded-2xl p-6 relative z-10">
 
-        {/* close button */}
+        {/* close */}
         <button
           onClick={() => setOpen(false)}
           className="absolute top-3 right-4 text-gray-500"
@@ -116,63 +137,79 @@ const {selectedProgramId} = useAcademicContext();
           className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           {/* Name */}
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Name"
-            className="border p-2 rounded-lg"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Name</label>
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter name"
+              className="border p-2 rounded-lg"
+            />
+          </div>
 
           {/* Student Code */}
-          <input
-            name="studentCode"
-            value={formData.studentCode}
-            onChange={handleChange}
-            placeholder="Student Code"
-            className="border p-2 rounded-lg"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Student Code</label>
+            <input
+              name="studentCode"
+              value={formData.studentCode}
+              onChange={handleChange}
+              placeholder="Enter student code"
+              className="border p-2 rounded-lg"
+            />
+          </div>
 
           {/* National ID */}
-          <input
-            name="nationalId"
-            value={formData.nationalId}
-            onChange={handleChange}
-            placeholder="National ID"
-            className="border p-2 rounded-lg"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">National ID</label>
+            <input
+              name="nationalId"
+              value={formData.nationalId}
+              onChange={handleChange}
+              placeholder="Enter national ID"
+              className="border p-2 rounded-lg"
+            />
+          </div>
 
           {/* Username */}
-          <input
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Username"
-            className="border p-2 rounded-lg"
-          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Username</label>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Enter username"
+              className="border p-2 rounded-lg"
+            />
+          </div>
 
           {/* Password */}
-          <div className="relative">
-            <input
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="border p-2 rounded-lg w-full"
-            />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">Password</label>
 
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-2 text-gray-500"
-            >
-              {showPassword ? (
-                <BiHide size={20} />
-              ) : (
-                <BiSolidShow size={20} />
-              )}
-            </button>
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter password"
+                className="border p-2 rounded-lg w-full"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2 text-gray-500"
+              >
+                {showPassword ? (
+                  <BiHide size={20} />
+                ) : (
+                  <BiSolidShow size={20} />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Submit */}
@@ -186,7 +223,13 @@ const {selectedProgramId} = useAcademicContext();
 
           {/* Message */}
           {message && (
-            <p className="col-span-2 text-center text-sm text-gray-600">
+            <p
+              className={`col-span-2 text-center text-sm font-medium ${
+                messageType === "success"
+                  ? "text-green-600"
+                  : "text-red-600"
+              }`}
+            >
               {message}
             </p>
           )}

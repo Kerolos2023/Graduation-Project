@@ -56,7 +56,7 @@ export default function ContactInformation() {
     };
 
     try {
-      await studentProfileService.updateContactData(payload);
+      await studentProfileService.updateContactData(payload, studentId);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);

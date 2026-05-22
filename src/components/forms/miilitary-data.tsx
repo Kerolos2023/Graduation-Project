@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
+import { MILITARY_STATUS_OPTIONS } from "@/lib/constants";
 
 type MilitaryFormData = {
   militaryStatus: number | "";
@@ -68,21 +69,24 @@ export default function MilitaryData() {
       endDate: formData.endDate,
     };
     try {
-      await studentProfileService.updateMilitaryData(payload);
+      await studentProfileService.updateMilitaryData(payload, studentId);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
-    } catch (err: any) {
-      setResponseMessage(
-        err.response?.data?.message || "Something went wrong"
-      );
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+
+      setResponseMessage(message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-9 shadow-sm rounded-[20px]">
+    <div className="bg-white p-9 shadow-sm rounded-4xl">
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
@@ -93,28 +97,40 @@ export default function MilitaryData() {
               {key.replace(/([A-Z])/g, " $1")}
             </label>
 
-            <input
-              type={
-                key.toLowerCase().includes("date")
-                  ? "date"
-                  : key === "militaryStatus"
-                    ? "number"
-                    : "text"
-              }
-              value={value as any}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [key]:
-                    key === "militaryStatus"
-                      ? e.target.value === ""
-                        ? ""
-                        : Number(e.target.value)
-                      : e.target.value,
-                })
-              }
-              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-            />
+            {key === "militaryStatus" ? (
+              <select
+                value={value as number | ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    militaryStatus:
+                      e.target.value === "" ? "" : Number(e.target.value),
+                  })
+                }
+                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              >
+                <option value="">Select Military Status</option>
+                {MILITARY_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={
+                  key.toLowerCase().includes("date") ? "date" : "text"
+                }
+                value={String(value)}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [key]: e.target.value,
+                  })
+                }
+                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              />
+            )}
           </div>
         ))}
 
