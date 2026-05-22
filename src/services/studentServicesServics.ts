@@ -45,7 +45,7 @@ export const studentServicesService = {
     pageSize = 10,
     searchValue = ""
   ): Promise<PaginatedResponse<ServiceHistoryItem>> => {
-    const response = await axiosInstance.get("/service-requests/student-history", {
+    const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/service-requests/student-history`, {
       params: { PageNumber: pageNumber, PageSize: pageSize, SearchValue: searchValue || undefined },
     });
     return response.data;
@@ -57,9 +57,8 @@ export const studentServicesService = {
     pageSize = 10,
     searchValue = ""
   ): Promise<PaginatedResponse<ServiceItem>> => {
-    const response = await axiosInstance.get("/services", {
+    const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/services`, {
       params: {
-        collegeId: COLLEGE_ID,
         PageNumber: pageNumber,
         PageSize: pageSize,
         SearchValue: searchValue || undefined,
