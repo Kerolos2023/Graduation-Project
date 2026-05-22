@@ -30,7 +30,7 @@ export default function PreviousQualificationData() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 
@@ -86,12 +86,12 @@ export default function PreviousQualificationData() {
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
-    } catch (err) {
-      const errorsObject = err?.response?.data?.errors;
+    } catch (error: any) {
+      const errorsObject = error?.response?.data?.errors;
 
       if (errorsObject) {
         const allErrors = Object.values(errorsObject).flat();
-        setErrorMessage(allErrors[0] as string);
+        setErrorMessage(String(allErrors[0] ?? ""));
       }
 
     } finally {

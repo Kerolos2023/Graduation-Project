@@ -13,7 +13,7 @@ type AcademicYear = {
 type GraduationDetails = {
   gpa: number;
   graduationYear: string;
-  graduationSemester: "";
+  graduationSemester: string;
   graduationProjectName: string;
 };
 const TERM_OPTIONS = [
@@ -63,7 +63,7 @@ export default function GraduationDetailsPage() {
           {
             params: {
               PageNumber: 1,
-              PageSize: 100,
+              PageSize: 10,
               collegeId: COLLEGE_ID,
             },
           }

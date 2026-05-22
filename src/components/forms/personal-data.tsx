@@ -91,7 +91,7 @@ export default function PersonalData() {
       if (!studentId || !selectedProgramId) {
         return;
       }
-      setErrorMessage("");
+      setErrorMessage(null);
 
       await studentProfileService.updatePersonalData(
         formData,

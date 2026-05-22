@@ -28,7 +28,7 @@ export default function MilitaryData() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // FETCH
@@ -58,7 +58,7 @@ export default function MilitaryData() {
     if (!studentId) return;
 
     setLoading(true);
-    setResponseMessage("");
+    setResponseMessage(null);
     const payload = {
       studentId,
       militaryStatus: formData.militaryStatus,
@@ -72,12 +72,12 @@ export default function MilitaryData() {
       await studentProfileService.updateMilitaryData(payload, studentId);
 
       setResponseMessage("Updated successfully");
-    } catch (err) {
-      const errorsObject = err?.response?.data?.errors;
+    } catch (error: any) {
+      const errorsObject = error?.response?.data?.errors;
 
       if (errorsObject) {
         const allErrors = Object.values(errorsObject).flat();
-        setErrorMessage(allErrors[0] as string);
+        setErrorMessage(String(allErrors[0] ?? ""));
       }
     } finally {
       setLoading(false);

@@ -30,8 +30,8 @@ export default function StudentParentForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
+  const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
 
   useEffect(() => {
@@ -61,7 +61,8 @@ export default function StudentParentForm() {
     if (!studentId) return;
 
     setLoading(true);
-    setResponseMessage("");
+    setResponseMessage(null);
+    setErrorMessage(null);
 
     const payload = {
       studentId,
@@ -78,13 +79,13 @@ export default function StudentParentForm() {
       await studentProfileService.updateParentData(payload, studentId);
 
       setResponseMessage("Updated successfully");
-    } catch (err: any) {
-      const errorsObject = err?.response?.data?.errors;
+    } catch (error: any) {
+      const errorsObject = error?.response?.data?.errors;
 
       if (errorsObject) {
         const allErrors = Object.values(errorsObject).flat();
 
-        setErrorMessage(allErrors[0]);
+        setErrorMessage(String(allErrors[0] ?? ""));
 
       } 
     }finally {
