@@ -3,37 +3,37 @@ import { COLLEGE_ID } from "@/lib/constants";
 
 export const studentProfileService = {
   getPersonalData: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/personal-data`);
+    const res = await axiosInstance.get(`/students/personal-data`);
     return res.data;
   },
 
   getParentData: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/parent-data`);
+    const res = await axiosInstance.get(`/students/parent-data`);
     return res.data;
   },
 
   getContactData: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/contact-data`);
+    const res = await axiosInstance.get(`/students/contact-data`);
     return res.data;
   },
 
   getMilitaryData: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/military-data`);
+    const res = await axiosInstance.get(`/students/military-data`);
     return res.data;
   },
 
   getQualificationData: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/previous-qualification-data`);
+    const res = await axiosInstance.get(`/students/previous-qualification-data`);
     return res.data;
   },
 
   getAllData: async () => {
     const [personal, parent, contact, military, qualification] = await Promise.all([
-      axiosInstance.get(`/colleges/${COLLEGE_ID}/students/personal-data`),
-      axiosInstance.get(`/colleges/${COLLEGE_ID}/students/parent-data`),
-      axiosInstance.get(`/colleges/${COLLEGE_ID}/students/contact-data`),
-      axiosInstance.get(`/colleges/${COLLEGE_ID}/students/military-data`),
-      axiosInstance.get(`/colleges/${COLLEGE_ID}/students/previous-qualification-data`),
+      axiosInstance.get(`/students/personal-data`),
+      axiosInstance.get(`/students/parent-data`),
+      axiosInstance.get(`/students/contact-data`),
+      axiosInstance.get(`/students/military-data`),
+      axiosInstance.get(`/students/previous-qualification-data`),
     ]);
 
     return {
@@ -46,67 +46,91 @@ export const studentProfileService = {
   },
 
   getAcademicHistory: async () => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/academic-history`);
+    const res = await axiosInstance.get(`/students/academic-history`);
     return res.data || [];
   },
 
   getPersonalDataForStudent: async (studentId: string) => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/personal-data`, {
+    const res = await axiosInstance.get(`/students/personal-data`, {
       params: { studentId },
     });
     return res.data;
   },
 
-  updatePersonalData: async (data: Record<string, unknown>) => {
-    const res = await axiosInstance.put(`/colleges/${COLLEGE_ID}/students/personal-data`, data);
-    return res.data;
-  },
+  updatePersonalData: async (
+    data: Record<string, unknown>,
+    studentId: string,
+    academicProgramId: string
+  ) => {
+    const res = await axiosInstance.put(
+      `/students/personal-data`,
+      {
+        ...data,
+      },
+      {
+        params: {
+          studentId,
+          academicProgramId,
+        },
+      }
+    );
+
+  return res.data;
+},
 
   getContactDataForStudent: async (studentId: string) => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/contact-data`, {
+    const res = await axiosInstance.get(`/students/contact-data`, {
       params: { studentId },
     });
     return res.data;
   },
 
-  updateContactData: async (data: Record<string, unknown>) => {
-    const res = await axiosInstance.put(`/colleges/${COLLEGE_ID}/students/contact-data`, data);
+  updateContactData: async (data: Record<string, unknown>, studentId: string) => {
+    const res = await axiosInstance.put(`/students/contact-data`, data, {
+      params: { studentId },
+    });
     return res.data;
   },
 
   getParentDataForStudent: async (studentId: string) => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/parent-data`, {
+    const res = await axiosInstance.get(`/students/parent-data`, {
       params: { studentId },
     });
     return res.data;
   },
 
-  updateParentData: async (data: Record<string, unknown>) => {
-    const res = await axiosInstance.put(`/colleges/${COLLEGE_ID}/students/parent-data`, data);
+  updateParentData: async (data: Record<string, unknown>, studentId: string) => {
+    const res = await axiosInstance.put(`/students/parent-data`, data, {
+      params: { studentId },
+    });
     return res.data;
   },
 
   getMilitaryDataForStudent: async (studentId: string) => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/military-data`, {
+    const res = await axiosInstance.get(`/students/military-data`, {
       params: { studentId },
     });
     return res.data;
   },
 
-  updateMilitaryData: async (data: Record<string, unknown>) => {
-    const res = await axiosInstance.put(`/colleges/${COLLEGE_ID}/students/military-data`, data);
+  updateMilitaryData: async (data: Record<string, unknown>, studentId: string) => {
+    const res = await axiosInstance.put(`/students/military-data`, data, {
+      params: { studentId },
+    });
     return res.data;
   },
 
   getQualificationDataForStudent: async (studentId: string) => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/previous-qualification-data`, {
+    const res = await axiosInstance.get(`/students/previous-qualification-data`, {
       params: { studentId },
     });
     return res.data;
   },
 
-  updateQualificationData: async (data: Record<string, unknown>) => {
-    const res = await axiosInstance.put(`/colleges/${COLLEGE_ID}/students/previous-qualification-data`, data);
+  updateQualificationData: async (data: Record<string, unknown>, studentId: string) => {
+    const res = await axiosInstance.put(`/students/previous-qualification-data`, data, {
+      params: { studentId },
+    });
     return res.data;
   },
 };

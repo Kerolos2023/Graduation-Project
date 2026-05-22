@@ -75,7 +75,7 @@ export default function StudentParentForm() {
       guardianAddress: formData.guardianAddress,
     };
     try {
-      await studentProfileService.updateParentData(payload);
+      await studentProfileService.updateParentData(payload, studentId);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);

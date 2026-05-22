@@ -1,9 +1,6 @@
-
-
-
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +13,7 @@ import {
   Loader2,
   ExternalLink,
   AlertCircle,
- } from "lucide-react";
+} from "lucide-react";
 import { examTermsService } from '@/services/examServices';
 import { Badge } from "@/components/ui/badge";
 import { useAcademicContext } from '@/hooks/useAcademicContext';
@@ -36,6 +33,10 @@ export default function ExamTermsPage() {
   const [fetching, setFetching] = useState(true);
   const [searchValue, setSearchValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+   const formRef = useRef<HTMLDivElement>(null);
+  
+  const [togglingIds, setTogglingIds] = useState<Record<string, boolean>>({});
 
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
     text: "",
@@ -73,13 +74,42 @@ export default function ExamTermsPage() {
     }
   };
 
+  
+  const handleStartEdit = (item: any) => {
+    const typeObj = ExamTypeOptions.find(t => t.name === item.examType);
+    setEditingId(item.id);
+    setFormData({
+      examType: typeObj ? typeObj.id.toString() : "",
+      startDate: item.startDate || "",
+      endDate: item.endDate || ""
+    });
+    
+    
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   const handleToggleStatus = async (id: string) => {
     if (!selectedProgramId) return;
+    
+    const previousExams = [...exams];
+
+    setExams(prevExams => 
+      prevExams.map(exam => 
+        exam.id === id ? { ...exam, isPublished: !exam.isPublished } : exam
+      )
+    );
+    
+    setTogglingIds(prev => ({ ...prev, [id]: true }));
+
     try {
       await examTermsService.togglePublisher(selectedProgramId, id);
-      loadData();
     } catch (error) {
+      setExams(previousExams);
       setStatusMessage({ text: "Failed to update status", type: 'error' });
+    } finally {
+      setTogglingIds(prev => ({ ...prev, [id]: false }));
     }
   };
 
@@ -168,7 +198,7 @@ export default function ExamTermsPage() {
         </div>
       )}
 
-       <div className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB]">
+        <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
             {editingId ? "Updating Exam Term" : "Adding Exam Term"}
@@ -238,7 +268,7 @@ export default function ExamTermsPage() {
           </div>
         </div>
 
-         <div className="hidden md:grid grid-cols-[50px_1fr_1fr_1fr_250px] px-6 py-4 bg-slate-50 rounded-xl mb-4  font-semibold text-[#181D27] tracking-wider">
+         <div className="hidden md:grid grid-cols-[50px_1fr_1fr_1fr_250px] px-6 py-4 bg-slate-50 rounded-xl mb-4   font-semibold text-[#181D27] tracking-wider">
           <div className="flex justify-center"></div>
           <div>Name</div>
           <div className="text-center">Start Date</div>
@@ -262,7 +292,7 @@ export default function ExamTermsPage() {
                 <div className="flex justify-between items-center w-full md:w-auto md:justify-center">
                   <div className="w-4 h-4" /> 
                   <div className="md:hidden flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => {/* Edit Logic */}} className="h-9 w-9 text-blue-500 bg-blue-50/50">
+                    <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50">
                       <Edit2 size={16} />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-9 w-9 text-red-500 bg-red-50/50">
@@ -288,16 +318,7 @@ export default function ExamTermsPage() {
 
                 <div className="w-full md:w-auto flex justify-end items-center gap-2">
                   <div className="hidden md:flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => {
-                      const typeObj = ExamTypeOptions.find(t => t.name === item.examType);
-                      setEditingId(item.id);
-                      setFormData({
-                        examType: typeObj ? typeObj.id.toString() : "",
-                        startDate: item.startDate || "",
-                        endDate: item.endDate || ""
-                      });
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }} className="h-8 w-8 text-blue-500 hover:bg-blue-100 transition-colors">
+                    <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} className="h-8 w-8 text-blue-500 hover:bg-blue-100 transition-colors">
                       <Edit2 size={16} />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-8 w-8 text-red-500 hover:bg-red-100 transition-colors">
@@ -305,17 +326,21 @@ export default function ExamTermsPage() {
                     </Button>
                   </div>
                   
-                  
                   <Button 
                     variant="outline" 
+                    disabled={togglingIds[item.id]} 
                     onClick={() => handleToggleStatus(item.id)} 
-                    className={`h-8 min-w-[90px] rounded-lg font-bold text-[10px] border transition-all ${
+                    className={`h-8 min-w-[90px] rounded-lg font-bold text-[10px] border transition-all flex items-center justify-center gap-1 ${
                       item.isPublished 
                         ? 'text-blue-600 border-blue-100 bg-blue-50 hover:bg-blue-100' 
                         : 'text-amber-600 border-amber-100 bg-amber-50 hover:bg-amber-100'
                     }`}
                   >
-                    {item.isPublished ? 'Published' : 'Draft'}
+                    {togglingIds[item.id] ? (
+                      <Loader2 className="animate-spin w-3 h-3" />
+                    ) : (
+                      item.isPublished ? 'Published' : 'Draft'
+                    )}
                   </Button>
 
                   <Button 
@@ -337,11 +362,3 @@ export default function ExamTermsPage() {
 function cn(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
-
-
-
-
-
-
-
-

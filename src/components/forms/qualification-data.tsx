@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
+import { ADMISSION_TYPE_OPTIONS } from "@/lib/constants";
 
 type PreviousQualificationFormData = {
   schoolName: string;
@@ -80,21 +81,24 @@ export default function PreviousQualificationData() {
     };
 
     try {
-      await studentProfileService.updateQualificationData(payload);
+      await studentProfileService.updateQualificationData(payload, studentId);
 
       setResponseMessage("Updated successfully");
       setIsEditPopupOpen(false);
-    } catch (err: any) {
-      setResponseMessage(
-        err.response?.data?.message || "Something went wrong"
-      );
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+
+      setResponseMessage(message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white p-9 shadow-sm rounded-[20px]">
+    <div className="bg-white p-9 shadow-sm rounded-4xl">
       <form
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
         onSubmit={handleSubmit}
@@ -105,22 +109,38 @@ export default function PreviousQualificationData() {
               {key.replace(/([A-Z])/g, " $1")}
             </label>
 
-            <input
-              type={key === "admissionType" ? "number" : "text"}
-              value={value}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [key]:
-                    key === "admissionType"
-                      ? e.target.value === ""
-                        ? ""
-                        : Number(e.target.value)
-                      : e.target.value,
-                })
-              }
-              className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-            />
+            {key === "admissionType" ? (
+              <select
+                value={value}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    admissionType:
+                      e.target.value === "" ? "" : Number(e.target.value),
+                  })
+                }
+                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              >
+                <option value="">Select Admission Type</option>
+                {ADMISSION_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={value}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [key]: e.target.value,
+                  })
+                }
+                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              />
+            )}
           </div>
         ))}
 
