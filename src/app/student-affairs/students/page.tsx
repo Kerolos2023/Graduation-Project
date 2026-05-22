@@ -80,7 +80,7 @@ export default function StudentsPage() {
     const [isLoading, setIsLoading] = useState(false);
     
     // ── Context States ─────────────────────────────────────────────────────────
-    const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, isAddPopupOpen, setActiveTab } = useStudentContext();
+    const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, isAddPopupOpen, isEditPopupOpen, setActiveTab } = useStudentContext();
     const { selectedProgramId } = useAcademicContext();
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
@@ -114,8 +114,10 @@ export default function StudentsPage() {
     }, [pageNumber, pageSize, searchValue, selectedProgramId]);
 
     useEffect(() => {
-        fetchStudents();
-    }, [fetchStudents]);
+        if (!isAddPopupOpen && !isEditPopupOpen) {
+            fetchStudents();
+        }
+    }, [fetchStudents, isAddPopupOpen, isEditPopupOpen]);
 
     // ── Delete ─────────────────────────────────────────────────────────────────
     const handleDeleteClick = async (student: Student) => {
