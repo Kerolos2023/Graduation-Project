@@ -299,16 +299,29 @@ export default function CourseResultPage() {
 
   // ── Load Levels ────────────────────────────────────────────────────────────────
   useEffect(() => {
+    // Reset selections and table immediately when program changes
+    setLevels([]);
+    setSelectedLevelId("");
+    setSemesterType("");
+    setCourseOfferings([]);
+    setSelectedCourseOfferingId("");
+    setGroupNumber("");
+    setSearchValue("");
+    setSortColumn("");
+    setPageNumber(1);
+    setStudents([]);
+    setAssessmentHeaders([]);
+    setCourseTotalGrade(0);
+    setTotalPages(1);
+    setTotalCount(0);
+    setHasFetched(false);
+
     if (!selectedProgramId) return;
+
     const load = async () => {
       try {
         const response = await levelService.getAllLevels(selectedProgramId, { PageNumber: 1, PageSize: 1000 });
-        const items = response.items;
-        setLevels(items);
-        setSelectedLevelId("");
-        setSemesterType("");
-        setCourseOfferings([]);
-        setSelectedCourseOfferingId("");
+        setLevels(response.items);
       } catch (err) {
         console.error("Error fetching levels:", err);
       }
@@ -389,44 +402,72 @@ export default function CourseResultPage() {
     : [];
 
   // ── Fetch Students ────────────────────────────────────────────────────────
-  const fetchStudents = useCallback(async () => {
-    if (!selectedProgramId || !selectedCourseOfferingId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params: GetStudentsControlParams = {
-        CourseOfferingId: selectedCourseOfferingId,
-        PageNumber: pageNumber,
-        PageSize: PAGE_SIZE,
-        ...(groupNumber ? { GroupNumber: Number(groupNumber) } : {}),
-        ...(searchValue ? { SearchValue: searchValue } : {}),
-        ...(sortColumn ? { SortColumn: sortColumn } : {}),
-      };
+  useEffect(() => {
+    let isMounted = true;
 
-      const res = await staffControlService.getStudents(
-        selectedProgramId,
-        params
-      );
-      const data = res.data;
-      setStudents(data.items ?? []);
-      setTotalPages(data.totalPages ?? 1);
-      setTotalCount(data.totalCount ?? 0);
-      setHasFetched(true);
-    } catch (err: unknown) {
-      console.error("Error fetching students:", err);
-      const axiosError = err as {
-        response?: { data?: { message?: string; title?: string } };
-        message?: string;
-      };
-      setError(
-        axiosError?.response?.data?.message ||
-        axiosError?.response?.data?.title ||
-        axiosError?.message ||
-        "Failed to load students"
-      );
-    } finally {
+    if (!selectedProgramId || !selectedCourseOfferingId) {
+      // Reset table when course is cleared or program changes
+      setStudents([]);
+      setAssessmentHeaders([]);
+      setCourseTotalGrade(0);
+      setTotalPages(1);
+      setTotalCount(0);
+      setHasFetched(false);
       setIsLoading(false);
+      return;
     }
+
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const params: GetStudentsControlParams = {
+          CourseOfferingId: selectedCourseOfferingId,
+          PageNumber: pageNumber,
+          PageSize: PAGE_SIZE,
+          ...(groupNumber ? { GroupNumber: Number(groupNumber) } : {}),
+          ...(searchValue ? { SearchValue: searchValue } : {}),
+          ...(sortColumn ? { SortColumn: sortColumn } : {}),
+        };
+
+        const res = await staffControlService.getStudents(
+          selectedProgramId,
+          params
+        );
+        
+        if (!isMounted) return;
+
+        const data = res.data;
+        setStudents(data.items ?? []);
+        setTotalPages(data.totalPages ?? 1);
+        setTotalCount(data.totalCount ?? 0);
+        setHasFetched(true);
+      } catch (err: unknown) {
+        if (!isMounted) return;
+        
+        console.error("Error fetching students:", err);
+        const axiosError = err as {
+          response?: { data?: { message?: string; title?: string } };
+          message?: string;
+        };
+        setError(
+          axiosError?.response?.data?.message ||
+          axiosError?.response?.data?.title ||
+          axiosError?.message ||
+          "Failed to load students"
+        );
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchStudents();
+
+    return () => {
+      isMounted = false;
+    };
   }, [
     selectedProgramId,
     selectedCourseOfferingId,
@@ -435,20 +476,6 @@ export default function CourseResultPage() {
     sortColumn,
     pageNumber,
   ]);
-
-  useEffect(() => {
-    if (selectedProgramId && selectedCourseOfferingId) {
-      fetchStudents();
-    } else {
-      // Reset table when course is cleared
-      setStudents([]);
-      setAssessmentHeaders([]);
-      setCourseTotalGrade(0);
-      setTotalPages(1);
-      setTotalCount(0);
-      setHasFetched(false);
-    }
-  }, [fetchStudents]);
 
   // ── Handle Degree Update ──────────────────────────────────────────────────
   const handleDegreeUpdated = (
