@@ -1,22 +1,7 @@
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Pencil, Trash2,Search,Loader2, ChevronsUpDown, X } from "lucide-react"
+import { Pencil, Trash2, Search, Loader2, ChevronsUpDown, X } from "lucide-react"
 import { staffService } from "@/services/stuffServices"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,13 +19,12 @@ export default function StaffPage() {
   const [staff, setStaff] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  const formRef = useRef<HTMLDivElement>(null);
+
   const [selectedRoles, setSelectedRoles] = useState<string[]>(["Staff"]);
   const [openSelect, setOpenSelect] = useState(false);
 
+  const formRef = useRef<HTMLDivElement>(null);
 
   const scrollToForm = () => {
     if (!formRef.current) return;
@@ -111,10 +95,9 @@ export default function StaffPage() {
       (innerForm.elements.namedItem("phoneNumber") as HTMLInputElement).value = item.phoneNumber || "";
     }
 
-    
     setTimeout(() => {
       scrollToForm();
-    }, 50);  
+    }, 50);
   };
 
   const cancelEdit = () => {
@@ -132,10 +115,6 @@ export default function StaffPage() {
     } catch (error) { console.error(error); }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const toggleRole = (value: string) => {
     setSelectedRoles(prev => prev.includes(value) ? prev.filter(r => r !== value) : [...prev, value]);
   };
@@ -143,7 +122,7 @@ export default function StaffPage() {
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans text-neutral-900">
 
-        <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-6">
+      <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-lg md:text-xl font-bold text-[#0A0D12]">
             {editingId ? "Update Staff" : "Add Staff"}
@@ -170,10 +149,15 @@ export default function StaffPage() {
             <label className="text-sm font-semibold text-[#090909]">Username</label>
             <Input name="userName" placeholder="Username" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Password</label>
-            <Input name="password" type="password" placeholder={editingId ? "Leave empty to keep current" : "Password"} required={!editingId} className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
-          </div>
+
+
+          {!editingId && (
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-[#090909]">Password</label>
+              <Input name="password" type="password" placeholder="Password" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-[#090909]">Email</label>
             <Input name="email" type="email" placeholder="Email" className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
@@ -183,8 +167,9 @@ export default function StaffPage() {
             <Input name="phoneNumber" placeholder="Phone Number" required className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-600 bg-white" />
           </div>
 
+
           <div className="col-span-full space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Permissions</label>
+            <label className="text-sm font-semibold text-[#090909]">Permissions (Roles)</label>
             <Popover open={openSelect} onOpenChange={setOpenSelect}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full h-auto min-h-[44px] justify-between rounded-xl border-slate-200 bg-white px-4 py-2 flex-wrap gap-2 text-slate-500 font-normal">
@@ -225,7 +210,7 @@ export default function StaffPage() {
         </form>
       </div>
 
-       <div className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
+      <div className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Staff List</h2>
@@ -242,10 +227,8 @@ export default function StaffPage() {
         </div>
 
         <div className="space-y-3">
-           <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4  text-[#181D27] font-semibold tracking-wider border border-[#E9EAEB]">
+          <div className="hidden md:grid grid-cols-[1fr_100px] px-6 py-4 bg-[#FAFAFA] rounded-xl mb-4 text-[#181D27] font-semibold tracking-wider border border-[#E9EAEB]">
             <div>Name</div>
-            <div>Username</div>
-            <div>Permissions</div>
             <div className="text-right pr-4">Actions</div>
           </div>
 
@@ -258,29 +241,13 @@ export default function StaffPage() {
           ) : (
             filteredStaff.map((item) => (
               <div key={item.id} className={cn(
-                "flex flex-col md:grid md:grid-cols-[1.5fr_1.5fr_2fr_100px] items-start md:items-center p-4 md:px-6 md:py-5 border rounded-2xl transition-all bg-white gap-3 md:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200",
+                "flex flex-col md:grid md:grid-cols-[1fr_100px] items-start md:items-center p-4 md:px-6 md:py-5 border rounded-2xl transition-all bg-white gap-3 md:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200",
                 editingId === item.id && "border-blue-200 bg-blue-50/30"
               )}>
-                
+
                 <div className="flex flex-col md:block w-full md:w-auto">
                   <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Name</span>
                   <div className="font-bold md:font-medium text-slate-900 text-base md:text-sm truncate">{item.name}</div>
-                </div>
-
-                <div className="flex flex-col md:block w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Username</span>
-                  <div className="text-slate-600 text-sm">{item.userName}</div>
-                </div>
-
-                <div className="flex flex-col md:block w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Permissions</span>
-                  <div className="flex flex-wrap gap-1">
-                    {item.roles?.map((r: any, i: number) => (
-                      <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 text-[10px] font-medium border-none py-0 px-2">
-                        {r}
-                      </Badge>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="w-full md:w-auto flex justify-end items-center gap-2">
