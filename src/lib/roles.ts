@@ -26,12 +26,12 @@ export const roleLabels: Record<string, string> = {
 };
 
 // Role → which module cards appear in the settings switcher
-// AcademicAdvising can switch to any non-student module (student-affairs + staff)
+// AcademicAdvising has full access to all non-student modules
 // Staff can only switch to the staff module
 export const roleModuleAccess: Record<string, string[]> = {
   Student:          [],                                  // no switching
   Staff:            ["Staff", "StudentAdvisor"],          // Staff Portal + Student Advisor
-  AcademicAdvising: ["AcademicAdvising", "Staff"],        // Student Affairs + Staff Portal
+  AcademicAdvising: ["AcademicAdvising", "Staff", "StudentAdvisor"], // full access to all modules
 };
 
 // ─── Is this a multi-role user? ───────────────────────────────────────────────
