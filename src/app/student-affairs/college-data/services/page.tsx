@@ -116,7 +116,6 @@ export default function ServicesPage() {
     }
   };
 
-  // ✔️ FIX: safe truncate
   const truncateDescription = (text: string) => {
     if (!text) return "";
     const words = text.split(" ");
