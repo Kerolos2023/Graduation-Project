@@ -20,7 +20,6 @@ export default function ServiceRequestsPage() {
         params: {
           pageNumber,
           pageSize,
-          collegeId: COLLEGE_ID,
         },
       });
 
