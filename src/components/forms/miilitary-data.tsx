@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 import { MILITARY_STATUS_OPTIONS } from "@/lib/constants";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type MilitaryFormData = {
   militaryStatus: number | "";
@@ -27,9 +28,8 @@ export default function MilitaryData() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
-
-
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // FETCH
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function MilitaryData() {
     if (!studentId) return;
 
     setLoading(true);
-    setResponseMessage("");
+    setResponseMessage(null);
     const payload = {
       studentId,
       militaryStatus: formData.militaryStatus,
@@ -72,14 +72,13 @@ export default function MilitaryData() {
       await studentProfileService.updateMilitaryData(payload, studentId);
 
       setResponseMessage("Updated successfully");
-      setIsEditPopupOpen(false);
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : undefined;
+    } catch (error: any) {
+      const errorsObject = error?.response?.data?.errors;
 
-      setResponseMessage(message || "Something went wrong");
+      if (errorsObject) {
+        const allErrors = Object.values(errorsObject).flat();
+        setErrorMessage(String(allErrors[0] ?? ""));
+      }
     } finally {
       setLoading(false);
     }
@@ -92,30 +91,32 @@ export default function MilitaryData() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
         {Object.entries(formData).map(([key, value]) => (
-          <div key={key} className="flex flex-col gap-1">
+          <div key={key} className="flex flex-col gap-1 min-w-0">
             <label className="text-[13px] text-gray-500 capitalize">
               {key.replace(/([A-Z])/g, " $1")}
             </label>
 
             {key === "militaryStatus" ? (
-              <select
-                value={value as number | ""}
-                onChange={(e) =>
+              <Select
+                value={value === "" ? "" : String(value)}
+                onValueChange={(val) =>
                   setFormData({
                     ...formData,
-                    militaryStatus:
-                      e.target.value === "" ? "" : Number(e.target.value),
+                    militaryStatus: val === "" ? "" : Number(val),
                   })
                 }
-                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
               >
-                <option value="">Select Military Status</option>
-                {MILITARY_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <SelectValue placeholder="Select Military Status" />
+                </SelectTrigger>
+                <SelectContent className="w-full max-w-full min-w-0">
+                  {MILITARY_STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={String(option.value)} title={option.label}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <input
                 type={
@@ -133,7 +134,11 @@ export default function MilitaryData() {
             )}
           </div>
         ))}
-
+{errorMessage && (
+          <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {errorMessage}
+          </div>
+        )}
         <button
           type="submit"
           disabled={loading}

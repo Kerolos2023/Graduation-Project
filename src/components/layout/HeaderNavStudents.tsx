@@ -12,16 +12,18 @@ export const HeaderNavigation = () => {
     { label: "Contact Information", key: "contact" },
     { label: "Military Data", key: "military" },
     { label: "Qualification Data", key: "qualification" },
+    { label: "Change Program", key: "change-program" },
+    { label: "Graduation Project", key: "graduation-project" },
   ];
 
   return (
-    <div className="w-full flex gap-2 p-3 bg-white rounded-2xl border">
+    <div className="w-full flex flex-nowrap gap-2 p-3 bg-white rounded-2xl border overflow-x-auto scrollbar-hide">
       {navLinks.map((item) => (
         <button
           key={item.key}
           onClick={() => setActiveTab(item.key as any)}
           className={cn(
-            "px-4 py-2 rounded-xl text-sm font-semibold",
+            "min-w-max whitespace-nowrap px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold",
             activeTab === item.key
               ? "bg-blue-100 text-blue-600"
               : "text-gray-500 hover:bg-gray-100"

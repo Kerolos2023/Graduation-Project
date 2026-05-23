@@ -9,6 +9,8 @@ import ParentData from "./parent-data";
 import ContactInformation from "./contact-information";
 import MilitaryData from "./miilitary-data";
 import QualificationData from "./qualification-data";
+import ChangeProgramPage from "./change-program";
+import GraduationProjectPage from "./graduation-project";
 
 export default function StudentFormsPopup() {
   const { activeTab, isEditPopupOpen, setIsEditPopupOpen } =
@@ -28,6 +30,10 @@ export default function StudentFormsPopup() {
         return <MilitaryData />;
       case "qualification":
         return <QualificationData />;
+      case "change-program":
+        return <ChangeProgramPage />;
+      case "graduation-project":
+        return <GraduationProjectPage />;
       default:
         return <PersonalData />;
     }

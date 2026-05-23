@@ -19,6 +19,7 @@ import {
     Clock,
     LayoutGrid,
     UserCheck,
+    ChartBarIncreasing,
 } from 'lucide-react';
 import { PiBuildingOfficeLight } from "react-icons/pi";
 import { FaUniversity } from "react-icons/fa";
@@ -296,7 +297,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         isActive={pathname?.includes('/view-acc-rej-service')}
                         onClick={onClose}
                     />
-
+                    <NavItem
+                        icon={ChartBarIncreasing}
+                        label="Services Requests History"
+                        href="/student-affairs/college-data/service-request"
+                        isActive={pathname?.includes('/service-request')}
+                        onClick={onClose}
+                    />
                 </nav>
 
 

@@ -144,6 +144,12 @@ export default function StudentsPage() {
             <PopupForm
                 open={isAddPopupOpen}
                 setOpen={setIsAddPopupOpen}
+                onSuccess={(studentId) => {
+                    if (!studentId) return;
+                    setStudentId(studentId);
+                    setActiveTab("personal");
+                    setIsEditPopupOpen(true);
+                }}
             />
 
             {/* ── No program selected guard ── */}

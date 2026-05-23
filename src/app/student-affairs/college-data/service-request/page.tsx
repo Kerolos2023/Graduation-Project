@@ -5,7 +5,7 @@ import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
 import { COLLEGE_ID } from "@/lib/constants";
 
-const API = "/service-requests/history";
+const API = `/colleges/${COLLEGE_ID}/service-requests/history`;
 
 export default function ServiceRequestsPage() {
   const [data, setData] = useState<any[]>([]);
@@ -21,13 +21,7 @@ export default function ServiceRequestsPage() {
       const res = await axiosInstance.get(
         `${API}?pageNumber=${pageNumber}&pageSize=${pageSize}${
           search ? `&status=${search}` : ""
-        }`,
-        {
-          params: {
-            collegeId: COLLEGE_ID,
-          },
-        }
-      );
+        }`);
 
       setData(res.data.items || []);
       setTotalPages(res.data.totalPages || 1);

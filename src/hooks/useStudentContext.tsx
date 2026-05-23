@@ -7,7 +7,10 @@ type ActiveTab =
   | "parent"
   | "contact"
   | "military"
-  | "qualification";
+  | "qualification"
+  | "change-program"
+  | "graduation-project"
+  ;
 
 interface StudentContextType {
   studentId: string | null;

@@ -13,7 +13,7 @@ export default function PopupForm({
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (studentId: string) => void;
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -73,7 +73,7 @@ export default function PopupForm({
     setLoading(true);
 
     try {
-      await axiosInstance.post(
+      const response = await axiosInstance.post(
         `/students`,
         {
           name: formData.name,
@@ -90,6 +90,9 @@ export default function PopupForm({
         }
       );
 
+      const newStudentId =
+        response.data?.id || response.data?.studentId || response.data?.student?.id;
+
       setMessage("Student added successfully");
       setMessageType("success");
 
@@ -100,9 +103,13 @@ export default function PopupForm({
         username: "",
         password: "",
       });
-
+      
       setOpen(false);
-      onSuccess?.();
+      if (newStudentId) {
+        onSuccess?.(newStudentId);
+      } else {
+        onSuccess?.("");
+      }
     } catch (err: any) {
       setMessage(getErrorMessage(err));
       setMessageType("error");

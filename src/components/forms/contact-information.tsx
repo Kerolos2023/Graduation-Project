@@ -17,8 +17,7 @@ export default function ContactInformation() {
 
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
-
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // FETCH
   useEffect(() => {
@@ -59,11 +58,16 @@ export default function ContactInformation() {
       await studentProfileService.updateContactData(payload, studentId);
 
       setResponseMessage("Updated successfully");
-      setIsEditPopupOpen(false);
     } catch (err: any) {
-      setResponseMessage(
-        err.response?.data?.message || "Something went wrong"
-      );
+      const errorsObject = err?.response?.data?.errors;
+
+      if (errorsObject) {
+        const allErrors = Object.values(
+  errorsObject as Record<string, unknown>
+).flat();
+
+setErrorMessage(String(allErrors[0] ?? ""));
+      }
     } finally {
       setLoading(false);
     }
@@ -91,7 +95,11 @@ export default function ContactInformation() {
             />
           </div>
         ))}
-
+      {errorMessage && (
+          <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {errorMessage}
+          </div>
+        )}
         <button
           type="submit"
           disabled={loading}

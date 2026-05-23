@@ -5,7 +5,6 @@ import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
 import { COLLEGE_ID } from "@/lib/constants";
 
-const API = "/service-requests";
 
 export default function ServiceRequestsPage() {
   const [data, setData] = useState<any[]>([]);
@@ -17,11 +16,10 @@ export default function ServiceRequestsPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await axiosInstance.get(API, {
+      const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/service-requests`, {
         params: {
           pageNumber,
           pageSize,
-          collegeId: COLLEGE_ID,
         },
       });
 
@@ -38,7 +36,7 @@ export default function ServiceRequestsPage() {
 
   const handleAccept = async (id: string) => {
     try {
-      await axiosInstance.patch(`/service-requests/${id}/accept`);
+      await axiosInstance.patch(`/colleges/${COLLEGE_ID}/service-requests/${id}/accept`);
       fetchData();
     } catch (e) {
       console.error(e);
@@ -47,7 +45,7 @@ export default function ServiceRequestsPage() {
 
   const handleReject = async (id: string) => {
     try {
-      await axiosInstance.patch(`/service-requests/${id}/reject`);
+      await axiosInstance.patch(`/colleges/${COLLEGE_ID}/service-requests/${id}/reject`);
       fetchData();
     } catch (e) {
       console.error(e);
