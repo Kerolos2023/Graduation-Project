@@ -45,8 +45,8 @@ src/
 
 ## 🌐 Live Demo
 
-heartfelt-lolly-d30443.netlify.app
-
+[heartfelt-lolly-d30443.netlify.app
+](https://heartfelt-lolly-d30443.netlify.app/)
 ---
 
 ## 🔑 Demo Admin Account
