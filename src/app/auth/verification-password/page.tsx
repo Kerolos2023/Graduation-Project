@@ -88,7 +88,7 @@ export default function VerificationPage() {
         try {
             await authService.sendResetPassword({
                 email,
-                userName: userName || email,
+                userName: userName,
             });
             alert("A new code has been sent to your email.");
             setTimeLeft(60);
