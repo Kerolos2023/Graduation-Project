@@ -37,10 +37,19 @@ export default function ChangePasswordAdminPage() {
       setStatus("success");
       setForm({ userName: "", newPassword: "" });
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      setErrorMsg(
-        axiosErr?.response?.data?.message ?? "Something went wrong. Please try again."
-      );
+      const axiosErr = err as { response?: { data?: { message?: string; errors?: string[]; title?: string } } };
+      const data = axiosErr?.response?.data;
+      
+      let errMsg = "Something went wrong. Please try again.";
+      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        errMsg = data.errors.join(", ");
+      } else if (data?.message) {
+        errMsg = data.message;
+      } else if (data?.title) {
+        errMsg = data.title;
+      }
+
+      setErrorMsg(errMsg);
       setStatus("error");
     }
   };
