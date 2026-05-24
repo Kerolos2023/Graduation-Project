@@ -218,6 +218,20 @@ export default function AssignAdvisorPage() {
   const canAssign = selectedUnassigned.size > 0 && !!selectedAdvisorId && !isAssigning;
   const canUnassign = selectedAssigned.size > 0 && !isUnassigning;
 
+  // ── Custom advisor dropdown ───────────────────────────────────────────────
+  const [advisorDropdownOpen, setAdvisorDropdownOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAdvisorDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="w-full flex flex-col gap-6 pb-8 font-inter">
@@ -244,24 +258,55 @@ export default function AssignAdvisorPage() {
             <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
               Academic Advisor
             </label>
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               {isLoadingAdvisors ? (
                 <div className="h-11 w-64 rounded-[12px] border border-gray-200 bg-[#f8f9fc] flex items-center px-4 gap-2 text-gray-400 text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" /> Loading…
                 </div>
               ) : (
                 <>
-                  <select
-                    value={selectedAdvisorId}
-                    onChange={(e) => setSelectedAdvisorId(e.target.value)}
-                    className="appearance-none h-11 w-64 pl-4 pr-10 rounded-[12px] border border-gray-200 bg-[#f8f9fc] text-[13px] font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                  {/* Trigger button */}
+                  <button
+                    type="button"
+                    onClick={() => setAdvisorDropdownOpen((prev) => !prev)}
+                    className="appearance-none h-11 w-64 pl-4 pr-10 rounded-[12px] border border-gray-200 bg-[#f8f9fc] text-[13px] font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer text-left truncate"
                   >
-                    {advisors.length === 0 && <option value="">No advisors found</option>}
-                    {advisors.map((a) => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    {advisors.length === 0
+                      ? "No advisors found"
+                      : selectedAdvisorName || "Select advisor"}
+                  </button>
+                  <ChevronDown
+                    className={cn(
+                      "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform duration-200",
+                      advisorDropdownOpen && "rotate-180"
+                    )}
+                  />
+
+                  {/* Dropdown list — shows 5 items, scrolls for the rest */}
+                  {advisorDropdownOpen && advisors.length > 0 && (
+                    <ul
+                      className="absolute z-50 mt-1 w-64 rounded-[12px] border border-gray-200 bg-white shadow-lg overflow-y-auto"
+                      style={{ maxHeight: `${5 * 40}px` }}
+                    >
+                      {advisors.map((a) => (
+                        <li
+                          key={a.id}
+                          onClick={() => {
+                            setSelectedAdvisorId(a.id);
+                            setAdvisorDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "h-10 flex items-center px-4 text-[13px] cursor-pointer transition-colors",
+                            a.id === selectedAdvisorId
+                              ? "bg-blue-50 text-blue-700 font-semibold"
+                              : "text-gray-700 hover:bg-gray-50"
+                          )}
+                        >
+                          <span className="truncate">{a.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               )}
             </div>
