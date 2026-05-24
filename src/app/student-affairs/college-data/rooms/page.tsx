@@ -5,18 +5,16 @@ import { Search, Pencil, Trash2, Printer } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
 
-const BUILDING_API = "/Building";
-
 const ROOM_TYPES = [
-  { value: 1, label: "Lecture Hall" },
-  { value: 2, label: "Class Room" },
-  { value: 3, label: "Computer Lab" },
-  { value: 4, label: "Scientific Lab" },
-  { value: 5, label: "Workshop" },
-  { value: 6, label: "Studio" },
-  { value: 7, label: "Clinic" },
-  { value: 8, label: "Language Lab" },
-  { value: 9, label: "Drawing Room" },
+  { id: 1, name: "LectureHall", label: "Lecture Hall" },
+  { id: 2, name: "ClassRoom", label: "Class Room" },
+  { id: 3, name: "ComputerLab", label: "Computer Lab" },
+  { id: 4, name: "ScientificLab", label: "Scientific Lab" },
+  { id: 5, name: "Workshop", label: "Workshop" },
+  { id: 6, name: "Studio", label: "Studio" },
+  { id: 7, name: "Clinic", label: "Clinic" },
+  { id: 8, name: "LanguageLab", label: "Language Lab" },
+  { id: 9, name: "DrawingRoom", label: "Drawing Room" },
 ];
 
 export default function RoomsPage() {
@@ -24,54 +22,64 @@ export default function RoomsPage() {
   const [buildings, setBuildings] = useState<any[]>([]);
 
   const [selectedBuildingId, setSelectedBuildingId] = useState("");
+
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize] = useState(10);
+
   const [searchValue, setSearchValue] = useState("");
+
   const [totalPages, setTotalPages] = useState(1);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
     capacity: "",
     roomNumber: "",
-    roomTypeId: "",
+    type: "",
   });
-
-  // ================= Fetch Rooms =================
-  const fetchRooms = useCallback(async () => {
-    if (!selectedBuildingId) return;
-
-    setIsLoading(true);
-
-    try {
-      const url = `/buildings/${selectedBuildingId}/rooms/all?PageNumber=${pageNumber}&PageSize=${pageSize}${
-        searchValue ? `&SearchValue=${searchValue}` : ""
-      }`;
-
-      const res = await axiosInstance.get(url);
-
-      setRooms(res.data?.items || []);
-      setTotalPages(res.data?.totalPages || 1);
-    } catch (err) {
-      console.error("Error fetching rooms:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedBuildingId, pageNumber, pageSize, searchValue]);
 
   // ================= Fetch Buildings =================
   const fetchBuildings = async () => {
     try {
-      const res = await axiosInstance.get(`buildings?PageNumber=${pageNumber}&PageSize=${pageSize}${
-        searchValue ? `&SearchValue=${searchValue}` : ""
-      }`);
+      const res = await axiosInstance.get(
+        `/buildings?PageNumber=1&PageSize=100`
+      );
+
       setBuildings(res.data?.items || []);
     } catch (err) {
       console.error("Error fetching buildings:", err);
     }
   };
+
+  // ================= Fetch Rooms =================
+  const fetchRooms = useCallback(async () => {
+    if (!selectedBuildingId) {
+      setRooms([]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await axiosInstance.get(
+        `/buildings/${selectedBuildingId}/rooms?PageNumber=${pageNumber}&PageSize=${pageSize}${
+          searchValue ? `&SearchValue=${searchValue}` : ""
+        }`
+      );
+
+      setRooms(res.data?.items || []);
+      setTotalPages(res.data?.totalPages || 1);
+    } catch (err) {
+      console.error("Error fetching rooms:", err);
+      setRooms([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedBuildingId, pageNumber, pageSize, searchValue]);
 
   useEffect(() => {
     fetchBuildings();
@@ -93,39 +101,40 @@ export default function RoomsPage() {
     }));
   };
 
+  // ================= Reset =================
   const resetForm = () => {
     setEditingId(null);
+    setErrorMessage("");
 
     setFormData({
       name: "",
       capacity: "",
       roomNumber: "",
-      roomTypeId: "",
+      type: "",
     });
-
-    setSelectedBuildingId("");
   };
 
   // ================= Submit =================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
 
     if (
-      !formData.name ||
-      !formData.capacity ||
-      !formData.roomNumber ||
-      !formData.roomTypeId ||
-      !selectedBuildingId
+      formData.name.trim() === "" ||
+      formData.capacity === "" ||
+      formData.roomNumber.trim() === "" ||
+      formData.type === "" ||
+      selectedBuildingId === ""
     ) {
       alert("Please fill all fields.");
       return;
     }
 
     const payload = {
-      name: formData.name,
+      name: formData.name.trim(),
       capacity: Number(formData.capacity),
-      roomNumber: formData.roomNumber,
-      roomTypeId: Number(formData.roomTypeId),
+      roomNumber: formData.roomNumber.trim(),
+      roomType: Number(formData.type),
     };
 
     try {
@@ -142,34 +151,65 @@ export default function RoomsPage() {
       }
 
       resetForm();
+
       fetchRooms();
-    } catch (err) {
-      console.error("Error saving room:", err);
+    } catch (err: any) {
+      const data = err?.response?.data;
+      console.error("Error saving room:", data || err);
+
+      let message = "Failed to save room data.";
+      if (data) {
+        if (data.errors && typeof data.errors === "object") {
+          const errorParts = Object.entries(data.errors).map(([key, value]) => {
+            const text = Array.isArray(value) ? value.join("; ") : String(value);
+            return `${key}: ${text}`;
+          });
+          message = errorParts.join("\n") || message;
+        } else if (data.message) {
+          message = data.message;
+        } else if (data.title) {
+          message = data.title;
+        }
+      }
+
+      setErrorMessage(message);
     }
   };
 
   // ================= Edit =================
-  const handleEdit = (room: any) => {
-    setEditingId(room.id);
+const handleEdit = (room: any) => {
+  setEditingId(room.id);
 
-    setFormData({
-      name: room.name,
-      capacity: String(room.capacity),
-      roomNumber: room.roomNumber,
-      roomTypeId: String(room.roomTypeId),
-    });
+  const roomTypeValue = room.roomType ?? room.type;
+  const matchedRoomType = ROOM_TYPES.find(
+    (t) =>
+      String(t.id) === String(roomTypeValue) ||
+      String(t.name) === String(roomTypeValue)
+  );
 
-    setSelectedBuildingId(room.buildingId || "");
+  setFormData({
+    name: room.name || "",
+    capacity: String(room.capacity || ""),
+    roomNumber: String(room.roomNumber || ""),
+    type: matchedRoomType ? String(matchedRoomType.id) : "",
+  });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  setSelectedBuildingId(
+    String(
+      room.buildingId ?? room.building?.id ?? selectedBuildingId ?? ""
+    )
+  );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 
   // ================= Delete =================
   const handleDelete = async (roomId: string) => {
     if (!confirm("Delete this room?")) return;
+
     if (!selectedBuildingId) return;
 
     try {
@@ -183,7 +223,10 @@ export default function RoomsPage() {
     }
   };
 
-  const handlePrint = () => window.print();
+  // ================= Print =================
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className="w-full flex flex-col gap-6 pb-8 font-inter">
@@ -193,7 +236,14 @@ export default function RoomsPage() {
           {editingId ? "Edit Room" : "Add Room"}
         </h1>
 
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+            }
+          }}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div>
               <label className="text-[13px] font-bold text-gray-900 ml-1">
@@ -243,15 +293,15 @@ export default function RoomsPage() {
               </label>
 
               <select
-                name="roomTypeId"
-                value={formData.roomTypeId}
+                name="type"
+                value={formData.type}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200"
               >
                 <option value="">Select Room Type</option>
 
                 {ROOM_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
+                  <option key={type.id} value={type.id}>
                     {type.label}
                   </option>
                 ))}
@@ -271,7 +321,7 @@ export default function RoomsPage() {
                 <option value="">Select Building</option>
 
                 {buildings.map((b) => (
-                  <option key={b.id} value={b.id}>
+                  <option key={b.id} value={String(b.id)}>
                     {b.name}
                   </option>
                 ))}
@@ -288,11 +338,13 @@ export default function RoomsPage() {
         </form>
       </div>
 
-      {/* ================= SEARCH & TABLE ================= */}
+      {/* ================= TABLE ================= */}
       <div className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 print:hidden">
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] font-bold text-gray-900">Rooms</h2>
+            <h2 className="text-[22px] font-bold text-gray-900">
+              Rooms
+            </h2>
 
             <span className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100">
               {rooms.length} Rooms
@@ -316,6 +368,7 @@ export default function RoomsPage() {
             </div>
 
             <button
+              type="button"
               onClick={handlePrint}
               className="flex items-center justify-center gap-2 px-4 py-2.5 min-w-[90px] rounded-[12px] border border-blue-200 text-blue-600 bg-white text-sm cursor-pointer"
             >
@@ -331,9 +384,16 @@ export default function RoomsPage() {
               <tr className="text-left border-b border-gray-200 text-gray-600">
                 <th className="py-3 px-4 font-semibold">Name</th>
                 <th className="py-3 px-4 font-semibold">Capacity</th>
-                <th className="py-3 px-4 font-semibold">Room Number</th>
-                <th className="py-3 px-4 font-semibold">Room Type</th>
-                <th className="py-3 px-4 font-semibold">Building</th>
+                <th className="py-3 px-4 font-semibold">
+                  Room Number
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  Room Type
+                </th>
+                <th className="py-3 px-4 font-semibold">
+                  Building
+                </th>
+
                 <th className="py-3 px-4 font-semibold text-right print:hidden">
                   Actions
                 </th>
@@ -373,24 +433,36 @@ export default function RoomsPage() {
                       {room.name}
                     </td>
 
-                    <td className="py-4 px-4">{room.capacity}</td>
+                    <td className="py-4 px-4">
+                      {room.capacity}
+                    </td>
 
-                    <td className="py-4 px-4">{room.roomNumber}</td>
+                    <td className="py-4 px-4">
+                      {String(room.roomNumber)}
+                    </td>
 
                     <td className="py-4 px-4">
                       {ROOM_TYPES.find(
-                        (t) => t.value === room.roomTypeId
+                        (t) =>
+                          String(t.id) === String(room.roomType || room.type) ||
+                          String(t.name) === String(room.roomType || room.type)
                       )?.label || "—"}
                     </td>
 
                     <td className="py-4 px-4">
-                      {buildings.find((b) => b.id === room.buildingId)?.name ||
+                      {room.buildingName ||
+                        buildings.find(
+                          (b) =>
+                            String(b.id) ===
+                            String(room.buildingId)
+                        )?.name ||
                         "—"}
                     </td>
 
                     <td className="py-4 px-4 text-right print:hidden">
                       <div className="flex justify-end gap-2">
                         <button
+                          type="button"
                           onClick={() => handleEdit(room)}
                           className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                         >
@@ -398,6 +470,7 @@ export default function RoomsPage() {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleDelete(room.id)}
                           className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
                         >

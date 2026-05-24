@@ -80,13 +80,16 @@ export default function VerificationPage() {
     }
 
     async function handleResend() {
-        if (!email || !userName) {
+        if (!email) {
             alert("Email or Username not found. Please restart the reset process.");
             return;
         }
         setIsResending(true);
         try {
-            await authService.sendResetPassword({ email });
+            await authService.sendResetPassword({
+                email,
+                userName: userName || email,
+            });
             alert("A new code has been sent to your email.");
             setTimeLeft(60);
         } catch (error: any) {
