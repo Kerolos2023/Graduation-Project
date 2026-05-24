@@ -256,6 +256,20 @@ export default function SchedulePage() {
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [saveError, setSaveError] = useState<string>("");
 
+  // ── Custom instructor dropdown ──
+  const [instructorDropdownOpen, setInstructorDropdownOpen] = useState(false);
+  const instructorDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (instructorDropdownRef.current && !instructorDropdownRef.current.contains(e.target as Node)) {
+        setInstructorDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const [periodForm, setPeriodForm] = useState({
     day: "",
     startTime: "",
@@ -907,18 +921,55 @@ export default function SchedulePage() {
               </div>
               <div>
                 <label className="text-[12px] font-bold text-gray-700">Instructor</label>
-                <select
-                  value={periodForm.instructorId}
-                  onChange={(e) => setPeriodForm({ ...periodForm, instructorId: e.target.value })}
-                  className="w-full h-11 mt-1 border border-gray-200 rounded-[10px] px-3 text-sm bg-white cursor-pointer"
-                >
-                  <option value="">Select Instructor</option>
-                  {staff.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative mt-1" ref={instructorDropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setInstructorDropdownOpen((prev) => !prev)}
+                    className="w-full h-11 pl-3 pr-8 border border-gray-200 rounded-[10px] text-sm bg-white cursor-pointer text-left truncate"
+                  >
+                    {periodForm.instructorId
+                      ? staff.find((m) => m.id === periodForm.instructorId)?.name || "Select Instructor"
+                      : "Select Instructor"}
+                  </button>
+                  <svg
+                    className={cn(
+                      "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 transition-transform duration-200",
+                      instructorDropdownOpen && "rotate-180"
+                    )}
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+
+                  {instructorDropdownOpen && (
+                    <ul
+                      className="absolute z-[60] mt-1 w-full rounded-[10px] border border-gray-200 bg-white shadow-lg overflow-y-auto"
+                      style={{ maxHeight: `${5 * 40}px` }}
+                    >
+                      {staff.length === 0 ? (
+                        <li className="h-10 flex items-center px-3 text-sm text-gray-400">No instructors found</li>
+                      ) : (
+                        staff.map((m) => (
+                          <li
+                            key={m.id}
+                            onClick={() => {
+                              setPeriodForm({ ...periodForm, instructorId: m.id });
+                              setInstructorDropdownOpen(false);
+                            }}
+                            className={cn(
+                              "h-10 flex items-center px-3 text-sm cursor-pointer transition-colors",
+                              m.id === periodForm.instructorId
+                                ? "bg-blue-50 text-blue-700 font-semibold"
+                                : "text-gray-700 hover:bg-gray-50"
+                            )}
+                          >
+                            <span className="truncate">{m.name}</span>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-[12px] font-bold text-gray-700">Capacity</label>
