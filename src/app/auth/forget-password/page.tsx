@@ -49,7 +49,7 @@ export default function ForgetPasswordPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await authService.sendResetPassword({ email: values.email });
+      await authService.sendResetPassword({ email: values.email, userName: values.userName });
 
       sessionStorage.setItem('resetEmail', values.email);
       sessionStorage.setItem('resetUserName', values.userName);

@@ -16,6 +16,7 @@ export interface LoginResponse {
 
 export interface ForgetPasswordPayload {
   email: string;
+  userName: string;
 }
 
 export interface ResetPasswordPayload {
