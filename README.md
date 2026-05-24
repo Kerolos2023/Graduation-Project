@@ -2,37 +2,37 @@
 
 ## 📌 Overview
 
-A full-featured university management system built with modern frontend technologies.
-The platform helps manage students, staff, courses, and service requests with secure role-based access control.
+A full-featured University Management System developed using modern frontend technologies.
+The system streamlines the management of students, staff, courses, academic services, buildings, and rooms through a secure role-based platform.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-* 🔐 Authentication & Authorization (Role-Based Access)
-* 👨‍🎓 Student Management
+* 🔐 Authentication & Authorization with Role-Based Access Control
+* 👨‍🎓 Student Management System
 * 🧑‍🏫 Staff Management
-* 📚 Courses & Academic Data
+* 📚 Courses & Academic Information Management
 * 🏢 Buildings & Rooms Management
-* 📝 Service Requests System
-* 🔎 Search & Pagination
-* 📊 Clean Dashboard UI
+* 📝 Service Requests Management
+* 🔎 Search, Filtering & Pagination
+* 📊 Responsive and User-Friendly Dashboard
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Technologies Used
 
-* **Frontend:** Next.js, React
+* **Frontend:** Next.js, React.js
 * **Styling:** Tailwind CSS
-* **State Management:** React Hooks
-* **API Handling:** Axios
-* **Architecture:** Modular & Scalable Structure
+* **HTTP Requests:** Axios
+* **State Management:** React Hooks & Context API
+* **Architecture:** Modular & Scalable Folder Structure
 
 ---
 
 ## 📂 Project Structure
 
-```
+```bash
 src/
  ├── app/
  ├── components/
@@ -40,27 +40,45 @@ src/
  ├── services/
  └── types/
 ```
-Host
 
-https://playful-torrone-6e1691.netlify.app
+---
+
+## 🌐 Live Demo
+
+[https://playful-torrone-6e1691.netlify.app](https://playful-torrone-6e1691.netlify.app)
+
+---
+
+## 🔑 Demo Admin Account
+
+```txt
+Username: Admin
+Password: P@ssword123
+```
+## 🔑 Demo User Account
+
+```txt
+Username: OsamaSabry
+Password: P@ssword12
+```
 ---
 
 ## ⚙️ Installation & Setup
 
-### 1) Clone the repository
+### Clone Repository
 
 ```bash
 git clone https://github.com/Kerolos2023/Graduation-Project.git
 cd Graduation-Project
 ```
 
-### 2) Install dependencies
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3) Run the project
+### Run Development Server
 
 ```bash
 npm run dev
@@ -68,32 +86,28 @@ npm run dev
 
 ---
 
-## 🌐 API Integration
+## 🔗 API Integration
 
-This project depends on external REST APIs.
-Make sure the backend server is running and update API base URL if needed.
-
-```
+The application integrates with external REST APIs for handling authentication, academic data, and service operations.
 
 ---
 
-## 📈 Future Improvements
+## 📈 Future Enhancements
 
-* Notifications system
-* Real-time updates
+* Real-time notifications
 * Advanced analytics dashboard
-* Mobile responsiveness enhancements
+* Improved mobile responsiveness
+* Live data updates
 
 ---
 
+## 👨‍💻 Authors
 
-## 👤 Author
-
-**Kerolos Saleh**
-**Mohamed Osama**
+* Kerolos Saleh
+* Mohamed Osama
 
 ---
 
-## ⭐ Notes
+## ⭐ Project Note
 
-This project was developed as a graduation project and demonstrates real-world frontend architecture, API integration, and role-based systems.
+This project was developed as a graduation project and demonstrates practical experience in frontend development, scalable architecture, API integration, authentication systems, and dashboard development using modern web technologies.
