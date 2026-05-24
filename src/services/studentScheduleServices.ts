@@ -12,7 +12,7 @@ export interface StudentSession {
 
 export const studentScheduleService = {
   getSchedule: async (): Promise<StudentSession[]> => {
-    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/students/student-schedule`);
+    const res = await axiosInstance.get(`/students/student-schedule`);
     return res.data || [];
   },
 };
