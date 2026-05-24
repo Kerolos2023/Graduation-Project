@@ -45,7 +45,7 @@ src/
 
 ## 🌐 Live Demo
 
-[https://playful-torrone-6e1691.netlify.app](https://playful-torrone-6e1691.netlify.app)
+heartfelt-lolly-d30443.netlify.app
 
 ---
 
