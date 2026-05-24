@@ -24,13 +24,13 @@ export default function ControlStatus() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
 
   const { selectedProgramId, selectedSemesterId } = useAcademicContext();
-  
+
   const isReady = !!selectedProgramId && !!selectedSemesterId;
 
-  // sorting helper
   const wordToNumber = (name: string) => {
     const map: Record<string, number> = {
       one: 1,
@@ -54,6 +54,35 @@ export default function ControlStatus() {
     return Number.MAX_SAFE_INTEGER;
   };
 
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    const axiosErr = err as {
+      message?: string;
+      response?: {
+        data?: any;
+      };
+    };
+
+    const responseData = axiosErr.response?.data;
+    if (!responseData) return axiosErr.message || fallback;
+
+    if (typeof responseData === "string") return responseData;
+    if (responseData.message) return responseData.message;
+    if (responseData.error) return responseData.error;
+    if (Array.isArray(responseData.errors)) {
+      return responseData.errors.join(" ");
+    }
+    if (typeof responseData === "object") {
+      return Object.values(responseData)
+        .flatMap((value) =>
+          Array.isArray(value) ? value : [value]
+        )
+        .filter(Boolean)
+        .join(" ") || axiosErr.message || fallback;
+    }
+
+    return axiosErr.message || fallback;
+  };
+
   useEffect(() => {
     if (!isReady) return;
 
@@ -62,6 +91,7 @@ export default function ControlStatus() {
     const fetchData = async () => {
       setLoading(true);
       setError("");
+      setActionError("");
 
       try {
         const res = await axiosInstance.get("/control/control-status", {
@@ -80,10 +110,10 @@ export default function ControlStatus() {
 
         setLevels(sorted);
         setExpandedLevels(sorted.map((l) => l.levelId));
-      } catch {
+      } catch (err) {
         if (!ignore) {
           setLevels([]);
-          setError("Failed to load data");
+          setError(getErrorMessage(err, "Failed to load data"));
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -112,6 +142,8 @@ export default function ControlStatus() {
   ) => {
     if (currentState === targetState) return;
 
+    setActionError("");
+
     try {
       await axiosInstance.patch(
         `/control/${courseOfferingId}/toggle-control`
@@ -128,11 +160,36 @@ export default function ControlStatus() {
         }))
       );
     } catch (err) {
-      console.error(err);
+      setActionError(
+        getErrorMessage(err, "Failed to update control status. Please try again.")
+      );
     }
   };
 
-   if (!isReady) {
+  const handleAdvertise = async () => {
+    if (!selectedProgramId || !selectedSemesterId) return;
+
+    setActionError("");
+
+    try {
+      await axiosInstance.patch(
+        "/control/toggle-announce-result",
+        null,
+        {
+          params: {
+            programId: selectedProgramId,
+            semesterId: selectedSemesterId,
+          },
+        }
+      );
+    } catch (err) {
+      setActionError(
+        getErrorMessage(err, "Failed to advertise result. Please try again.")
+      );
+    }
+  };
+
+  if (!isReady) {
     return <p className="p-4">Select program and semester...</p>;
   }
 
@@ -151,6 +208,12 @@ export default function ControlStatus() {
         </span>
       </div>
 
+      {actionError && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {actionError}
+        </div>
+      )}
+
       {/* LEVELS */}
       <div className="space-y-4">
         {levels.map((level) => (
@@ -158,7 +221,6 @@ export default function ControlStatus() {
             key={level.levelId}
             className="bg-white border rounded-2xl p-4 shadow-sm"
           >
-            {/* HEADER */}
             <div
               onClick={() => toggleLevel(level.levelId)}
               className="flex justify-between items-center cursor-pointer"
@@ -179,7 +241,6 @@ export default function ControlStatus() {
               />
             </div>
 
-            {/* TABLE */}
             {expandedLevels.includes(level.levelId) && (
               <div className="mt-4">
 
@@ -248,9 +309,13 @@ export default function ControlStatus() {
       </div>
 
       {/* FOOTER */}
-      <div className="mt-6 border rounded-xl text-center py-3 text-blue-600 bg-white hover:bg-blue-50 cursor-pointer">
+      <div
+        onClick={handleAdvertise}
+        className="mt-6 border rounded-xl text-center py-3 text-blue-600 bg-white hover:bg-blue-50 cursor-pointer"
+      >
         Advertise
       </div>
+
     </div>
   );
 }

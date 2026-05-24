@@ -82,19 +82,9 @@ const NAV_ITEMS = [
     href: "/student/exam-and-midterm",
   },
   {
-    icon: TrendingUp,
-    label: "Student Progress",
-    href: "/student/student-progress",
-  },
-  {
     icon: CalendarDays,
     label: "Schedule",
     href: "/student/schedule",
-  },
-  {
-    icon: CalendarPlus,
-    label: "Register Schedule",
-    href: "/student/register-schedule",
   },
   {
     icon: ClipboardList,

@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FcViewDetails } from "react-icons/fc";
+import axiosInstance from "@/lib/axios";
 import { studentProfileService } from "@/services/studentProfileServices";
 
 export default function AcademicHistory() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [assessmentDetails, setAssessmentDetails] = useState<any[]>([]);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
+  const [selectedCourseName, setSelectedCourseName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,11 +56,70 @@ export default function AcademicHistory() {
     return "bg-gray-400";
   };
 
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    const axiosErr = err as {
+      message?: string;
+      response?: { data?: any };
+    };
+
+    const responseData = axiosErr.response?.data;
+    if (!responseData) return axiosErr.message || fallback;
+    if (typeof responseData === "string") return responseData;
+    if (responseData.message) return responseData.message;
+    if (responseData.error) return responseData.error;
+    if (Array.isArray(responseData.errors)) return responseData.errors.join(" ");
+
+    if (typeof responseData === "object") {
+      const values = Object.values(responseData).flat();
+      return values.filter(Boolean).join(" ") || axiosErr.message || fallback;
+    }
+
+    return axiosErr.message || fallback;
+  };
+
+  const handleOpenDetails = async (course: any) => {
+    const courseOfferingId =
+      course.courseOfferingId || course.id || course.courseId;
+
+    if (!courseOfferingId) {
+      setDetailsError("Course details are not available.");
+      setIsDetailsOpen(true);
+      return;
+    }
+
+    setSelectedCourseName(
+      course.courseName || course.courseCode || "Course details"
+    );
+    setDetailsLoading(true);
+    setDetailsError("");
+    setAssessmentDetails([]);
+    setIsDetailsOpen(true);
+
+    try {
+      const res = await axiosInstance.get(
+        "/students/assessments-in-course",
+        { params: { courseOfferingId } }
+      );
+      setAssessmentDetails(res.data || []);
+    } catch (err) {
+      setDetailsError(getErrorMessage(err, "Failed to load degree details."));
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
+    setAssessmentDetails([]);
+    setDetailsLoading(false);
+    setDetailsError("");
+    setSelectedCourseName("");
+  };
+
   if (loading) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="space-y-6 p-3 sm:p-4 bg-[#f6f7fb] min-h-screen">
-
       {data.map((semester, index) => (
         <div
           key={index}
@@ -68,21 +132,21 @@ export default function AcademicHistory() {
             </h2>
 
             <div className="text-sm font-medium text-gray-500">
-              GPA:{" "}
-              <span className="text-gray-800">{semester.semesterGPA}</span>
+              GPA: <span className="text-gray-800">{semester.semesterGPA}</span>
             </div>
           </div>
 
-          {/* Table Wrapper → SCROLL FIX */}
+          {/* Table */}
           <div className="w-full overflow-x-auto rounded-xl border border-gray-300">
             <table className="min-w-[700px] w-full text-sm">
               <thead className="bg-gray-50 text-gray-500 text-[12px]">
                 <tr>
-                  <th className="px-4 py-3 text-left whitespace-nowrap">Course Code</th>
-                  <th className="px-4 py-3 text-left whitespace-nowrap">Course Name</th>
-                  <th className="px-4 py-3 text-center whitespace-nowrap">Credit Hours</th>
-                  <th className="px-4 py-3 text-center whitespace-nowrap">Degree</th>
-                  <th className="px-4 py-3 text-center whitespace-nowrap">Grade</th>
+                  <th className="px-4 py-3 text-left">Course Code</th>
+                  <th className="px-4 py-3 text-left">Course Name</th>
+                  <th className="px-4 py-3 text-center">Credit Hours</th>
+                  <th className="px-4 py-3 text-center">Degree</th>
+                  <th className="px-4 py-3 text-center">Degree Details</th>
+                  <th className="px-4 py-3 text-center">Grade</th>
                 </tr>
               </thead>
 
@@ -92,21 +156,25 @@ export default function AcademicHistory() {
                     key={i}
                     className="border-t border-gray-200 hover:bg-gray-50 transition"
                   >
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                      {course.courseCode}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                      {course.courseName}
-                    </td>
-                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
+                    <td className="px-4 py-3">{course.courseCode}</td>
+                    <td className="px-4 py-3">{course.courseName}</td>
+                    <td className="px-4 py-3 text-center">
                       {course.creditHours}
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600 whitespace-nowrap">
-                      {course.finalGrade}
+                    <td className="px-4 py-3 text-center">
+                      {course.totalDegree}
                     </td>
 
-                    {/* Grade Badge */}
-                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => handleOpenDetails(course)}
+                        className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 hover:bg-gray-100"
+                      >
+                        <FcViewDetails size={20} />
+                      </button>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getGradeColor(
                           course.letterGrade
@@ -125,17 +193,69 @@ export default function AcademicHistory() {
               </tbody>
             </table>
           </div>
-
-          {/* Footer → Responsive */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 text-[12px] text-gray-500 border-t border-gray-300 pt-4">
-            <span>Attempted Hours: {semester.attemptedHours}</span>
-            <span>Earned Hours: {semester.earnedHours}</span>
-            <span>Semester Grade: {semester.semesterGrade}</span>
-            <span>Cumulative Grade: {semester.cumulativeGrade}</span>
-            <span>Cumulative GPA: {semester.cumulativeGPA}</span>
-          </div>
         </div>
       ))}
+
+      {/* MODAL */}
+      {isDetailsOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={handleCloseDetails} // 👈 click outside closes
+        >
+          <div
+            className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()} // 👈 prevent inside click close
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Degree Details</h3>
+                <p className="text-sm text-gray-500">{selectedCourseName}</p>
+              </div>
+
+              <button
+                onClick={handleCloseDetails}
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-500 font-medium">
+                <span>Name</span>
+                <span className="text-right">Your Degree</span>
+              </div>
+
+              <div className="mt-3 space-y-3">
+                {detailsLoading ? (
+                  <p>Loading...</p>
+                ) : detailsError ? (
+                  <p className="text-red-600">{detailsError}</p>
+                ) : assessmentDetails.length === 0 ? (
+                  <p>No degree details found.</p>
+                ) : (
+                  assessmentDetails.map((item: any, index: number) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-2 bg-white border rounded-xl px-4 py-4"
+                    >
+                      <span>{item.assessmentName}</span>
+                      <span className="text-right font-semibold text-blue-600">
+                        {item.studentScore}
+                        <span className="text-gray-400">
+                          /{item.maxScore}
+                        </span>
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

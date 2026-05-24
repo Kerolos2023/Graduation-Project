@@ -50,8 +50,10 @@ export default function RoomsPage() {
       );
 
       setBuildings(res.data?.items || []);
-    } catch (err) {
-      console.error("Error fetching buildings:", err);
+      setErrorMessage("");
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to fetch buildings.";
+      setErrorMessage(message);
     }
   };
 
@@ -73,8 +75,9 @@ export default function RoomsPage() {
 
       setRooms(res.data?.items || []);
       setTotalPages(res.data?.totalPages || 1);
-    } catch (err) {
-      console.error("Error fetching rooms:", err);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to fetch rooms.";
+      setErrorMessage(message);
       setRooms([]);
     } finally {
       setIsLoading(false);
@@ -155,7 +158,6 @@ export default function RoomsPage() {
       fetchRooms();
     } catch (err: any) {
       const data = err?.response?.data;
-      console.error("Error saving room:", data || err);
 
       let message = "Failed to save room data.";
       if (data) {
@@ -218,8 +220,9 @@ const handleEdit = (room: any) => {
       );
 
       fetchRooms();
-    } catch (err) {
-      console.error("Error deleting room:", err);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to delete room.";
+      setErrorMessage(message);
     }
   };
 
@@ -335,6 +338,12 @@ const handleEdit = (room: any) => {
           >
             {editingId ? "Update" : "Add"}
           </button>
+
+          {errorMessage && (
+            <p className="mt-4 text-sm text-red-600 whitespace-pre-line">
+              {errorMessage}
+            </p>
+          )}
         </form>
       </div>
 

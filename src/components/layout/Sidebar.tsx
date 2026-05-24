@@ -227,13 +227,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                         onClick={onClose}
                     />
                     <NavItem
-                        icon={LayoutGrid}
-                        label="Room Types"
-                        href="/student-affairs/college-data/roomtype"
-                        isActive={pathname?.includes('/roomtype')}
-                        onClick={onClose}
-                    />
-                    <NavItem
                         icon={FaUniversity}
                         label="Rooms"
                         href="/student-affairs/college-data/rooms"
