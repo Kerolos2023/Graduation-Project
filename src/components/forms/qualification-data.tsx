@@ -3,8 +3,21 @@
 import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { ADMISSION_TYPE_OPTIONS } from "@/lib/constants";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+
+const ADMISSION_TYPE_OPTIONS = [
+  { value: "Regular", label: "Regular" },
+  { value: "Transfer", label: "Transfer" },
+  { value: "Equivalent", label: "Equivalent" },
+];
 
 type PreviousQualificationFormData = {
   schoolName: string;
@@ -13,43 +26,59 @@ type PreviousQualificationFormData = {
   qualification: string;
   graduationYear: string;
   totalGrade: string;
-  admissionType: number | "";
+  admissionType: string;
 };
 
 export default function PreviousQualificationData() {
-  const { studentId, setIsEditPopupOpen } = useStudentContext();
+  const { studentId, setIsEditPopupOpen } =
+    useStudentContext();
 
-  const [formData, setFormData] = useState<PreviousQualificationFormData>({
-    schoolName: "",
-    enrollmentYear: "",
-    seatNumber: "",
-    qualification: "",
-    graduationYear: "",
-    totalGrade: "",
-    admissionType: "",
-  });
+  const [formData, setFormData] =
+    useState<PreviousQualificationFormData>({
+      schoolName: "",
+      enrollmentYear: "",
+      seatNumber: "",
+      qualification: "",
+      graduationYear: "",
+      totalGrade: "",
+      admissionType: "",
+    });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState<null | string>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [responseMessage, setResponseMessage] =
+    useState<null | string>(null);
 
-  // FETCH
+  const [errorMessage, setErrorMessage] =
+    useState<string | null>(null);
+
+  // ================= FETCH =================
   useEffect(() => {
     if (!studentId) return;
 
     const fetchData = async () => {
       try {
-        const data = await studentProfileService.getQualificationDataForStudent(studentId);
+        const data =
+          await studentProfileService.getQualificationDataForStudent(
+            studentId
+          );
+
+        console.log("QUALIFICATION DATA:", data);
 
         setFormData({
           schoolName: data.schoolName || "",
-          enrollmentYear: data.enrollmentYear || "",
-          seatNumber: data.seatNumber || "",
-          qualification: data.qualification || "",
-          graduationYear: data.graduationYear || "",
-          totalGrade: data.totalGrade || "",
-          admissionType: data.admissionType ?? "",
+          enrollmentYear:
+            data.enrollmentYear || "",
+          seatNumber:
+            String(data.seatNumber || ""),
+          qualification:
+            data.qualification || "",
+          graduationYear:
+            data.graduationYear || "",
+          totalGrade:
+            String(data.totalGrade || ""),
+          admissionType:
+            data.admissionType || "",
         });
       } catch (err) {
         console.error(err);
@@ -59,41 +88,75 @@ export default function PreviousQualificationData() {
     fetchData();
   }, [studentId]);
 
-  // SUBMIT
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ================= SUBMIT =================
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
+
     if (!studentId) return;
 
     setLoading(true);
-    setResponseMessage("");
+    setResponseMessage(null);
+    setErrorMessage(null);
 
     const payload = {
       schoolName: formData.schoolName,
-      enrollmentYear: formData.enrollmentYear.toString(),
+      enrollmentYear: formData.enrollmentYear,
       seatNumber: formData.seatNumber,
       qualification: formData.qualification,
-      graduationYear: formData.graduationYear.toString(),
-      totalGrade: formData.totalGrade.toString(),
+      graduationYear: formData.graduationYear,
+      totalGrade: formData.totalGrade,
 
-      admissionType:
-        formData.admissionType === ""
-          ? null
-          : Number(formData.admissionType),
+      admissionType: formData.admissionType,
     };
 
     try {
-      await studentProfileService.updateQualificationData(payload, studentId);
+      await studentProfileService.updateQualificationData(
+        payload,
+        studentId
+      );
 
-      setResponseMessage("Updated successfully");
-      setIsEditPopupOpen(false);
+      setResponseMessage(
+        "Updated successfully"
+      );
+
+      const updatedData =
+        await studentProfileService.getQualificationDataForStudent(
+          studentId
+        );
+
+      setFormData({
+        schoolName:
+          updatedData.schoolName || "",
+        enrollmentYear:
+          updatedData.enrollmentYear || "",
+        seatNumber: String(
+          updatedData.seatNumber || ""
+        ),
+        qualification:
+          updatedData.qualification || "",
+        graduationYear:
+          updatedData.graduationYear || "",
+        totalGrade: String(
+          updatedData.totalGrade || ""
+        ),
+        admissionType:
+          updatedData.admissionType || "",
+      });
+
     } catch (error: any) {
-      const errorsObject = error?.response?.data?.errors;
+      const errorsObject =
+        error?.response?.data?.errors;
 
       if (errorsObject) {
-        const allErrors = Object.values(errorsObject).flat();
-        setErrorMessage(String(allErrors[0] ?? ""));
-      }
+        const allErrors =
+          Object.values(errorsObject).flat();
 
+        setErrorMessage(
+          String(allErrors[0] ?? "")
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -105,59 +168,78 @@ export default function PreviousQualificationData() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
         onSubmit={handleSubmit}
       >
-        {Object.entries(formData).map(([key, value]) => (
-          <div key={key} className="flex flex-col gap-1">
-            <label className="text-[13px] text-gray-500 capitalize">
-              {key.replace(/([A-Z])/g, " $1")}
-            </label>
+        {Object.entries(formData).map(
+          ([key, value]) => (
+            <div
+              key={key}
+              className="flex flex-col gap-1"
+            >
+              <label className="text-[13px] text-gray-500 capitalize">
+                {key.replace(
+                  /([A-Z])/g,
+                  " $1"
+                )}
+              </label>
 
-            {key === "admissionType" ? (
-              <Select
-                value={value === "" ? "" : String(value)}
-                onValueChange={(val) =>
-                  setFormData({
-                    ...formData,
-                    admissionType: val === "" ? "" : Number(val),
-                  })
-                }
-              >
-                <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder="Select Admission Type" />
-                </SelectTrigger>
-                <SelectContent className="w-full max-w-full min-w-0">
-                  {ADMISSION_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={String(option.value)} title={option.label}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <input
-                type="text"
-                value={value}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    [key]: e.target.value,
-                  })
-                }
-                className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-              />
-            )}
-          </div>
-        ))}
-{errorMessage && (
+              {key === "admissionType" ? (
+                <Select
+                  value={value}
+                  onValueChange={(val) =>
+                    setFormData({
+                      ...formData,
+                      admissionType: val,
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
+                    <SelectValue placeholder="Select Admission Type" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {ADMISSION_TYPE_OPTIONS.map(
+                      (option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      [key]:
+                        e.target.value,
+                    })
+                  }
+                  className="border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                />
+              )}
+            </div>
+          )
+        )}
+
+        {errorMessage && (
           <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
             {errorMessage}
           </div>
         )}
+
         <button
           type="submit"
           disabled={loading}
           className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
         >
-          {loading ? "Updating..." : "Update"}
+          {loading
+            ? "Updating..."
+            : "Update"}
         </button>
 
         {responseMessage && (

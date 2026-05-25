@@ -34,7 +34,7 @@ export default function ChangeProgramPage() {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        setLoading(true);
+        // setLoading(true);
 
         const res = await academicService.getAllPrograms();
 
@@ -42,7 +42,7 @@ export default function ChangeProgramPage() {
       } catch (err) {
         setErrorMessage("Failed to load programs");
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -55,7 +55,7 @@ export default function ChangeProgramPage() {
 
       setErrorMessage("");
       setSuccessMessage("");
-
+      setLoading(true);
       await academicService.changeStudentProgram(
         studentId,
         selectedProgramId
@@ -72,6 +72,8 @@ export default function ChangeProgramPage() {
       } else {
         setErrorMessage("Something went wrong");
       }
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -136,7 +138,9 @@ export default function ChangeProgramPage() {
             disabled:cursor-not-allowed
           "
         >
-          Update
+          {loading
+            ? "Updating..."
+            : "Update"}
         </button>
 
         {successMessage && (

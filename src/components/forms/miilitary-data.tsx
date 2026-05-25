@@ -3,11 +3,27 @@
 import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
-import { MILITARY_STATUS_OPTIONS } from "@/lib/constants";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// ✅ IMPORTANT
+// values لازم تطابق الـAPI
+
+const MILITARY_STATUS_OPTIONS = [
+  { value: "Exempted", label: "Exempted" },
+  { value: "Postponed", label: "Postponed" },
+  { value: "Completed", label: "Completed" },
+  { value: "Serving", label: "Serving" },
+  { value: "NotRequired", label: "Not Required" },
+];
 
 type MilitaryFormData = {
-  militaryStatus: number | "";
+  militaryStatus: string;
   militaryNumber: string;
   decisionNumber: string;
   decisionDate: string;
@@ -16,7 +32,7 @@ type MilitaryFormData = {
 };
 
 export default function MilitaryData() {
-  const { studentId, setIsEditPopupOpen } = useStudentContext();
+  const { studentId } = useStudentContext();
 
   const [formData, setFormData] = useState<MilitaryFormData>({
     militaryStatus: "",
@@ -28,30 +44,40 @@ export default function MilitaryData() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState<null | string>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [responseMessage, setResponseMessage] =
+    useState<null | string>(null);
 
-  // FETCH
+  const [errorMessage, setErrorMessage] =
+    useState<string | null>(null);
+
+  // ================= FETCH =================
   useEffect(() => {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const data = await studentProfileService.getMilitaryDataForStudent(studentId);
+      const data =
+        await studentProfileService.getMilitaryDataForStudent(
+          studentId
+        );
+
+      console.log("MILITARY DATA:", data);
 
       setFormData({
-        militaryStatus: data.militaryStatus ?? "",
-        militaryNumber: data.militaryNumber || "",
-        decisionNumber: data.decisionNumber || "",
-        decisionDate: data.decisionDate?.split("T")[0] || "",
-        enrollmentDate: data.enrollmentDate?.split("T")[0] || "",
-        endDate: data.endDate?.split("T")[0] || "",
+        militaryStatus: data?.militaryStatus ?? "",
+        militaryNumber: data?.militaryNumber || "",
+        decisionNumber: data?.decisionNumber || "",
+        decisionDate:
+          data?.decisionDate?.split("T")[0] || "",
+        enrollmentDate:
+          data?.enrollmentDate?.split("T")[0] || "",
+        endDate: data?.endDate?.split("T")[0] || "",
       });
     };
 
     fetchData();
   }, [studentId]);
 
-  // SUBMIT
+  // ================= SUBMIT =================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,24 +85,56 @@ export default function MilitaryData() {
 
     setLoading(true);
     setResponseMessage(null);
-    const payload = {
-      studentId,
-      militaryStatus: formData.militaryStatus,
-      militaryNumber: formData.militaryNumber,
-      decisionNumber: formData.decisionNumber,
-      decisionDate: formData.decisionDate,
-      enrollmentDate: formData.enrollmentDate,
-      endDate: formData.endDate,
-    };
+    setErrorMessage(null);
+
     try {
-      await studentProfileService.updateMilitaryData(payload, studentId);
+      const payload = {
+        studentId,
+        militaryStatus: formData.militaryStatus,
+        militaryNumber: formData.militaryNumber,
+        decisionNumber: formData.decisionNumber,
+        decisionDate: formData.decisionDate,
+        enrollmentDate: formData.enrollmentDate,
+        endDate: formData.endDate,
+      };
+
+      await studentProfileService.updateMilitaryData(
+        payload,
+        studentId
+      );
 
       setResponseMessage("Updated successfully");
+
+      // ✅ refetch
+      const updatedData =
+        await studentProfileService.getMilitaryDataForStudent(
+          studentId
+        );
+
+      setFormData({
+        militaryStatus:
+          updatedData?.militaryStatus ?? "",
+        militaryNumber:
+          updatedData?.militaryNumber || "",
+        decisionNumber:
+          updatedData?.decisionNumber || "",
+        decisionDate:
+          updatedData?.decisionDate?.split("T")[0] ||
+          "",
+        enrollmentDate:
+          updatedData?.enrollmentDate?.split("T")[0] ||
+          "",
+        endDate:
+          updatedData?.endDate?.split("T")[0] || "",
+      });
     } catch (error: any) {
-      const errorsObject = error?.response?.data?.errors;
+      const errorsObject =
+        error?.response?.data?.errors;
 
       if (errorsObject) {
-        const allErrors = Object.values(errorsObject).flat();
+        const allErrors =
+          Object.values(errorsObject).flat();
+
         setErrorMessage(String(allErrors[0] ?? ""));
       }
     } finally {
@@ -91,27 +149,34 @@ export default function MilitaryData() {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
         {Object.entries(formData).map(([key, value]) => (
-          <div key={key} className="flex flex-col gap-1 min-w-0">
+          <div
+            key={key}
+            className="flex flex-col gap-1 min-w-0"
+          >
             <label className="text-[13px] text-gray-500 capitalize">
               {key.replace(/([A-Z])/g, " $1")}
             </label>
 
             {key === "militaryStatus" ? (
               <Select
-                value={value === "" ? "" : String(value)}
+                value={value}
                 onValueChange={(val) =>
                   setFormData({
                     ...formData,
-                    militaryStatus: val === "" ? "" : Number(val),
+                    militaryStatus: val,
                   })
                 }
               >
-                <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <SelectTrigger className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
                   <SelectValue placeholder="Select Military Status" />
                 </SelectTrigger>
-                <SelectContent className="w-full max-w-full min-w-0">
+
+                <SelectContent>
                   {MILITARY_STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={String(option.value)} title={option.label}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -120,7 +185,9 @@ export default function MilitaryData() {
             ) : (
               <input
                 type={
-                  key.toLowerCase().includes("date") ? "date" : "text"
+                  key.toLowerCase().includes("date")
+                    ? "date"
+                    : "text"
                 }
                 value={String(value)}
                 onChange={(e) =>
@@ -134,11 +201,13 @@ export default function MilitaryData() {
             )}
           </div>
         ))}
-{errorMessage && (
+
+        {errorMessage && (
           <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
             {errorMessage}
           </div>
         )}
+
         <button
           type="submit"
           disabled={loading}

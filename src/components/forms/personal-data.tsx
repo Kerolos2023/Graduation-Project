@@ -4,104 +4,167 @@ import { useState, useEffect } from "react";
 import { studentProfileService } from "@/services/studentProfileServices";
 import { useStudentContext } from "@/hooks/useStudentContext";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
-import { MARITAL_STATUS_OPTIONS, RELIGION_OPTIONS } from "@/lib/constants";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const GENDER_OPTIONS = [
-  { value: 1, label: "Male" },
-  { value: 2, label: "Female" },
+
+const RELIGION_OPTIONS = [
+  { value: "Muslim", label: "Muslim" },
+  { value: "Christian", label: "Christian" },
+  { value: "Other", label: "Other" },
 ];
 
+const MARITAL_STATUS_OPTIONS = [
+  { value: "Single", label: "Single" },
+  { value: "Married", label: "Married" },
+  { value: "Divorced", label: "Divorced" },
+  { value: "Widowed", label: "Widowed" },
+];
+
+const GENDER_OPTIONS = [
+  { value: "Male", label: "Male" },
+  { value: "Female", label: "Female" },
+];
+
+type PersonalDataFormData = {
+  name: string;
+  studentCode: string;
+  nationalIdOrPassport: string;
+
+  religion: string;
+  gender: string;
+  maritalStatus: string;
+
+  dateOfBirth: string;
+  placeOfBirth: string;
+  nationality: string;
+};
+
 export default function PersonalData() {
-  const { studentId, setIsEditPopupOpen } = useStudentContext();
+  const { studentId } = useStudentContext();
   const { selectedProgramId } = useAcademicContext();
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [responseMessage, setResponseMessage] = useState("");
-  type PersonalDataFormData = {
-    name: string;
-    studentCode: string;
-    nationalIdOrPassport: string;
-    religion: number;
-    gender: number;
-    maritalStatus: number;
-    dateOfBirth: string;
-    placeOfBirth: string;
-    nationality: string;
-  };
 
   const [formData, setFormData] = useState<PersonalDataFormData>({
     name: "",
     studentCode: "",
     nationalIdOrPassport: "",
-    religion: 0,
-    gender: 0,
-    maritalStatus: 0,
+    religion: "",
+    gender: "",
+    maritalStatus: "",
     dateOfBirth: "",
     placeOfBirth: "",
     nationality: "",
   });
 
-  const getLabel = (key: string) => {
-    const labels: Record<string, string> = {
-      name: "Name",
-      studentCode: "Student Code",
-      nationalIdOrPassport: "National ID / Passport",
-      religion: "Religion",
-      gender: "Gender",
-      maritalStatus: "Marital Status",
-      dateOfBirth: "Date of Birth",
-      placeOfBirth: "Place of Birth",
-      nationality: "Nationality",
-    };
-
-    return labels[key] || key;
+  const selectFieldOptions: Record<
+    string,
+    { value: string; label: string }[]
+  > = {
+    religion: RELIGION_OPTIONS,
+    gender: GENDER_OPTIONS,
+    maritalStatus: MARITAL_STATUS_OPTIONS,
   };
 
+  const fields: {
+    key: keyof PersonalDataFormData;
+    label: string;
+    type: "text" | "date" | "select";
+  }[] = [
+    { key: "name", label: "Name", type: "text" },
+    { key: "studentCode", label: "Student Code", type: "text" },
+    {
+      key: "nationalIdOrPassport",
+      label: "National ID / Passport",
+      type: "text",
+    },
+    { key: "religion", label: "Religion", type: "select" },
+    { key: "gender", label: "Gender", type: "select" },
+    { key: "maritalStatus", label: "Marital Status", type: "select" },
+    { key: "dateOfBirth", label: "Date of Birth", type: "date" },
+    { key: "placeOfBirth", label: "Place of Birth", type: "text" },
+    { key: "nationality", label: "Nationality", type: "text" },
+  ];
+
+  // ================= FETCH =================
   useEffect(() => {
     if (!studentId) return;
 
     const fetchData = async () => {
-      const data =
-        await studentProfileService.getPersonalDataForStudent(studentId);
+      try {
+        const data =
+          await studentProfileService.getPersonalDataForStudent(studentId);
 
-      setFormData({
-        name: data.name || "",
-        studentCode: data.studentCode || "",
-        nationalIdOrPassport: data.nationalIdOrPassport || "",
-        religion: Number(data.religion) || 0,
-        gender: Number(data.gender) || 0,
-        dateOfBirth: data.dateOfBirth || "",
-        maritalStatus: Number(data.maritalStatus) || 0,
-        placeOfBirth: data.placeOfBirth || "",
-        nationality: data.nationality || "",
-      });
+        console.log("API DATA:", data);
+
+        setFormData({
+          name: data?.name ?? "",
+          studentCode: data?.studentCode ?? "",
+          nationalIdOrPassport:
+            data?.nationalIdOrPassport ?? "",
+
+            religion: data?.religion ?? "",
+          gender: data?.gender ?? "",
+          maritalStatus: data?.maritalStatus ?? "",
+
+          dateOfBirth: data?.dateOfBirth ?? "",
+          placeOfBirth: data?.placeOfBirth ?? "",
+          nationality: data?.nationality ?? "",
+        });
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     fetchData();
   }, [studentId]);
-  console.log({
-    studentId,
-    selectedProgramId,
-  });
 
+  // ================= SUBMIT =================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setLoading(true);
     try {
-      if (!studentId || !selectedProgramId) {
-        return;
-      }
+      if (!studentId || !selectedProgramId) return;
+
       setErrorMessage(null);
+      setResponseMessage("");
 
       await studentProfileService.updatePersonalData(
         formData,
         studentId,
-        selectedProgramId,
+        selectedProgramId
       );
 
       setResponseMessage("Updated successfully");
+      setLoading(false);
+      const updatedData =
+        await studentProfileService.getPersonalDataForStudent(studentId);
 
+      setFormData({
+        name: updatedData?.name ?? "",
+        studentCode: updatedData?.studentCode ?? "",
+        nationalIdOrPassport:
+          updatedData?.nationalIdOrPassport ?? "",
+
+        religion: updatedData?.religion ?? "",
+        gender: updatedData?.gender ?? "",
+        maritalStatus: updatedData?.maritalStatus ?? "",
+
+        dateOfBirth: updatedData?.dateOfBirth ?? "",
+        placeOfBirth: updatedData?.placeOfBirth ?? "",
+        nationality: updatedData?.nationality ?? "",
+      });
     } catch (error: any) {
+      console.error(error);
+
       const errorsObject = error?.response?.data?.errors;
 
       if (errorsObject) {
@@ -114,66 +177,63 @@ export default function PersonalData() {
     }
   };
 
-  const numericFields = ["religion", "gender", "maritalStatus"];
-  const selectFieldOptions: Record<string, { value: number; label: string }[]> =
-    {
-      religion: RELIGION_OPTIONS,
-      gender: GENDER_OPTIONS,
-      maritalStatus: MARITAL_STATUS_OPTIONS,
-    };
-
+  // ================= UI =================
   return (
     <div className="bg-white p-9 shadow-sm rounded-[20px]">
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-[20px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 "
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {Object.entries(formData).map(([key, value]) => {
-          const options = selectFieldOptions[key];
+        {fields.map((field) => {
+          const options = selectFieldOptions[field.key];
 
           return (
-          <div key={key} className="flex flex-col gap-1 min-w-0">
-              {/* FIXED LABEL */}
-              <label className="text-sm text-gray-500">{getLabel(key)}</label>
+            <div
+              key={field.key}
+              className="flex flex-col gap-1 min-w-0"
+            >
+              <label className="text-sm text-gray-500">
+                {field.label}
+              </label>
 
-              {options ? (
+              {/* SELECT */}
+              {field.type === "select" && options ? (
                 <Select
-                  value={value !== 0 ? String(value) : ""}
+                  value={formData[field.key] ?? ""}
                   onValueChange={(val) =>
-                    setFormData({
-                      ...formData,
-                      [key]: val === "" ? 0 : Number(val),
-                    })
+                    setFormData((prev) => ({
+                      ...prev,
+                      [field.key]: val,
+                    }))
                   }
                 >
-                  <SelectTrigger className="w-full max-w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <SelectValue placeholder={`Select ${getLabel(key)}`} />
+                  <SelectTrigger className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm">
+                    <SelectValue
+                      placeholder={`Select ${field.label}`}
+                    />
                   </SelectTrigger>
-                  <SelectContent className="w-full max-w-full min-w-0">
-                    {options.map((option) => (
-                      <SelectItem key={option.value} value={String(option.value)} title={option.label}>
-                        {option.label}
+
+                  <SelectContent>
+                    {options.map((opt) => (
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value}
+                      >
+                        {opt.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               ) : (
+                /* INPUT */
                 <input
-                  type={
-                    numericFields.includes(key)
-                      ? "number"
-                      : key === "dateOfBirth"
-                        ? "date"
-                        : "text"
-                  }
-                  value={value}
+                  type={field.type}
+                  value={formData[field.key] as string}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      [key]: numericFields.includes(key)
-                        ? parseInt(e.target.value) || 0
-                        : e.target.value,
-                    })
+                    setFormData((prev) => ({
+                      ...prev,
+                      [field.key]: e.target.value,
+                    }))
                   }
                   className="border border-gray-200 rounded-xl px-3 py-2"
                 />
@@ -181,21 +241,30 @@ export default function PersonalData() {
             </div>
           );
         })}
+
+        {/* ERROR */}
         {errorMessage && (
           <div className="col-span-full bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
             {errorMessage}
           </div>
         )}
-        <button className="col-span-full bg-blue-600 text-white py-3 mt-2 rounded-xl">
-          Update
+
+      <button
+          type="submit"
+          disabled={loading}
+          className="col-span-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl mt-2 transition"
+        >
+          {loading
+            ? "Updating..."
+            : "Update"}
         </button>
-        {
-          responseMessage && (
-            <p className="col-span-full text-center text-green-600 text-sm">
-              {responseMessage}
-            </p>
-          )
-        }
+
+        {/* SUCCESS */}
+        {responseMessage && (
+          <p className="col-span-full text-center text-green-600 text-sm">
+            {responseMessage}
+          </p>
+        )}
       </form>
     </div>
   );

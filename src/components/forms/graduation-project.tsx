@@ -43,7 +43,7 @@ export default function GraduationDetailsPage() {
 
     const fetchData = async () => {
       try {
-        setLoading(true);
+        // setLoading(true);
 
         const graduationRes = await axiosInstance.get(
           `/students/${studentId}/graduation-details`
@@ -73,7 +73,7 @@ export default function GraduationDetailsPage() {
       } catch {
         setErrorMessage("Failed to load data");
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -86,8 +86,8 @@ export default function GraduationDetailsPage() {
 
       setErrorMessage(null);
       setSuccessMessage("");
+      setLoading(true);
 
-      // 🔥 FIX ONLY: ensure correct payload (NO UI change)
       await axiosInstance.patch(
         `/students/${studentId}/graduation-details`,
         {
@@ -107,6 +107,8 @@ export default function GraduationDetailsPage() {
       } else {
         setErrorMessage("Something went wrong");
       }
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -143,7 +145,8 @@ export default function GraduationDetailsPage() {
                 gpa: Number(e.target.value),
               })
             }
-            className="border border-gray-200 rounded-xl px-3 py-3"
+            readOnly
+  className="border border-gray-200 rounded-xl px-3 py-3 bg-gray-100 cursor-not-allowed"
           />
         </div>
 
@@ -223,7 +226,7 @@ export default function GraduationDetailsPage() {
           onClick={handleSubmit}
           className="md:col-span-2 bg-blue-600 text-white py-3 rounded-xl mt-2"
         >
-          Updat
+          {loading ? "Updating..." : "Update"}
         </button>
 
         {successMessage && (

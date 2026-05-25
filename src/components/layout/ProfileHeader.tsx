@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import axiosInstance from "@/lib/axios";
+import { useStudentContext } from "@/hooks/useStudentContext";
 import {
   Camera,
   Trash2,
@@ -21,6 +23,9 @@ interface Toast {
 function ProfileHeader() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { studentId } = useStudentContext();
+  const userId = studentId;
+
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -30,12 +35,7 @@ function ProfileHeader() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const ACCEPTED_TYPES = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-  ];
+  const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
   const MAX_SIZE_MB = 2;
   const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -58,26 +58,19 @@ function ProfileHeader() {
     }
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-
     if (!file) return;
 
     setValidationError(null);
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setValidationError(
-        "Only JPG, PNG, GIF, or WebP images are allowed."
-      );
+      setValidationError("Only JPG, PNG, GIF, or WebP images are allowed.");
       return;
     }
 
     if (file.size > MAX_SIZE_BYTES) {
-      setValidationError(
-        `File size must not exceed ${MAX_SIZE_MB}MB.`
-      );
+      setValidationError(`File size must not exceed ${MAX_SIZE_MB}MB.`);
       return;
     }
 
@@ -91,18 +84,20 @@ function ProfileHeader() {
     setLoading("upload");
 
     try {
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1500)
-      );
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      setImageUrl(previewUrl);
+      const res = await axiosInstance.post("/users/upload-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setImageUrl(res.data.imageUrl);
       showToast("success", "Profile picture updated successfully!");
       clearSelection();
     } catch {
-      showToast(
-        "error",
-        "Failed to upload image. Please try again."
-      );
+      showToast("error", "Failed to upload image. Please try again.");
     } finally {
       setLoading(null);
     }
@@ -110,43 +105,50 @@ function ProfileHeader() {
 
   const handleDelete = async () => {
     setLoading("delete");
-
     try {
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1000)
-      );
-
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setImageUrl(null);
       setPreviewUrl(null);
       setSelectedFile(null);
       setShowDeleteConfirm(false);
-
-      showToast(
-        "success",
-        "Profile picture removed successfully."
-      );
+      showToast("success", "Profile picture removed successfully.");
     } catch {
-      showToast(
-        "error",
-        "Failed to delete image. Please try again."
-      );
+      showToast("error", "Failed to delete image. Please try again.");
     } finally {
       setLoading(null);
     }
   };
 
+  useEffect(() => {
+    const fetchImage = async () => {
+      if (!userId) return;
+
+      try {
+        const res = await axiosInstance.get("/users/get-image-url", {
+          params: { userId },
+        });
+
+        const data = res.data;
+
+        const url = typeof data === "string" ? data : data?.imageUrl;
+
+        setImageUrl(url || null);
+      } catch {
+        // silent fail (UI unchanged behavior)
+      }
+    };
+
+    fetchImage();
+  }, [userId]);
+
   const displayImage = previewUrl ?? imageUrl;
 
-  const isUploading = loading === "upload";
-  const isDeleting = loading === "delete";
   const isBusy = loading !== null;
 
   return (
     <div>
       <div className="bg-white p-4 rounded-2xl shadow mb-4">
-        <h2 className="text-lg font-semibold mb-4">
-          Profile Picture
-        </h2>
+        <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
 
         {/* Toast */}
         {toast && (
@@ -202,9 +204,7 @@ function ProfileHeader() {
                 onClick={() => fileInputRef.current?.click()}
                 className="text-blue-600 font-medium cursor-pointer hover:underline disabled:opacity-50"
               >
-                {selectedFile
-                  ? selectedFile.name
-                  : "Change Photo"}
+                {selectedFile ? selectedFile.name : "Change Photo"}
               </button>
 
               <p className="text-sm text-gray-500">
@@ -225,13 +225,13 @@ function ProfileHeader() {
                   onClick={handleUpload}
                   className="bg-black text-white px-4 py-2 rounded-full cursor-pointer flex items-center gap-2 hover:bg-gray-800 transition disabled:opacity-50"
                 >
-                  {isUploading ? (
+                  {loading === "upload" ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Upload className="w-4 h-4" />
                   )}
 
-                  {isUploading ? "Saving..." : "Save"}
+                  {loading === "upload" ? "Saving..." : "Save"}
                 </button>
 
                 <button
@@ -259,20 +259,16 @@ function ProfileHeader() {
                   <button
                     type="button"
                     disabled={isBusy}
-                    onClick={() =>
-                      setShowDeleteConfirm(true)
-                    }
+                    onClick={() => setShowDeleteConfirm(true)}
                     className="bg-red-600 text-white px-4 py-2 rounded-full cursor-pointer flex items-center gap-2 hover:bg-red-700 transition disabled:opacity-50"
                   >
-                    {isDeleting ? (
+                    {loading === "delete" ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
 
-                    {isDeleting
-                      ? "Deleting..."
-                      : "Delete"}
+                    {loading === "delete" ? "Deleting..." : "Delete"}
                   </button>
                 )}
               </>
@@ -307,22 +303,17 @@ function ProfileHeader() {
                 <Trash2 className="w-6 h-6 text-red-500" />
               </div>
 
-              <h2 className="text-lg font-bold">
-                Remove Profile Picture?
-              </h2>
+              <h2 className="text-lg font-bold">Remove Profile Picture?</h2>
 
               <p className="text-sm text-gray-500">
-                This will permanently remove your
-                profile picture.
+                This will permanently remove your profile picture.
               </p>
             </div>
 
             <div className="mt-5 flex gap-3">
               <button
                 type="button"
-                onClick={() =>
-                  setShowDeleteConfirm(false)
-                }
+                onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 border border-gray-200 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
               >
                 Cancel
