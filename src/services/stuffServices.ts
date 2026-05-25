@@ -1,16 +1,28 @@
+ 
 import axiosInstance from "@/lib/axios";
 import { COLLEGE_ID } from "@/lib/constants";
 
 export const staffService = {
-  getAllStaff: async () => {
-    const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/stuff`);
+  
+  getAllStaff: async (pageNumber = 1, pageSize = 10, searchValue = "") => {
+    const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/stuff`, {
+      params: {
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+        SearchValue: searchValue
+      }
+    });
     return response.data; 
+  },
+
+  getStaffById: async (id: string) => {
+    const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/stuff/${id}`);
+    return response.data;
   },
 
   addStaff: async (data: any) => {
     const response = await axiosInstance.post(`/colleges/${COLLEGE_ID}/stuff`, {
       ...data,
-      
       roles: data.roles && data.roles.length > 0 ? data.roles : ["Staff"],
     });
     return response.data;
@@ -24,7 +36,7 @@ export const staffService = {
   updateStaff: async (id: string, data: any) => {
     const response = await axiosInstance.put(`/colleges/${COLLEGE_ID}/stuff/${id}`, {
       ...data,
-       roles: data.roles && data.roles.length > 0 ? data.roles : ["Staff"],
+      roles: data.roles && data.roles.length > 0 ? data.roles : ["Staff"],
     });
     return response.data;
   }
