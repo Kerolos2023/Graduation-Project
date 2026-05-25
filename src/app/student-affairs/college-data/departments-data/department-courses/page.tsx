@@ -9,6 +9,7 @@ import {
   Plus,
   Trash2,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,8 +28,6 @@ import { useAcademicContext } from "@/hooks/useAcademicContext";
 import axiosInstance from "@/lib/axios";
 import { levelService, AcademicLevel as LevelOption } from "@/services/levelsServices";
 import { COLLEGE_ID } from "@/lib/constants";
-
-
 
 type SemesterType = "Fall" | "Spring" | "Summer";
 type RequirementType = "University" | "College" | "Program";
@@ -49,7 +48,6 @@ type CourseOption = {
   name: string;
   code: string;
 };
-
 
 type AssessmentItem = {
   type: AssessmentType;
@@ -280,6 +278,10 @@ const extractSemesterMapping = (rawYear: unknown): Partial<Record<SemesterType, 
 
   return result;
 };
+
+// ── Shared UI Styles matching DepartmentDataPage ──────────────────────────────
+const labelCls = 'text-[13px] font-semibold text-gray-700';
+const inputCls = 'w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed';
 
 export default function DepartmentCoursesPage() {
   const { selectedProgramId, selectedSemesterId, selectedTermId, selectedYearId } = useAcademicContext();
@@ -905,517 +907,532 @@ export default function DepartmentCoursesPage() {
   const isLoadingHeaderData = loadingCourses || loadingAcademicYear;
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-8 bg-[#F5F5F5] min-h-screen">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
+      {/* Tabs */}
       <CollegeDataTabs />
 
-      <div ref={formRef} className="bg-white p-5 md:p-8 rounded-[24px] shadow-sm border border-[#E9EAEB] space-y-6">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold text-[#0A0D12]">
-            {editingId ? "Update Department Course" : "Department Courses"}
-          </h1>
-          {editingId && (
-            <Button
-              variant="ghost"
-              onClick={resetForm}
-              className="text-red-500 hover:bg-red-50 rounded-xl"
-            >
-              <X className="w-4 h-4 mr-1" />
-              Cancel Edit
-            </Button>
-          )}
+      {/* No program selected */}
+      {isMissingContext && (
+        <div className="bg-white rounded-[20px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-blue-400" strokeWidth={1.5} />
+          </div>
+          <p className="text-[15px] font-semibold text-gray-700">No Program Selected</p>
+          <p className="text-[13px] text-gray-400">Select an academic program from the sidebar first.</p>
         </div>
+      )}
 
-        {isMissingContext && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm px-4 py-3">
-            Please select a program from the sidebar first.
-          </div>
-        )}
-
-        {!isMissingContext && !effectiveAcademicYearId && (
-          <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3">
-            Current academic year is missing. Please check year setup.
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-          <div className="space-y-2 md:col-span-3">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Course</label>
-            <Select
-              value={formData.courseId}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, courseId: value }))}
-            >
-              <SelectTrigger className="!h-12 rounded-xl border-slate-200 bg-white w-full">
-                <SelectValue placeholder={loadingCourses ? "Loading courses..." : "Select course"} />
-              </SelectTrigger>
-              <SelectContent>
-                {sortedCourses.map((course) => (
-                  <SelectItem key={course.id} value={course.id}>
-                    {course.name}
-                    {course.code ? ` (${course.code})` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Semester</label>
-            <Select
-              value={formData.semesterType}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, semesterType: value as SemesterType }))
-              }
-            >
-              <SelectTrigger className="!h-12 rounded-xl border-slate-200 bg-white w-full">
-                <SelectValue placeholder="Select semester" />
-              </SelectTrigger>
-              <SelectContent>
-                {SEMESTER_OPTIONS.map((semester) => (
-                  <SelectItem key={semester.value} value={semester.value}>
-                    {semester.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Credit Hours</label>
-            <Input
-              type="number"
-              min={1}
-              placeholder="e.g. 3"
-              className="h-12 rounded-xl border-slate-200"
-              value={formData.creditHours}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, creditHours: event.target.value }))
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Level</label>
-            <Select
-              value={formData.levelId}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, levelId: value }))}
-            >
-              <SelectTrigger className="!h-12 rounded-xl border-slate-200 bg-white w-full">
-                <SelectValue placeholder={loadingLevels ? "Loading levels..." : "Select level"} />
-              </SelectTrigger>
-              <SelectContent>
-                {levels.map((level) => (
-                  <SelectItem key={level.id} value={level.id}>
-                    {level.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Requirement Type</label>
-            <Select
-              value={formData.type}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, type: value as RequirementType }))
-              }
-            >
-              <SelectTrigger className="!h-12 rounded-xl border-slate-200 bg-white w-full">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                {REQUIREMENT_OPTIONS.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Pass Percentage</label>
-            <Input
-              type="number"
-              min={1}
-              max={100}
-              placeholder="e.g. 25"
-              className="h-12 rounded-xl border-slate-200"
-              value={formData.successPercentage}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, successPercentage: event.target.value }))
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Total Grade</label>
-            <Input
-              type="number"
-              min={1}
-              placeholder="e.g. 50"
-              className="h-12 rounded-xl border-slate-200"
-              value={formData.totalGrade}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, totalGrade: event.target.value }))
-              }
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[#090909] ml-1">Number of Groups</label>
-            <Input
-              type="number"
-              min={1}
-              placeholder="e.g. 1"
-              className="h-12 rounded-xl border-slate-200"
-              value={formData.numberOfGroups}
-              onChange={(event) =>
-                setFormData((prev) => ({ ...prev, numberOfGroups: event.target.value }))
-              }
-            />
-          </div>
-
-          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-transparent ml-1 select-none">Options</label>
-              <div className="border border-slate-200 rounded-xl h-12 px-3 flex items-center gap-3 bg-white">
-                <Checkbox
-                  checked={formData.isOptional}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isOptional: checked === true,
-                      optionalGroupCode: checked === true ? prev.optionalGroupCode : "",
-                    }))
-                  }
-                />
-                <span className="text-sm font-medium text-slate-700">Optional Course</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-transparent ml-1 select-none">Options</label>
-              <div className="border border-slate-200 rounded-xl h-12 px-3 flex items-center gap-3 bg-white">
-                <Checkbox
-                  checked={formData.isIncludedInGpa}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isIncludedInGpa: checked === true,
-                    }))
-                  }
-                />
-                <span className="text-sm font-medium text-slate-700">Included in GPA</span>
-              </div>
-            </div>
-          </div>
-
-          {formData.isOptional && (
-            <div className="space-y-2 md:col-span-3">
-              <label className="text-xs font-semibold text-[#090909] ml-1">Optional Group Code</label>
-              <Input
-                placeholder="e.g. OPT-G1"
-                className="h-12 rounded-xl border-slate-200"
-                value={formData.optionalGroupCode}
-                onChange={(event) =>
-                  setFormData((prev) => ({ ...prev, optionalGroupCode: event.target.value }))
-                }
-              />
-            </div>
-          )}
+      {/* Academic year missing */}
+      {!isMissingContext && !effectiveAcademicYearId && (
+        <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 flex items-center gap-3 text-red-600">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span className="text-sm font-medium">Current academic year is missing. Please check year setup.</span>
         </div>
+      )}
 
-        <div className="rounded-2xl border border-slate-200 bg-[#FCFCFD] p-4 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[#090909] ml-1">Max Degree</label>
-              <Input
-                type="number"
-                min={1}
-                placeholder="e.g. 40"
-                className="h-12 rounded-xl border-slate-200"
-                value={assessmentDraft.maxScore}
-                onChange={(event) =>
-                  setAssessmentDraft((prev) => ({ ...prev, maxScore: event.target.value }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[#090909] ml-1">Assessment Type</label>
-              <Select
-                value={assessmentDraft.type}
-                onValueChange={(value) =>
-                  setAssessmentDraft((prev) => ({ ...prev, type: value as AssessmentType }))
-                }
-              >
-                <SelectTrigger className="!h-12 rounded-xl border-slate-200 bg-white w-full">
-                  <SelectValue placeholder="Select assessment type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ASSESSMENT_OPTIONS.map((assessment) => (
-                    <SelectItem key={assessment.value} value={assessment.value}>
-                      {assessment.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              type="button"
-              onClick={handleAddAssessment}
-              className="h-12 w-12 p-0 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="w-5 h-5" />
-            </Button>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-xs text-slate-500">
-              Assessments total: <span className="font-semibold">{totalAssessmentScore}</span>
-              {numericTotalGrade > 0 && (
-                <>
-                  {" "}
-                  / Total grade: <span className="font-semibold">{numericTotalGrade}</span>
-                </>
+      {/* Form Section */}
+      {!isMissingContext && effectiveAcademicYearId && (
+        <div ref={formRef} className="space-y-6">
+          <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-gray-800">
+                {editingId ? "Update Department Course" : "Department Courses"}
+              </h2>
+              {editingId && (
+                <Button
+                  variant="ghost"
+                  onClick={resetForm}
+                  className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-semibold h-9 px-3"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel Edit
+                </Button>
               )}
             </div>
-            {numericTotalGrade > 0 && !isAssessmentTotalMatching && (
-              <div className="text-xs text-red-600 font-medium">
-                Sum of assessment scores must equal total grade.
-              </div>
-            )}
-          </div>
 
-          {assessments.length === 0 ? (
-            <div className="text-sm text-slate-400 border border-dashed border-slate-200 rounded-xl px-4 py-3">
-              No assessments added yet.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {assessments.map((item) => (
-                <div
-                  key={item.type}
-                  className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-center rounded-xl border border-slate-200 bg-white p-3"
+            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Course selection - full width */}
+              <div className="flex flex-col gap-1.5 md:col-span-3">
+                <label className={labelCls}>Course</label>
+                <Select
+                  value={formData.courseId}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, courseId: value }))}
                 >
-                  <div className="text-sm font-medium text-slate-700">
-                    {ASSESSMENT_OPTIONS.find((option) => option.value === item.type)?.label || item.type}
+                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                    <SelectValue placeholder={loadingCourses ? "Loading courses..." : "Select course"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedCourses.map((course) => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.name}
+                        {course.code ? ` (${course.code})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Semester */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Semester</label>
+                <Select
+                  value={formData.semesterType}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, semesterType: value as SemesterType }))
+                  }
+                >
+                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEMESTER_OPTIONS.map((semester) => (
+                      <SelectItem key={semester.value} value={semester.value}>
+                        {semester.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Credit Hours */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Credit Hours</label>
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 3"
+                  className={`${inputCls} !h-11`}
+                  value={formData.creditHours}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, creditHours: event.target.value }))
+                  }
+                />
+              </div>
+
+              {/* Level */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Level</label>
+                <Select
+                  value={formData.levelId}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, levelId: value }))}
+                >
+                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                    <SelectValue placeholder={loadingLevels ? "Loading levels..." : "Select level"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {levels.map((level) => (
+                      <SelectItem key={level.id} value={level.id}>
+                        {level.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Requirement Type */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Requirement Type</label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, type: value as RequirementType }))
+                  }
+                >
+                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REQUIREMENT_OPTIONS.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Pass Percentage */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Pass Percentage</label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  placeholder="e.g. 25"
+                  className={`${inputCls} !h-11`}
+                  value={formData.successPercentage}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, successPercentage: event.target.value }))
+                  }
+                />
+              </div>
+
+              {/* Total Grade */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Total Grade</label>
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 50"
+                  className={`${inputCls} !h-11`}
+                  value={formData.totalGrade}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, totalGrade: event.target.value }))
+                  }
+                />
+              </div>
+
+              {/* Number of Groups */}
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Number of Groups</label>
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 1"
+                  className={`${inputCls} !h-11`}
+                  value={formData.numberOfGroups}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, numberOfGroups: event.target.value }))
+                  }
+                />
+              </div>
+
+              {/* Checkboxes Wrapper */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div className="flex flex-col gap-1.5">
+                  <div className={`${inputCls} !h-11 px-3 flex items-center gap-3 bg-white`}>
+                    <Checkbox
+                      checked={formData.isOptional}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          isOptional: checked === true,
+                          optionalGroupCode: checked === true ? prev.optionalGroupCode : "",
+                        }))
+                      }
+                    />
+                    <span className="text-sm font-semibold text-gray-700">Optional Course</span>
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <div className={`${inputCls} !h-11 px-3 flex items-center gap-3 bg-white`}>
+                    <Checkbox
+                      checked={formData.isIncludedInGpa}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          isIncludedInGpa: checked === true,
+                        }))
+                      }
+                    />
+                    <span className="text-sm font-semibold text-gray-700">Included in GPA</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optional Group Code */}
+              {formData.isOptional && (
+                <div className="flex flex-col gap-1.5 md:col-span-3">
+                  <label className={labelCls}>Optional Group Code</label>
+                  <Input
+                    placeholder="e.g. OPT-G1"
+                    className={`${inputCls} !h-11`}
+                    value={formData.optionalGroupCode}
+                    onChange={(event) =>
+                      setFormData((prev) => ({ ...prev, optionalGroupCode: event.target.value }))
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Assessments Area */}
+            <div className="mx-6 mb-6 p-4 rounded-[16px] border border-gray-100 bg-gray-50/50 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+                <div className="flex flex-col gap-1.5">
+                  <label className={labelCls}>Max Degree</label>
                   <Input
                     type="number"
-                    min={0}
-                    value={item.maxScore}
-                    onChange={(event) => handleAssessmentScoreChange(item.type, event.target.value)}
-                    className="h-10 rounded-lg border-slate-200"
+                    min={1}
+                    placeholder="e.g. 40"
+                    className={`${inputCls} bg-white !h-11`}
+                    value={assessmentDraft.maxScore}
+                    onChange={(event) =>
+                      setAssessmentDraft((prev) => ({ ...prev, maxScore: event.target.value }))
+                    }
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveAssessment(item.type)}
-                    className="text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {submitError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3">
-            {submitError}
-          </div>
-        )}
+                <div className="flex flex-col gap-1.5">
+                  <label className={labelCls}>Assessment Type</label>
+                  <Select
+                    value={assessmentDraft.type}
+                    onValueChange={(value) =>
+                      setAssessmentDraft((prev) => ({ ...prev, type: value as AssessmentType }))
+                    }
+                  >
+                    <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                      <SelectValue placeholder="Select assessment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASSESSMENT_OPTIONS.map((assessment) => (
+                        <SelectItem key={assessment.value} value={assessment.value}>
+                          {assessment.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={submitting || isMissingContext || isLoadingHeaderData}
-          className="w-full h-12 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white font-bold"
-        >
-          {submitting ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : editingId ? (
-            "Save Changes"
-          ) : (
-            "Add or Save"
-          )}
-        </Button>
-      </div>
-
-      <div className="bg-white p-5 md:p-8 rounded-[24px] shadow-sm border border-[#E9EAEB] space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#0A0D12]">Levels</h2>
-          {loadingLevels && <Loader2 className="w-4 h-4 animate-spin text-blue-600" />}
-        </div>
-
-        {isMissingContext && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-sm px-4 py-3">
-            Select program first to load department courses.
-          </div>
-        )}
-
-        {!isMissingContext && !effectiveAcademicYearId && (
-          <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3">
-            Current academic year is required to load course offerings.
-          </div>
-        )}
-
-        {!isMissingContext && !loadingLevels && levels.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-200 text-slate-400 text-sm px-4 py-6 text-center">
-            No levels found.
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {levels.map((level) => {
-            const isLevelOpen = openLevelId === level.id;
-
-            return (
-              <div key={level.id} className="rounded-2xl border border-slate-200 bg-[#FCFCFD]">
-                <button
-                  onClick={() => toggleLevel(level.id)}
-                  className="w-full p-4 md:p-5 flex items-center justify-between cursor-pointer"
+                <Button
+                  type="button"
+                  onClick={handleAddAssessment}
+                  className="h-11 w-11 p-0 rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-2xl font-bold text-[#0A0D12]">{level.name}</h3>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl border border-slate-200 bg-white grid place-items-center">
-                    {isLevelOpen ? (
-                      <ChevronUp className="w-4 h-4 text-slate-600" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-slate-600" />
-                    )}
-                  </div>
-                </button>
+                  <Plus className="w-5 h-5" />
+                </Button>
+              </div>
 
-                {isLevelOpen && (
-                  <div className="px-4 md:px-5 pb-5 space-y-4">
-                    {SEMESTER_OPTIONS.map((semester) => {
-                      const isSemesterOpen = openSemesterByLevel[level.id] === semester.value;
-                      const key = getOfferingsKey(level.id, semester.value);
-                      const bucket = offeringsByKey[key] ?? getDefaultBucket();
-
-                      return (
-                        <div
-                          key={`${level.id}-${semester.value}`}
-                          className={`rounded-2xl border ${isSemesterOpen ? "border-blue-600 bg-white" : "border-slate-200 bg-white"
-                            }`}
-                        >
-                          <button
-                            onClick={() => toggleSemester(level.id, semester.value)}
-                            className="w-full p-4 md:p-5 flex items-center justify-between cursor-pointer"
-                          >
-                            <div className="flex items-center gap-3">
-                              <h4 className="text-xl font-bold text-[#0A0D12]">{semester.label}</h4>
-                            </div>
-                            <div className="w-10 h-10 rounded-xl border border-slate-200 bg-white grid place-items-center">
-                              {isSemesterOpen ? (
-                                <ChevronUp className="w-4 h-4 text-slate-600" />
-                              ) : (
-                                <ChevronDown className="w-4 h-4 text-slate-600" />
-                              )}
-                            </div>
-                          </button>
-
-                          {isSemesterOpen && (
-                            <div className="px-4 md:px-5 pb-5">
-                              {bucket.loading ? (
-                                <div className="py-10 flex justify-center">
-                                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                                </div>
-                              ) : bucket.error ? (
-                                <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 flex items-center justify-between gap-3">
-                                  <span>{bucket.error}</span>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => fetchOfferings(level.id, semester.value)}
-                                    className="cursor-pointer"
-                                  >
-                                    Retry
-                                  </Button>
-                                </div>
-                              ) : bucket.items.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-slate-200 text-slate-400 text-sm px-4 py-6 text-center">
-                                  No courses in this semester.
-                                </div>
-                              ) : (
-                                <div className="overflow-x-auto">
-                                  <table className="w-full border-separate border-spacing-y-2">
-                                    <thead>
-                                      <tr className="text-left text-xs font-semibold text-[#181D27] uppercase tracking-wider">
-                                        <th className="px-4 py-2">Name</th>
-                                        <th className="px-4 py-2">Code</th>
-                                        <th className="px-4 py-2">Groups</th>
-                                        <th className="px-4 py-2 w-28"></th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {bucket.items.map((offering) => (
-                                        <tr key={offering.id}>
-                                          <td className="bg-white px-4 py-4 rounded-l-xl border-y border-l border-slate-200 text-sm font-medium text-slate-700">
-                                            {offering.name || "Unnamed Course"}
-                                          </td>
-                                          <td className="bg-white px-4 py-4 border-y border-slate-200 text-sm text-slate-700">
-                                            {offering.code || "-"}
-                                          </td>
-                                          <td className="bg-white px-4 py-4 border-y border-slate-200 text-sm text-slate-700">
-                                            {offering.numberOfGroups}
-                                          </td>
-                                          <td className="bg-white px-4 py-4 rounded-r-xl border-y border-r border-slate-200">
-                                            <div className="flex items-center justify-end gap-1">
-                                              <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                  handleEdit(offering.id, level.id, semester.value)
-                                                }
-                                                className="h-9 w-9 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
-                                              >
-                                                {loadingEditId === offering.id ? (
-                                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                  <Pencil className="w-4 h-4" />
-                                                )}
-                                              </Button>
-                                              <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                  handleDelete(offering.id, level.id, semester.value)
-                                                }
-                                                className="h-9 w-9 text-slate-500 hover:text-red-600 hover:bg-red-50"
-                                              >
-                                                <Trash2 className="w-4 h-4" />
-                                              </Button>
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+              {/* Assessment Score Info & Validations */}
+              <div className="space-y-1 px-1">
+                <div className="text-xs text-gray-500 font-medium">
+                  Assessments total: <span className="font-bold text-gray-700">{totalAssessmentScore}</span>
+                  {numericTotalGrade > 0 && (
+                    <>
+                      {" "} / Total grade: <span className="font-bold text-gray-700">{numericTotalGrade}</span>
+                    </>
+                  )}
+                </div>
+                {numericTotalGrade > 0 && !isAssessmentTotalMatching && (
+                  <div className="text-xs text-red-500 font-semibold flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    Sum of assessment scores must equal total grade.
                   </div>
                 )}
               </div>
-            );
-          })}
+
+              {/* Assessments Render List */}
+              {assessments.length === 0 ? (
+                <div className="text-sm text-gray-400 border border-dashed border-gray-200 bg-white rounded-[12px] px-4 py-4 text-center font-medium">
+                  No assessments added yet.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {assessments.map((item) => (
+                    <div
+                      key={item.type}
+                      className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-center rounded-[12px] border border-gray-100 bg-white p-3 shadow-sm"
+                    >
+                      <div className="text-sm font-semibold text-gray-700 px-1">
+                        {ASSESSMENT_OPTIONS.find((option) => option.value === item.type)?.label || item.type}
+                      </div>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={item.maxScore}
+                        onChange={(event) => handleAssessmentScoreChange(item.type, event.target.value)}
+                        className={`${inputCls} !h-10`}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveAssessment(item.type)}
+                        className="text-red-500 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Error Message */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 flex items-center gap-3 text-red-600">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span className="text-sm font-medium whitespace-pre-line">{submitError}</span>
+            </div>
+          )}
+
+          {/* Form Action Submit Button */}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || isMissingContext || isLoadingHeaderData}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3.5 rounded-[16px] transition-all shadow-sm cursor-pointer"
+          >
+            {submitting ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : editingId ? (
+              "Save Changes"
+            ) : (
+              "Add or Save"
+            )}
+          </button>
         </div>
-      </div>
+      )}
+
+      {/* Levels & Course Offerings List View */}
+      {!isMissingContext && effectiveAcademicYearId && (
+        <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+            <h2 className="text-xl font-bold text-gray-800">Levels</h2>
+            {loadingLevels && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
+          </div>
+
+          {!loadingLevels && levels.length === 0 && (
+            <div className="rounded-[16px] border border-dashed border-gray-200 text-gray-400 text-sm p-8 text-center font-medium bg-white">
+              No levels found.
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {levels.map((level) => {
+              const isLevelOpen = openLevelId === level.id;
+
+              return (
+                <div key={level.id} className="rounded-[16px] border border-gray-200 bg-gray-50/30 overflow-hidden">
+                  <button
+                    onClick={() => toggleLevel(level.id)}
+                    className="w-full p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/60 transition-all"
+                  >
+                    <h3 className="text-lg font-bold text-gray-800">{level.name}</h3>
+                    <div className="w-9 h-9 rounded-xl border border-gray-200 bg-white grid place-items-center shadow-sm">
+                      {isLevelOpen ? (
+                        <ChevronUp className="w-4 h-4 text-gray-600" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-600" />
+                      )}
+                    </div>
+                  </button>
+
+                  {isLevelOpen && (
+                    <div className="px-4 pb-4 space-y-4">
+                      {SEMESTER_OPTIONS.map((semester) => {
+                        const isSemesterOpen = openSemesterByLevel[level.id] === semester.value;
+                        const key = getOfferingsKey(level.id, semester.value);
+                        const bucket = offeringsByKey[key] ?? getDefaultBucket();
+
+                        return (
+                          <div
+                            key={`${level.id}-${semester.value}`}
+                            className={`rounded-[12px] border transition-all overflow-hidden bg-white ${
+                              isSemesterOpen ? "border-blue-500 shadow-sm" : "border-gray-200"
+                            }`}
+                          >
+                            <button
+                              onClick={() => toggleSemester(level.id, semester.value)}
+                              className="w-full p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/30 transition-all"
+                            >
+                              <h4 className="text-[15px] font-bold text-gray-700">{semester.label}</h4>
+                              <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white grid place-items-center shadow-sm">
+                                {isSemesterOpen ? (
+                                  <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
+                                ) : (
+                                  <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+                                )}
+                              </div>
+                            </button>
+
+                            {isSemesterOpen && (
+                              <div className="px-4 pb-4">
+                                {bucket.loading ? (
+                                  <div className="py-8 flex justify-center">
+                                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                                  </div>
+                                ) : bucket.error ? (
+                                  <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3.5 flex items-center justify-between gap-3">
+                                    <span className="font-medium">{bucket.error}</span>
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => fetchOfferings(level.id, semester.value)}
+                                      className="cursor-pointer h-8 rounded-lg"
+                                    >
+                                      Retry
+                                    </Button>
+                                  </div>
+                                ) : bucket.items.length === 0 ? (
+                                  <div className="rounded-xl border border-dashed border-gray-100 text-gray-400 text-xs py-6 text-center font-medium bg-gray-50/20">
+                                    No courses in this semester.
+                                  </div>
+                                ) : (
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full border-separate border-spacing-y-1.5">
+                                      <thead>
+                                        <tr className="text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                          <th className="px-4 py-2">Name</th>
+                                          <th className="px-4 py-2">Code</th>
+                                          <th className="px-4 py-2">Groups</th>
+                                          <th className="px-4 py-2 w-24"></th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {bucket.items.map((offering) => (
+                                          <tr key={offering.id} className="group">
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 rounded-l-xl border-y border-l border-gray-100 text-sm font-semibold text-gray-700 transition-all">
+                                              {offering.name || "Unnamed Course"}
+                                            </td>
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-sm font-medium text-gray-500 transition-all">
+                                              {offering.code || "-"}
+                                            </td>
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-sm font-medium text-gray-600 transition-all">
+                                              {offering.numberOfGroups}
+                                            </td>
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 rounded-r-xl border-y border-r border-gray-100 transition-all">
+                                              <div className="flex items-center justify-end gap-1">
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  onClick={() =>
+                                                    handleEdit(offering.id, level.id, semester.value)
+                                                  }
+                                                  className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                >
+                                                  {loadingEditId === offering.id ? (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                  ) : (
+                                                    <Pencil className="w-3.5 h-3.5" />
+                                                  )}
+                                                </Button>
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  onClick={() =>
+                                                    handleDelete(offering.id, level.id, semester.value)
+                                                  }
+                                                  className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                                >
+                                                  <Trash2 className="w-3.5 h-3.5" />
+                                                </Button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
