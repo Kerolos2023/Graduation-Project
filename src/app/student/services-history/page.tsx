@@ -9,6 +9,15 @@ import {
   type ServiceHistoryItem,
 } from "@/services/studentServicesServics";
 
+function useDebounce<T>(value: T, delay = 400): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 const STATUS_MAP: Record<string, { dot: string; bg: string; text: string; border: string }> = {
@@ -69,14 +78,19 @@ export default function ServicesHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const debouncedSearch = useDebounce(searchInput);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await studentServicesService.getHistory(currentPage, PAGE_SIZE, search);
+      const res = await studentServicesService.getHistory(currentPage, PAGE_SIZE, debouncedSearch);
       setItems(res.items ?? []);
       setTotalPages(res.totalPages ?? 1);
       setTotalItems(res.totalCount ?? 0);
@@ -85,17 +99,11 @@ export default function ServicesHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search]);
+  }, [currentPage, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    setSearch(searchInput);
-  };
 
   return (
     <div className="flex flex-col gap-5 h-full">
@@ -113,7 +121,7 @@ export default function ServicesHistoryPage() {
         </div>
 
         {/* Search — center */}
-        <form onSubmit={handleSearch} className="flex-1 min-w-[160px] max-w-xs mx-auto relative">
+        <div className="flex-1 min-w-[160px] max-w-xs mx-auto relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             value={searchInput}
@@ -121,7 +129,7 @@ export default function ServicesHistoryPage() {
             placeholder="Search"
             className="w-full pl-10 pr-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition shadow-sm"
           />
-        </form>
+        </div>
 
         {/* CTA button */}
         <button

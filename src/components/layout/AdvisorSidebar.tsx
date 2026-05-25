@@ -59,7 +59,7 @@ export const AdvisorSidebar: React.FC<AdvisorSidebarProps> = ({ onClose }) => {
   const router = useRouter();
   const { user, logout } = useAuth();
   const initials = user?.name ? getInitials(user.name) : "?";
-  const badge = user?.roles?.filter(r => r !== "Student")[0] ?? "AcademicAdvising";
+  const badge = user?.activeModule || "AcademicAdvising";
 
   const handleLogout = async () => {
     try {
