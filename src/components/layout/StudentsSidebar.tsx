@@ -48,7 +48,7 @@ export const StudentsSidebar: React.FC<StudentsSidebarProps> = ({ onClose }) => 
     const router = useRouter();
     const { user } = useAuth();
     const initials = user?.name ? getInitials(user.name) : "?";
-    const badge = user?.roles?.filter(r => r !== "Student")[0] ?? "AcademicAdvising";
+    const badge = user?.activeModule || "AcademicAdvising";
 
     const { setSelectedProgramId, incrementAcademicVersion } = useAcademicContext();
 

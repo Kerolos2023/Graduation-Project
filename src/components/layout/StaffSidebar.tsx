@@ -69,7 +69,7 @@ export const StaffSidebar: React.FC<StaffSidebarProps> = ({ onClose }) => {
   const { setSelectedProgramId, setCurrentAcademicYearId } = useStaffContext();
   const { user, logout } = useAuth();
   const initials = user?.name ? getInitials(user.name) : "?";
-  const badge = user?.roles?.filter(r => r !== "Student")[0] ?? "Staff";
+  const badge = user?.activeModule || "Staff";
 
   const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<string>("");
