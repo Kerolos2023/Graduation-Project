@@ -23,8 +23,7 @@ export default function ServicesPage() {
     price: ""
   });
 
-
-
+  // FETCH DATA (same logic)
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -42,13 +41,15 @@ export default function ServicesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [pageNumber, pageSize, collegeId, searchValue]);
+  }, [pageNumber, pageSize, searchValue]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -101,6 +102,7 @@ export default function ServicesPage() {
       description: item.description,
       price: item.price.toString()
     });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -108,7 +110,9 @@ export default function ServicesPage() {
     if (!window.confirm("Are you sure you want to delete?")) return;
 
     try {
-      await axiosInstance.delete(`${API_BASE}/${collegeId}/services/${id}`);
+      await axiosInstance.delete(
+        `${API_BASE}/${collegeId}/services/${id}`
+      );
       fetchData();
     } catch (err) {
       console.error("Error deleting:", err);
@@ -139,7 +143,7 @@ export default function ServicesPage() {
         placeholder={placeholder}
         value={formData[name]}
         onChange={handleInputChange}
-        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium"
+        className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium"
       />
     </div>
   );
@@ -163,22 +167,18 @@ export default function ServicesPage() {
             <label className="text-[13px] font-bold text-gray-900 ml-1">
               Description
             </label>
+
             <textarea
               name="description"
               rows={4}
               placeholder="Service description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value
-                }))
-              }
-              className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium resize-none"
+              onChange={handleInputChange}
+              className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium resize-none"
             />
           </div>
 
-          <button className="w-full bg-blue-600 text-white py-3 rounded-[12px] font-semibold">
+          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-[12px] font-semibold">
             {editingId ? "Save Changes" : "Add"}
           </button>
         </form>
@@ -187,27 +187,53 @@ export default function ServicesPage() {
       {/* LIST */}
       <div className="bg-white rounded-[24px] p-6 border">
 
-        <div className="flex justify-between mb-6">
-          <h2 className="text-[22px] font-bold">Services</h2>
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h2 className="text-[22px] font-bold text-gray-900">
+            Services
+          </h2>
 
-          <button className="flex items-center gap-2 px-4 py-2 border rounded-[12px] text-blue-600">
-            <Printer className="w-4 h-4" />
-            Print
-          </button>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+
+            {/* ✅ SEARCH (same as Buildings) */}
+            <div className="relative w-full md:w-[280px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchValue}
+                onChange={(e) => {
+                  setSearchValue(e.target.value);
+                  setPageNumber(1);
+                }}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium"
+              />
+            </div>
+
+            {/* ✅ PRINT (same position as Buildings) */}
+            <button className="flex items-center justify-center gap-2 px-4 py-2.5 min-w-[90px] rounded-[12px] border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors bg-white text-sm cursor-pointer">
+              <Printer className="w-4 h-4" />
+              Print
+            </button>
+
+          </div>
         </div>
 
-        {/* HEADER */}
+        {/* TABLE HEADER */}
         <div className="hidden md:flex px-5 py-4 mb-3 bg-gray-50 rounded-xl">
-          <span className="w-1/4 font-bold">Name</span>
-          <span className="w-1/2 font-bold">Description</span>
-          <span className="w-1/4 font-bold">Price</span>
+          <span className="w-1/4 font-bold text-gray-800">Name</span>
+          <span className="w-1/2 font-bold text-gray-800">Description</span>
+          <span className="w-1/4 font-bold text-gray-800">Price</span>
         </div>
 
         {/* LIST */}
         <div className="flex flex-col gap-3 mb-8">
 
           {isLoading && (
-            <div className="text-center p-4">Loading...</div>
+            <div className="text-center p-4 text-gray-500">
+              Loading...
+            </div>
           )}
 
           {!isLoading && services.length === 0 && (
@@ -220,18 +246,17 @@ export default function ServicesPage() {
             services.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row sm:items-center px-5 py-4 border rounded-xl"
+                className="flex flex-col sm:flex-row sm:items-center px-5 py-4 border border-gray-100 rounded-xl bg-white"
               >
-                <span className="w-full sm:w-1/4 font-bold">
+                <span className="w-full sm:w-1/4 font-bold text-gray-900">
                   {item.name}
                 </span>
 
-                {/* ✔️ FIXED DESCRIPTION */}
-                <span className="w-full sm:w-1/2 text-gray-500 break-words">
+                <span className="w-full sm:w-1/2 text-gray-500">
                   {truncateDescription(item.description)}
                 </span>
 
-                <span className="w-full sm:w-1/4 font-bold">
+                <span className="w-full sm:w-1/4 font-bold text-gray-900">
                   {item.price} EGP
                 </span>
 
@@ -239,6 +264,7 @@ export default function ServicesPage() {
                   <button onClick={() => handleEdit(item)}>
                     <Pencil className="w-[18px] h-[18px] text-gray-500 hover:text-blue-600" />
                   </button>
+
                   <button onClick={() => handleDelete(item.id)}>
                     <Trash2 className="w-[18px] h-[18px] text-gray-500 hover:text-red-600" />
                   </button>
