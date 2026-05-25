@@ -51,6 +51,6 @@ export const authService = {
   },
 
   logout: async () => {
-    await axiosInstance.post('/Auth/revoke-refresh-token');
+    await axiosInstance.delete('/Auth/revoke-refresh-token');
   },
 };
