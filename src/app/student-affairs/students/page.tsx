@@ -81,7 +81,12 @@ export default function StudentsPage() {
     
     // ── Context States ─────────────────────────────────────────────────────────
     const { setStudentId, setIsEditPopupOpen, setIsAddPopupOpen, isAddPopupOpen, isEditPopupOpen, setActiveTab } = useStudentContext();
-    const { selectedProgramId } = useAcademicContext();
+    const { selectedProgramId, academicVersion } = useAcademicContext();
+
+    // ── Reset page to 1 when program changes ────────────────────────────────
+    useEffect(() => {
+        setPageNumber(1);
+    }, [selectedProgramId]);
 
     // ── Fetch ──────────────────────────────────────────────────────────────────
     const fetchStudents = useCallback(async () => {
@@ -111,7 +116,7 @@ export default function StudentsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [pageNumber, pageSize, searchValue, selectedProgramId]);
+    }, [pageNumber, pageSize, searchValue, selectedProgramId, academicVersion]);
 
     useEffect(() => {
         if (!isAddPopupOpen && !isEditPopupOpen) {
