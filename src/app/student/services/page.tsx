@@ -8,6 +8,15 @@ import {
   type ServiceItem,
 } from "@/services/studentServicesServics";
 
+function useDebounce<T>(value: T, delay = 400): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const PAGE_SIZE = 10;
 
 export default function ServicesPage() {
@@ -15,11 +24,16 @@ export default function ServicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState<number | null>(null);
-  const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
+
+  const debouncedSearch = useDebounce(searchInput);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -27,7 +41,7 @@ export default function ServicesPage() {
       const res = await studentServicesService.getServices(
         currentPage,
         PAGE_SIZE,
-        search
+        debouncedSearch
       );
       setItems(res.items ?? []);
       setTotalPages(res.totalPages ?? 1);
@@ -37,17 +51,11 @@ export default function ServicesPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, search]);
+  }, [currentPage, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    setSearch(searchInput);
-  };
 
   const handlePay = async (service: ServiceItem) => {
     setPayingId(service.id);
@@ -78,10 +86,7 @@ export default function ServicesPage() {
         </div>
 
         {/* Search — right side */}
-        <form
-          onSubmit={handleSearch}
-          className="ml-auto relative"
-        >
+        <div className="ml-auto relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
             value={searchInput}
@@ -89,7 +94,7 @@ export default function ServicesPage() {
             placeholder="Search"
             className="w-56 pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition shadow-sm"
           />
-        </form>
+        </div>
       </div>
 
       {/* ── Error banner ── */}
