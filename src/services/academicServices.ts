@@ -39,6 +39,11 @@ export const academicService = {
     return Array.isArray(items) ? items : [];
   },
   
+  getAcademicYearById: async (yearId: string) => {
+    const res = await axiosInstance.get(`/colleges/${COLLEGE_ID}/academic-years/${yearId}`);
+    return res.data?.data || res.data || null;
+  },
+  
   changeStudentProgram: async (
   studentId: string,
   newProgramId: string
