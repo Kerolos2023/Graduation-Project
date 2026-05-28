@@ -36,16 +36,12 @@ function ProfileHeader() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-
   const MAX_SIZE_MB = 2;
   const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
   const showToast = (type: ToastType, message: string) => {
     setToast({ type, message });
-
-    setTimeout(() => {
-      setToast(null);
-    }, 4000);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const clearSelection = () => {
@@ -78,42 +74,49 @@ function ProfileHeader() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) return;
+  
+const handleUpload = async () => {
+  
+  if (!selectedFile || !userId) return;
 
-    setLoading("upload");
+  const formData = new FormData();
 
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+  formData.append("file", selectedFile);
 
-      const res = await axiosInstance.post("/users/upload-image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setImageUrl(res.data.imageUrl);
-      showToast("success", "Profile picture updated successfully!");
-      clearSelection();
-    } catch {
-      showToast("error", "Failed to upload image. Please try again.");
-    } finally {
-      setLoading(null);
-    }
-  };
+  await axiosInstance.post("/users/upload-image", formData, {
+    params: { userId },
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
 
   const handleDelete = async () => {
+    if (!imageUrl || !userId) return;
+
     setLoading("delete");
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await axiosInstance.delete("/users/remove-image", {
+        params: { userId, imageUrl },
+      });
+
       setImageUrl(null);
       setPreviewUrl(null);
       setSelectedFile(null);
       setShowDeleteConfirm(false);
+
       showToast("success", "Profile picture removed successfully.");
-    } catch {
-      showToast("error", "Failed to delete image. Please try again.");
+    } catch (err: any) {
+      console.error(err);
+
+      const apiMessage =
+        err.response?.data?.title ||
+        Object.values(err.response?.data?.errors || {})
+          .flat()
+          .join("\n");
+
+      showToast("error", apiMessage || "Failed to delete image.");
     } finally {
       setLoading(null);
     }
@@ -131,18 +134,14 @@ function ProfileHeader() {
         const data = res.data;
 
         const url = typeof data === "string" ? data : data?.imageUrl;
-
         setImageUrl(url || null);
-      } catch {
-        // silent fail (UI unchanged behavior)
-      }
+      } catch {}
     };
 
     fetchImage();
   }, [userId]);
 
   const displayImage = previewUrl ?? imageUrl;
-
   const isBusy = loading !== null;
 
   return (
@@ -164,15 +163,14 @@ function ProfileHeader() {
             ) : (
               <AlertCircle className="h-4 w-4" />
             )}
-
             <span>{toast.message}</span>
           </div>
         )}
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          {/* Left Side */}
+
+          {/* Avatar */}
           <div className="flex items-center gap-4">
-            {/* Avatar */}
             <div className="relative">
               {displayImage ? (
                 <img
@@ -196,13 +194,12 @@ function ProfileHeader() {
               </button>
             </div>
 
-            {/* Text */}
             <div>
               <button
                 type="button"
                 disabled={isBusy}
                 onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 font-medium cursor-pointer hover:underline disabled:opacity-50"
+                className="text-blue-600 font-medium hover:underline disabled:opacity-50"
               >
                 {selectedFile ? selectedFile.name : "Change Photo"}
               </button>
@@ -223,14 +220,13 @@ function ProfileHeader() {
                   type="button"
                   disabled={isBusy}
                   onClick={handleUpload}
-                  className="bg-black text-white px-4 py-2 rounded-full cursor-pointer flex items-center gap-2 hover:bg-gray-800 transition disabled:opacity-50"
+                  className="bg-black text-white px-4 py-2 rounded-full flex items-center gap-2"
                 >
                   {loading === "upload" ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Upload className="w-4 h-4" />
                   )}
-
                   {loading === "upload" ? "Saving..." : "Save"}
                 </button>
 
@@ -238,7 +234,7 @@ function ProfileHeader() {
                   type="button"
                   disabled={isBusy}
                   onClick={clearSelection}
-                  className="bg-gray-200 px-4 py-2 rounded-full cursor-pointer flex items-center gap-2 hover:bg-gray-300 transition disabled:opacity-50"
+                  className="bg-gray-200 px-4 py-2 rounded-full flex items-center gap-2"
                 >
                   <X className="w-4 h-4" />
                   Cancel
@@ -250,7 +246,7 @@ function ProfileHeader() {
                   type="button"
                   disabled={isBusy}
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-black text-white px-4 py-2 rounded-full cursor-pointer hover:bg-gray-800 transition disabled:opacity-50"
+                  className="bg-black text-white px-4 py-2 rounded-full"
                 >
                   Edit
                 </button>
@@ -260,14 +256,13 @@ function ProfileHeader() {
                     type="button"
                     disabled={isBusy}
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="bg-red-600 text-white px-4 py-2 rounded-full cursor-pointer flex items-center gap-2 hover:bg-red-700 transition disabled:opacity-50"
+                    className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2"
                   >
                     {loading === "delete" ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
-
                     {loading === "delete" ? "Deleting..." : "Delete"}
                   </button>
                 )}
@@ -284,7 +279,6 @@ function ProfileHeader() {
           </div>
         )}
 
-        {/* Hidden Input */}
         <input
           ref={fileInputRef}
           type="file"
@@ -296,37 +290,29 @@ function ProfileHeader() {
 
       {/* Delete Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-500" />
-              </div>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
 
-              <h2 className="text-lg font-bold">Remove Profile Picture?</h2>
-
-              <p className="text-sm text-gray-500">
-                This will permanently remove your profile picture.
-              </p>
-            </div>
+            <h2 className="text-lg font-bold text-center">
+              Remove Profile Picture?
+            </h2>
 
             <div className="mt-5 flex gap-3">
               <button
-                type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 border border-gray-200 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
+                className="flex-1 border py-2 rounded-full"
               >
                 Cancel
               </button>
 
               <button
-                type="button"
                 onClick={handleDelete}
-                className="flex-1 bg-red-600 text-white py-2 rounded-full text-sm font-semibold hover:bg-red-700 transition"
+                className="flex-1 bg-red-600 text-white py-2 rounded-full"
               >
                 Yes, Remove
               </button>
             </div>
+
           </div>
         </div>
       )}
