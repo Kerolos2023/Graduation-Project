@@ -19,6 +19,7 @@ export default function BuildingsPage() {
     name: "",
     code: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -61,11 +62,12 @@ export default function BuildingsPage() {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.code.trim()) {
-      alert("Please enter both Name and Code.");
+      setErrorMessage("Please fill in all fields.");
       return;
     }
 
     const payload = {
+      id: editingId,
       name: formData.name.trim(),
       code: formData.code.trim(),
     };
@@ -83,14 +85,14 @@ export default function BuildingsPage() {
       const status = err.response?.status;
 
       if (status === 409) {
-        alert("This building name or code already exists!");
+        setErrorMessage("A building with this name or code already exists");
       } else if (status === 401) {
-        alert("Unauthorized. Please login again.");
+        setErrorMessage("Unauthorized. Please login again.");
       } else if (status === 400) {
-        alert("Bad Request. Please check the data and try again.");
+        setErrorMessage("Bad Request. Please check the data and try again.");
       } else {
         console.error("Error saving building:", err);
-        alert("Something went wrong. Check console for details.");
+        setErrorMessage("Something went wrong. Check console for details.");
       }
     }
   };
@@ -113,7 +115,7 @@ export default function BuildingsPage() {
       fetchData();
     } catch (err) {
       console.error("Error deleting building:", err);
-      alert("Failed to delete building. Check console for details.");
+      setErrorMessage("Failed to delete building. Check console for details.");
     }
   };
 
@@ -140,6 +142,11 @@ export default function BuildingsPage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {errorMessage}
+        </div>
+      )}
       <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
         <h1 className="text-xl font-bold text-gray-900 mb-6">
           {editingId ? "Edit Building" : "Adding Buildings"}

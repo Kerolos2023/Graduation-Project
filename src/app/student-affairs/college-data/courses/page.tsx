@@ -7,7 +7,6 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { collegeCoursesService, type Course, type CoursePayload } from '@/services/collegeCoursesServices';
 
 export default function CoursesPage() {
-    // ── Table / Pagination state ────────────────────────────────────────────
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -15,12 +14,12 @@ export default function CoursesPage() {
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const formRef = useRef<HTMLDivElement>(null);
 
-    // ── Dropdown options ────────────────────────────────────────────────────
+    const formRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
     const [allCoursesOpts, setAllCoursesOpts] = useState<{ label: string; value: string }[]>([]);
 
-    // ── Form state ──────────────────────────────────────────────────────────
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<CoursePayload>({
         name: '',
@@ -29,8 +28,6 @@ export default function CoursesPage() {
         preRequisiteIds: [],
     });
 
-    // ── API helpers ─────────────────────────────────────────────────────────
-
     const fetchTableData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -38,6 +35,7 @@ export default function CoursesPage() {
             const items = data.data ?? data.items ?? [];
             const pages = data.totalPages ?? data.meta?.totalPages ?? 1;
             const count = data.totalCount ?? data.totalNumber ?? items.length;
+
             setCourses(Array.isArray(items) ? items : []);
             setTotalPages(pages);
             setTotalCount(count);
@@ -52,6 +50,7 @@ export default function CoursesPage() {
         try {
             const data = await collegeCoursesService.getAll(1, 1000);
             const items = data.data ?? data.items ?? [];
+
             if (Array.isArray(items)) {
                 setAllCoursesOpts(
                     items.map((c) => ({ label: c.name || 'Unnamed Course', value: c.id }))
@@ -62,10 +61,13 @@ export default function CoursesPage() {
         }
     }, []);
 
-    useEffect(() => { fetchTableData(); }, [fetchTableData]);
-    useEffect(() => { fetchDropdownData(); }, [fetchDropdownData]);
+    useEffect(() => {
+        fetchTableData();
+    }, [fetchTableData]);
 
-    // ── Handlers ────────────────────────────────────────────────────────────
+    useEffect(() => {
+        fetchDropdownData();
+    }, [fetchDropdownData]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -85,25 +87,13 @@ export default function CoursesPage() {
             } else {
                 await collegeCoursesService.create(formData);
             }
+
             resetForm();
             fetchTableData();
             fetchDropdownData();
         } catch (err: any) {
             console.error("Error saving course:", err);
-            let errorMessage = "An error occurred while saving.";
-            if (err.response?.data) {
-                const data = err.response.data;
-                if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-                    errorMessage = data.errors.join("\n");
-                } else if (data.message) {
-                    errorMessage = data.message;
-                } else if (data.title) {
-                    errorMessage = data.title;
-                }
-            } else if (err.message) {
-                errorMessage = err.message;
-            }
-            alert(errorMessage);
+            alert("Error occurred while saving.");
         }
     };
 
@@ -115,7 +105,20 @@ export default function CoursesPage() {
             description: course.description ?? '',
             preRequisiteIds: [],
         });
-        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        setTimeout(() => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+
+            formRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+
+            inputRef.current?.focus();
+        }, 50);
 
         try {
             const courseData = await collegeCoursesService.getById(course.id);
@@ -135,7 +138,6 @@ export default function CoursesPage() {
                 }).filter(Boolean)
                 : [];
 
-            // Normalise casing to match dropdown options
             ids = ids.map(id => {
                 const match = allCoursesOpts.find(opt => opt.value.toLowerCase() === id.toLowerCase());
                 return match ? match.value : id;
@@ -162,10 +164,11 @@ export default function CoursesPage() {
         <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-semibold text-gray-800">{label}</label>
             <input
+                ref={name === "code" ? inputRef : null}
                 type="text"
                 name={name}
                 placeholder={placeholder}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
                 value={formData[name] as string}
                 onChange={handleInputChange}
             />
@@ -175,22 +178,28 @@ export default function CoursesPage() {
     return (
         <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
 
-            {/* Upper Form Section */}
-            <div ref={formRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
+            {/* FORM */}
+            <div
+                ref={formRef}
+                className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0]"
+            >
                 <h1 className="text-xl font-bold text-gray-900 mb-6">Courses</h1>
+
                 <form onSubmit={handleAddOrSave}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
                         {renderInputField("Course Code", "code", "Ex: CS101")}
                         {renderInputField("Course Name", "name", "Ex: Intro to CS")}
 
-                        {/* Prerequisite MultiSelect */}
                         <div className="flex flex-col gap-1.5 w-full">
-                            <label className="text-sm font-semibold text-gray-800">Prerequisite</label>
+                            <label className="text-sm font-semibold text-gray-800">
+                                Prerequisite
+                            </label>
                             <MultiSelect
                                 options={allCoursesOpts.filter(opt => opt.value !== editingId)}
                                 selectedValues={formData.preRequisiteIds}
-                                onChange={(ids) => setFormData(prev => ({ ...prev, preRequisiteIds: ids }))}
-                                placeholder="Select Prerequisites..."
+                                onChange={(ids) =>
+                                    setFormData(prev => ({ ...prev, preRequisiteIds: ids }))
+                                }
                             />
                         </div>
                     </div>
@@ -201,94 +210,55 @@ export default function CoursesPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-medium py-3 rounded-xl transition-all shadow-sm cursor-pointer"
+                        className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition"
                     >
                         {editingId ? "Save Changes" : "Add Course"}
                     </button>
                 </form>
             </div>
 
-            {/* Bottom List Section */}
-            <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
-                {/* Table Header Row */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-bold text-gray-900 leading-none">Courses</h2>
-                        <span className="bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-100">
-                            {totalCount} Course
-                        </span>
-                    </div>
+            {/* TABLE */}
+            <div className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0]">
+                <div className="flex justify-between mb-6">
+                    <h2 className="text-xl font-bold">Courses</h2>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative w-full md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search"
-                                value={searchValue}
-                                onChange={(e) => {
-                                    setSearchValue(e.target.value);
-                                    setPageNumber(1);
-                                }}
-                                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm"
-                            />
-                        </div>
-                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search"
+                        value={searchValue}
+                        onChange={(e) => {
+                            setSearchValue(e.target.value);
+                            setPageNumber(1);
+                        }}
+                        className="border px-3 py-2 rounded-lg text-sm"
+                    />
                 </div>
 
-                {/* Table Header */}
-                <div className="flex items-center w-full px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl gap-4">
-                    <div className="flex items-center gap-1 sm:gap-4 flex-1 w-full">
-                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Name</span>
-                        <span className="text-[13px] font-bold text-gray-800 w-1/3">Code</span>
-                    </div>
-                    <div className="flex items-center justify-end gap-3 invisible">
-                        <button className="p-1.5 w-[30px] h-[30px]" />
-                        <button className="p-1.5 w-[30px] h-[30px]" />
-                    </div>
-                </div>
+                {isLoading && <p className="text-center">Loading...</p>}
 
-                {/* Table Rows */}
-                <div className="flex flex-col gap-3 mb-6">
-                    {isLoading && <div className="text-center p-4 text-gray-500 text-sm">Loading...</div>}
-
-                    {!isLoading && courses.length === 0 && (
-                        <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed">
-                            No courses found.
+                {!isLoading && courses.map((course) => (
+                    <div
+                        key={course.id}
+                        className="flex justify-between items-center p-4 border rounded-lg mb-2"
+                    >
+                        <div>
+                            <p className="font-medium">{course.name}</p>
+                            <p className="text-sm text-gray-500">{course.code}</p>
                         </div>
-                    )}
 
-                    {!isLoading && courses.map((course, idx) => (
-                        <div
-                            key={course.id ?? idx}
-                            className="flex flex-row items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors bg-white shadow-[0_1px_2px_rgba(0,0,0,0.01)] group gap-1 sm:gap-4 relative"
-                        >
-                            <div className="flex flex-row items-center gap-1 sm:gap-4 flex-1 w-full">
-                                <span className="text-[15px] text-gray-900 w-1/3 truncate">{course.name}</span>
-                                <span className="text-[14px] text-gray-900 w-1/3 truncate">{course.code}</span>
-                            </div>
-
-                            <div className="flex items-center justify-end gap-3">
-                                <button
-                                    onClick={() => handleEditClick(course)}
-                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
-                                >
-                                    <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteClick(course.id)}
-                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
-                                >
-                                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
-                                </button>
-                            </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => handleEditClick(course)}>
+                                <Pencil />
+                            </button>
+                            <button onClick={() => handleDeleteClick(course.id)}>
+                                <Trash2 />
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
 
-                {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex justify-center mt-2">
+                    <div className="flex justify-center mt-4">
                         <Pagination
                             currentPage={pageNumber}
                             totalPages={totalPages}

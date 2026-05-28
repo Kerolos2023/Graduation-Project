@@ -129,16 +129,17 @@ export default function RoomsPage() {
       formData.type === "" ||
       selectedBuildingId === ""
     ) {
-      alert("Please fill all fields.");
+      setErrorMessage("Please fill all fields.");
       return;
     }
 
-    const payload = {
-      name: formData.name.trim(),
-      capacity: Number(formData.capacity),
-      roomNumber: formData.roomNumber.trim(),
-      roomType: Number(formData.type),
-    };
+const payload = {
+  id: editingId,
+  name: formData.name.trim(),
+  capacity: Number(formData.capacity),
+  roomNumber: Number(formData.roomNumber),
+  roomType: Number(formData.type),
+};
 
     try {
       if (editingId) {
@@ -233,7 +234,11 @@ const handleEdit = (room: any) => {
 
   return (
     <div className="w-full flex flex-col gap-6 pb-8 font-inter">
-      {/* ================= FORM ================= */}
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {errorMessage}
+        </div>
+      )}
       <div className="bg-white rounded-[24px] p-6 shadow border border-[#eaebf0] print:hidden">
         <h1 className="text-xl font-bold mb-6">
           {editingId ? "Edit Room" : "Add Room"}
@@ -336,14 +341,8 @@ const handleEdit = (room: any) => {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-[12px]"
           >
-            {editingId ? "Update" : "Add"}
+            {editingId ? "Save Changes" : "Add"}
           </button>
-
-          {errorMessage && (
-            <p className="mt-4 text-sm text-red-600 whitespace-pre-line">
-              {errorMessage}
-            </p>
-          )}
         </form>
       </div>
 
@@ -399,9 +398,6 @@ const handleEdit = (room: any) => {
                 <th className="py-3 px-4 font-semibold">
                   Room Type
                 </th>
-                <th className="py-3 px-4 font-semibold">
-                  Building
-                </th>
 
                 <th className="py-3 px-4 font-semibold text-right print:hidden">
                   Actions
@@ -413,7 +409,7 @@ const handleEdit = (room: any) => {
               {isLoading && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="text-center py-6 text-gray-500"
                   >
                     Loading...
@@ -456,16 +452,6 @@ const handleEdit = (room: any) => {
                           String(t.id) === String(room.roomType || room.type) ||
                           String(t.name) === String(room.roomType || room.type)
                       )?.label || "—"}
-                    </td>
-
-                    <td className="py-4 px-4">
-                      {room.buildingName ||
-                        buildings.find(
-                          (b) =>
-                            String(b.id) ===
-                            String(room.buildingId)
-                        )?.name ||
-                        "—"}
                     </td>
 
                     <td className="py-4 px-4 text-right print:hidden">

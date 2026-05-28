@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Pencil, Trash2, Printer } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
@@ -17,6 +17,8 @@ export default function RoomTypePage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "" });
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -74,11 +76,20 @@ export default function RoomTypePage() {
   const handleEdit = (type: any) => {
     setEditingId(type.id);
     setFormData({ name: type.name });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      inputRef.current?.focus();
+    });
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this type?")) return;
+
     try {
       await axiosInstance.delete(`${API_BASE}/${id}`);
       fetchData();
@@ -103,7 +114,9 @@ export default function RoomTypePage() {
             <label className="text-[13px] font-bold text-gray-900 ml-1">
               Room Name
             </label>
+
             <input
+              ref={inputRef}
               type="text"
               placeholder="Ex: Lab"
               className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium"
@@ -166,6 +179,7 @@ export default function RoomTypePage() {
                 </th>
               </tr>
             </thead>
+
             <tbody>
               {isLoading && (
                 <tr>
@@ -185,10 +199,14 @@ export default function RoomTypePage() {
 
               {!isLoading &&
                 types.map((type) => (
-                  <tr key={type.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={type.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
                     <td className="py-4 px-4 font-semibold text-gray-900">
                       {type.name}
                     </td>
+
                     <td className="py-4 px-4 text-right print:hidden">
                       <div className="flex justify-end gap-2">
                         <button
@@ -197,6 +215,7 @@ export default function RoomTypePage() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
+
                         <button
                           onClick={() => handleDelete(type.id)}
                           className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"

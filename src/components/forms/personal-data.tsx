@@ -102,7 +102,6 @@ export default function PersonalData() {
         const data =
           await studentProfileService.getPersonalDataForStudent(studentId);
 
-        console.log("API DATA:", data);
 
         setFormData({
           name: data?.name ?? "",
