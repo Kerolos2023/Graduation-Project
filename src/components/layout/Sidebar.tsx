@@ -84,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
     const [selectedProgram, setSelectedProgram] = useState<string>("");
     const [, setCurrentSemester] = useState<{ id: string; name: string } | null>(null);
     const [selectedTermType, setSelectedTermType] = useState<string>("");
+    const [yearSemestersMap, setYearSemestersMap] = useState<Record<string, string>>({});
 
     const termOptions = [
         { value: "1", label: "Fall" },
@@ -128,8 +129,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
         }
     };
 
+    const fetchYearSemesters = async (yearId: string) => {
+        try {
+            const yearData = await academicService.getAcademicYearById(yearId);
+            const semesters = yearData?.semesters || yearData?.Semesters || yearData?.terms || yearData?.Terms || [];
+            const mapping: Record<string, string> = {};
+            semesters.forEach((sem: any) => {
+                const type = sem.termType ?? sem.TermType ?? sem.name ?? sem.Name ?? sem.semesterType ?? sem.SemesterType;
+                const id = sem.id ?? sem.Id ?? sem.semesterId ?? sem.SemesterId;
+                let normalizedType = "";
+                const raw = String(type || "").toLowerCase().trim();
+                if (raw === "fall" || raw === "1" || raw.includes("01")) normalizedType = "1";
+                else if (raw === "spring" || raw === "2" || raw.includes("02")) normalizedType = "2";
+                else if (raw === "summer" || raw === "3" || raw.includes("03")) normalizedType = "3";
+                
+                if (normalizedType && id) {
+                    mapping[normalizedType] = id;
+                }
+            });
+            setYearSemestersMap(mapping);
+            return mapping;
+        } catch (err) {
+            console.error("Error fetching year semesters:", err);
+            return {};
+        }
+    };
+
     const fetchCurrentSemester = async (yearId: string) => {
         try {
+            await fetchYearSemesters(yearId);
             const semester = await academicService.getCurrentSemester(yearId);
             if (semester?.id) {
                 setCurrentSemester({ id: semester.id, name: semester.name || "Current" });
@@ -353,6 +381,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
                                 // Map term number to semester name for course-offerings API
                                 const nameMap: Record<string, string> = { "1": "Fall", "2": "Spring", "3": "Summer" };
                                 setSelectedSemesterName(nameMap[termValue] || null);
+                                if (termValue && yearSemestersMap[termValue]) {
+                                    setSelectedSemesterId(yearSemestersMap[termValue]);
+                                }
+                                incrementAcademicVersion();
                             }}
                             className="appearance-none w-full h-[64px] px-5 pr-12 rounded-[20px] border border-[#D5D7DA] bg-[#F7F7F8] text-[14px] md:text-[16px] font-medium text-[#101828] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                         >
