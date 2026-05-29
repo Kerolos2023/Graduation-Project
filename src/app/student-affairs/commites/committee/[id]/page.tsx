@@ -1,16 +1,13 @@
- 
-
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAcademicContext } from "@/hooks/useAcademicContext";
 import { committeeService } from "@/services/committeeServices";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Edit2, Trash2, Loader2, X, AlertCircle } from "lucide-react";
+import { Search, Pencil, Trash2, Loader2, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -152,195 +149,198 @@ export default function CommitteesPage() {
   };
 
   const handleDelete = async (id: string) => {
-  if (!confirm("Are you sure?") || !examTermId) return;
-  try {
-    await committeeService.delete(examTermId, id);
-    
-    // سطر التعديل الصحيح:
-    setCommittees(p => p.filter(c => c.id !== id));
-    
-    toast.success("Committee deleted successfully");
-  } catch (e) { 
-    toast.error("Delete failed"); 
-  }
-};
+    if (!confirm("Are you sure?") || !examTermId) return;
+    try {
+      await committeeService.delete(examTermId, id);
+      setCommittees(p => p.filter(c => c.id !== id));
+      toast.success("Committee deleted successfully");
+    } catch (e) { 
+      toast.error("Delete failed"); 
+    }
+  };
 
   if (!examTermId || examTermId === 'undefined') {
     return (
-      <div className="py-20 text-center flex flex-col items-center gap-3 min-h-screen justify-center bg-[#F5F5F5]">
-        <Loader2 className="animate-spin text-blue-600 w-12 h-12" />
-        <span className="text-slate-500 font-bold text-lg">Initializing Context...</span>
+      <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
+        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+          <Loader2 className="animate-spin text-blue-600 w-12 h-12" />
+          <span className="text-gray-900 font-bold text-lg">Initializing Context...</span>
+        </div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="py-20 text-center flex flex-col items-center gap-3 min-h-screen justify-center bg-[#F5F5F5]">
-        <Loader2 className="animate-spin text-blue-600 w-12 h-12" />
-        <span className="text-slate-500 font-bold text-lg">Fetching Committee Details...</span>
+      <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
+        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+          <Loader2 className="animate-spin text-blue-600 w-12 h-12" />
+          <span className="text-gray-900 font-bold text-lg">Fetching Committee Details...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto bg-[#F5F5F5] min-h-screen font-sans">
+    <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
       
-       <Card ref={formRef} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white scroll-mt-6">
-        <CardHeader className="pb-2 pt-8 px-8 border-b border-gray-50">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl font-bold text-[#0A0D12]">
-              {editingId ? "Update Committee" : "Adding Committee"}
-            </CardTitle>
-            {editingId && (
-              <Button variant="ghost" size="sm" onClick={resetForm} className="text-red-500 hover:bg-red-50 rounded-xl font-bold gap-1">
-                <X className="w-4 h-4" /> Cancel Edit
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 flex flex-col">
-              <label className="text-sm font-semibold text-[#090909] ml-1">Committee Number</label>
-              <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Ex: 17" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
-            </div>
-            <div className="space-y-2 flex flex-col">
-              <label className="text-sm font-semibold text-[#090909] ml-1">Capacity</label>
-              <Input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Ex: 5" className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-100" />
-            </div>
-            {!editingId && (
-              <>
-                <div className="space-y-2 flex flex-col">
-                  <label className="text-sm font-semibold text-[#090909] ml-1">Building</label>
-                  <Select onValueChange={handleBuildingChange} value={form.buildingId}>
-                    <SelectTrigger className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl">
-                      <SelectValue placeholder="Select Building" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {buildings.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 flex flex-col">
-                  <label className="text-sm font-semibold text-[#090909]">Room</label>
-                  <Select onValueChange={(v) => setForm({ ...form, roomId: v })} value={form.roomId} disabled={isLoadingRooms || !form.buildingId}>
-                    <SelectTrigger className="h-14 bg-gray-50/50 border-[#E2E8F0] rounded-xl">
-                      <SelectValue
-                        placeholder={
-                          isLoadingRooms
-                            ? "Loading rooms..."
-                            : !form.buildingId
-                              ? "Select Building First"
-                              : rooms.length === 0
-                                ? "No rooms available"
-                                : "Select Room"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rooms.length > 0 ? (
-                        rooms.map((r: any) => (
-                          <SelectItem key={r.id} value={r.id}>
-                            Room {r.roomNumber} (Cap: {r.capacity})
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-sm text-slate-400">
-                          {form.buildingId ? "No rooms available in this building" : "Please select a building"}
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-          </div>
-          
-          <Button onClick={handleSubmit} disabled={isSubmitting} className={`w-full h-14 rounded-xl text-lg font-bold shadow-md transition-all text-white ${editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-[#2B59FF] hover:bg-blue-700'}`}>
-            {isSubmitting ? <Loader2 className="animate-spin w-6 h-6" /> : editingId ? "Save Changes" : "Add Committee"}
-          </Button>
-          
-          {errorMsg && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-600 font-bold">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
+      {/* FORM CARD */}
+      <div ref={formRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0 scroll-mt-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-xl font-bold text-gray-900">
+            {editingId ? "Update Committee" : "Adding Committee"}
+          </h1>
+          {editingId && (
+            <button onClick={resetForm} className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold h-9 px-3 cursor-pointer flex items-center gap-1 border border-transparent">
+              <X className="w-4 h-4" /> <span>Cancel Edit</span>
+            </button>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-       <Card className="border-none shadow-sm rounded-3xl bg-white p-4 md:p-8 overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-[13px] font-bold text-gray-900 ml-1">Committee Number</label>
+            <Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="Ex: 17" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
+          </div>
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-[13px] font-bold text-gray-900 ml-1">Capacity</label>
+            <Input value={form.capacity} onChange={(e) => setForm({ ...form, capacity: e.target.value })} placeholder="Ex: 5" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
+          </div>
+          {!editingId && (
+            <>
+              <div className="flex flex-col gap-1.5 w-full">
+                <label className="text-[13px] font-bold text-gray-900 ml-1">Building</label>
+                <Select onValueChange={handleBuildingChange} value={form.buildingId}>
+                  <SelectTrigger className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto">
+                    <SelectValue placeholder="Select Building" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {buildings.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1.5 w-full">
+                <label className="text-[13px] font-bold text-gray-900 ml-1">Room</label>
+                <Select onValueChange={(v) => setForm({ ...form, roomId: v })} value={form.roomId} disabled={isLoadingRooms || !form.buildingId}>
+                  <SelectTrigger className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto">
+                    <SelectValue
+                      placeholder={
+                        isLoadingRooms
+                          ? "Loading rooms..."
+                          : !form.buildingId
+                            ? "Select Building First"
+                            : rooms.length === 0
+                              ? "No rooms available"
+                              : "Select Room"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {rooms.length > 0 ? (
+                      rooms.map((r: any) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          Room {r.roomNumber} (Cap: {r.capacity})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-sm text-slate-400">
+                        {form.buildingId ? "No rooms available in this building" : "Please select a building"}
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+        </div>
+        
+        <button 
+          onClick={handleSubmit} 
+          disabled={isSubmitting} 
+          className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center mb-4 ${
+            editingId ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : editingId ? "Save Changes" : "Add"}
+        </button>
+        
+        {errorMsg && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 font-bold text-sm">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+      </div>
+
+      {/* LIST CARD */}
+      <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl md:text-2xl font-bold text-[#0A0D12]">Committees</h2>
-            <Badge className="bg-blue-50 text-[#2463F0] text-xs font-semibold px-3 py-1 rounded-full border border-[#BEDAFF]">
+            <h2 className="text-[22px] font-bold text-gray-900 leading-none">Committees</h2>
+            <Badge className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100 hover:bg-[#eff4ff] shadow-none">
               {filteredCommittees.length} Rooms
             </Badge>
           </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <div className="relative flex-1 md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input placeholder="Search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-11 h-12 bg-white border-[#E2E8F0] rounded-xl focus:ring-2 focus:ring-blue-50" />
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-[280px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input type="text" placeholder="Search" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto" />
             </div>
           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_1fr_150px] items-center px-6 py-4 bg-[#FAFAFA] rounded-xl  font-semibold text-[#181D27] mb-4 border border-gray-50">
-          <div>Name</div>
-          <div>Place</div>
-          <div className="text-center">Capacity</div>
-          <div className="text-right pr-4">Actions</div>
+        {/* Table Header */}
+        <div className="hidden lg:grid grid-cols-[1.5fr_1.5fr_1fr_100px] items-center px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl font-bold text-gray-800">
+          <div className="text-[13px]">Name</div>
+          <div className="text-[13px]">Place</div>
+          <div className="text-[13px] text-center">Capacity</div>
+          <div className="text-right px-2 text-[13px]">Actions</div>
         </div>
 
-        <div className="space-y-3">
+        {/* Table Body */}
+        <div className="flex flex-col gap-3 mb-8">
           {filteredCommittees.length === 0 ? (
-            <div className="py-20 text-center text-gray-400 font-bold bg-gray-50 rounded-3xl border-2 border-dashed flex flex-col items-center gap-3">
-              <Search className="w-10 h-10 opacity-10" />
+            <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed">
               <p>{searchTerm ? "No committees match your search" : "No committees found for this exam term"}</p>
             </div>
           ) : (
             filteredCommittees.map((item) => (
               <div
                 key={item.id}
-                className="grid grid-cols-1 lg:grid-cols-[1.5fr_1.5fr_1fr_150px] items-center p-4 lg:px-6 lg:py-5 border rounded-2xl transition-all bg-white gap-3 lg:gap-0 border-[#E2E8F0] hover:shadow-md hover:border-blue-200"
+                className="flex flex-col lg:grid lg:grid-cols-[1.5fr_1.5fr_1fr_100px] items-start lg:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 lg:gap-0 relative"
               >
-                <div className="flex items-center justify-between lg:block font-semibold text-[#181D27]">
-                  <div className="lg:block font-semibold text-[#181D27]">Committee {item.committeeNumber}</div>
-                  <div className="flex lg:hidden gap-1">
-                    <Button onClick={() => startEdit(item)} variant="ghost" size="sm" className="h-9 w-9 p-0 text-blue-600 hover:bg-blue-50"><Edit2 className="w-4 h-4" /></Button>
-                    <Button onClick={() => handleDelete(item.id)} variant="ghost" size="sm" className="h-9 w-9 p-0 text-red-500 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
-                  </div>
+                <div className="flex flex-col lg:block w-full lg:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Name</span>
+                  <div className="text-[14px] font-bold text-gray-900 truncate">Committee {item.committeeNumber}</div>
                 </div>
 
-                <div className="text-[#181D27] font-semibold">
-                  <span className="lg:hidden text-[10px] text-slate-400 uppercase font-bold block mb-1">Place:</span>
-                  {item.place || "Not Assigned"}
+                <div className="flex flex-col lg:block w-full lg:w-auto">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Place</span>
+                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.place || "Not Assigned"}</div>
                 </div>
                 
-                <div className="text-[#181D27] font-semibold lg:text-center">
-                  <span className="lg:hidden text-[10px] text-slate-400 uppercase font-bold block mb-1">Capacity:</span>
-                  {item.maxCapacity} Seats
+                <div className="flex flex-col lg:block w-full lg:w-auto lg:text-center">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Capacity</span>
+                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.maxCapacity} Seats</div>
                 </div>
 
-                <div className="hidden lg:flex items-center justify-end gap-2">
-                  <Button onClick={() => startEdit(item)} variant="ghost" size="icon" className="h-10 w-10 text-blue-500 hover:text-[#2B59FF] hover:bg-blue-50 rounded-xl transition-all"><Edit2 className="w-5 h-5" /></Button>
-                  <Button onClick={() => handleDelete(item.id)} variant="ghost" size="icon" className="h-10 w-10 text-red-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 className="w-5 h-5" /></Button>
+                <div className="flex items-center justify-end gap-2 absolute right-4 top-4 lg:relative lg:right-auto lg:top-auto">
+                  <button onClick={() => startEdit(item)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer">
+                    <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                  </button>
+                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer">
+                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                  </button>
                 </div>
               </div>
             ))
           )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
 
-
-
-
-
-
-
-
- 
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(' ');
+}
