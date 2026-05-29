@@ -20,7 +20,7 @@ export default function BuildingsPage() {
     code: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
-
+  const topRef = React.useRef<HTMLDivElement>(null);
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -102,9 +102,13 @@ export default function BuildingsPage() {
     setFormData({
       name: building.name,
       code: building.code,
-    });
+    }
+  );
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    topRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -117,6 +121,7 @@ export default function BuildingsPage() {
       console.error("Error deleting building:", err);
       setErrorMessage("Failed to delete building. Check console for details.");
     }
+    
   };
 
   const renderInputField = (
@@ -147,7 +152,7 @@ export default function BuildingsPage() {
           {errorMessage}
         </div>
       )}
-      <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
+      <div ref={topRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
         <h1 className="text-xl font-bold text-gray-900 mb-6">
           {editingId ? "Edit Building" : "Adding Buildings"}
         </h1>

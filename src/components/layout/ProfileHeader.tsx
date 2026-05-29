@@ -84,9 +84,6 @@ const handleUpload = async () => {
 
     formData.append("file", selectedFile);
 
-    for (const pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
 
     const res = await axiosInstance.post(
       `/users/upload-image?userId=${userId}`
@@ -101,7 +98,6 @@ const handleUpload = async () => {
 
     clearSelection();
   } catch (err: any) {
-    console.log("FULL ERROR:", err?.response?.data);
 
     showToast(
       "error",

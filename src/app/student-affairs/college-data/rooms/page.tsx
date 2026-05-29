@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Search, Pencil, Trash2, Printer } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
@@ -34,7 +34,7 @@ export default function RoomsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-
+const topRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     capacity: "",
@@ -179,11 +179,11 @@ const payload = {
     }
   };
 
-  // ================= Edit =================
 const handleEdit = (room: any) => {
   setEditingId(room.id);
 
   const roomTypeValue = room.roomType ?? room.type;
+
   const matchedRoomType = ROOM_TYPES.find(
     (t) =>
       String(t.id) === String(roomTypeValue) ||
@@ -203,10 +203,12 @@ const handleEdit = (room: any) => {
     )
   );
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
+  setTimeout(() => {
+topRef.current?.scrollIntoView({
+  behavior: "smooth",
+  block: "start",
+});
+  }, 0);
 };
 
   // ================= Delete =================
@@ -233,7 +235,7 @@ const handleEdit = (room: any) => {
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 pb-8 font-inter">
+    <div ref={topRef} className="w-full flex flex-col gap-6 pb-8 font-inter">
       {errorMessage && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
           {errorMessage}
@@ -322,10 +324,15 @@ const handleEdit = (room: any) => {
               </label>
 
               <select
-                value={selectedBuildingId}
-                onChange={(e) => setSelectedBuildingId(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200"
-              >
+  value={selectedBuildingId}
+  onChange={(e) => setSelectedBuildingId(e.target.value)}
+  disabled={!!editingId}
+  className={`w-full px-4 py-2.5 rounded-[12px] border border-gray-200 ${
+    editingId
+      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+      : ""
+  }`}
+>
                 <option value="">Select Building</option>
 
                 {buildings.map((b) => (
