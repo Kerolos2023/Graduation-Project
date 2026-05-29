@@ -314,13 +314,13 @@ export default function CoursesPage() {
                             <div className="flex items-center justify-end gap-2 absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
                                 <button
                                     onClick={() => handleEditClick(course)}
-                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer border border-gray-100 shadow-sm"
+                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
                                 >
                                     <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(course.id)}
-                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer border border-gray-100 shadow-sm"
+                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
                                 >
                                     <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                 </button>
