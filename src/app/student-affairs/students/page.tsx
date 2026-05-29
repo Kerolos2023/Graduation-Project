@@ -20,6 +20,7 @@ interface Student {
     studentCode: string;
     nationalIdOrPassport: string;
     gender: string;
+    imageUrl?: string;
 }
 
 
@@ -252,7 +253,15 @@ export default function StudentsPage() {
 
                                 {/* Name cell: avatar + name + studentCode below */}
                                 <div className="flex items-center gap-2 sm:gap-3 w-[38%] min-w-0">
-                                    <AvatarPlaceholder name={student.name} />
+                                    {student.imageUrl ? (
+                                        <img 
+                                            src={student.imageUrl} 
+                                            alt={student.name} 
+                                            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 border border-gray-100"
+                                        />
+                                    ) : (
+                                        <AvatarPlaceholder name={student.name} />
+                                    )}
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-[13px] sm:text-[14px] font-semibold text-gray-900 truncate leading-snug">
                                             {student.name}
