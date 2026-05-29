@@ -74,21 +74,42 @@ function ProfileHeader() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  
 const handleUpload = async () => {
-  
   if (!selectedFile || !userId) return;
 
-  const formData = new FormData();
+  setLoading("upload");
 
-  formData.append("file", selectedFile);
+  try {
+    const formData = new FormData();
 
-  await axiosInstance.post("/users/upload-image", formData, {
-    params: { userId },
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+    formData.append("file", selectedFile);
+
+    for (const pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    const res = await axiosInstance.post(
+      `/users/upload-image?userId=${userId}`
+      ,formData
+    );
+
+    const url = res.data?.imageUrl || res.data;
+
+    setImageUrl(url);
+
+    showToast("success", "Image uploaded successfully.");
+
+    clearSelection();
+  } catch (err: any) {
+    console.log("FULL ERROR:", err?.response?.data);
+
+    showToast(
+      "error",
+      err?.response?.data?.title || "Upload failed"
+    );
+  } finally {
+    setLoading(null);
+  }
 };
 
   const handleDelete = async () => {
@@ -108,15 +129,12 @@ const handleUpload = async () => {
 
       showToast("success", "Profile picture removed successfully.");
     } catch (err: any) {
-      console.error(err);
+      console.log(err);
 
-      const apiMessage =
-        err.response?.data?.title ||
-        Object.values(err.response?.data?.errors || {})
-          .flat()
-          .join("\n");
-
-      showToast("error", apiMessage || "Failed to delete image.");
+      showToast(
+        "error",
+        err?.response?.data?.title || "Delete failed"
+      );
     } finally {
       setLoading(null);
     }
@@ -132,10 +150,12 @@ const handleUpload = async () => {
         });
 
         const data = res.data;
-
         const url = typeof data === "string" ? data : data?.imageUrl;
+
         setImageUrl(url || null);
-      } catch {}
+      } catch (err) {
+        console.log("FETCH IMAGE ERROR:", err);
+      }
     };
 
     fetchImage();
@@ -168,7 +188,6 @@ const handleUpload = async () => {
         )}
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
           {/* Avatar */}
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -179,8 +198,8 @@ const handleUpload = async () => {
                   className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                 />
               ) : (
-                <div className="w-20 h-20 bg-gradient-to-tr from-slate-800 to-slate-600 rounded-full flex items-center justify-center text-white shadow-md">
-                  <Upload className="w-7 h-7 opacity-90" />
+                <div className="w-20 h-20 bg-gradient-to-tr from-slate-800 to-slate-600 rounded-full flex items-center justify-center text-white">
+                  <Upload className="w-7 h-7" />
                 </div>
               )}
 
@@ -188,7 +207,7 @@ const handleUpload = async () => {
                 type="button"
                 disabled={isBusy}
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-black text-white flex items-center justify-center border-2 border-white hover:bg-gray-800 transition disabled:opacity-50"
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-black text-white flex items-center justify-center border-2 border-white"
               >
                 <Camera className="w-3.5 h-3.5" />
               </button>
@@ -199,21 +218,19 @@ const handleUpload = async () => {
                 type="button"
                 disabled={isBusy}
                 onClick={() => fileInputRef.current?.click()}
-                className="text-blue-600 font-medium hover:underline disabled:opacity-50"
+                className="text-blue-600 font-medium"
               >
                 {selectedFile ? selectedFile.name : "Change Photo"}
               </button>
 
               <p className="text-sm text-gray-500">
-                {selectedFile
-                  ? `${(selectedFile.size / 1024).toFixed(1)} KB`
-                  : "JPG, PNG or GIF, Max size 2MB"}
+                JPG, PNG or GIF, Max size 2MB
               </p>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             {selectedFile ? (
               <>
                 <button
@@ -232,7 +249,6 @@ const handleUpload = async () => {
 
                 <button
                   type="button"
-                  disabled={isBusy}
                   onClick={clearSelection}
                   className="bg-gray-200 px-4 py-2 rounded-full flex items-center gap-2"
                 >
@@ -244,7 +260,6 @@ const handleUpload = async () => {
               <>
                 <button
                   type="button"
-                  disabled={isBusy}
                   onClick={() => fileInputRef.current?.click()}
                   className="bg-black text-white px-4 py-2 rounded-full"
                 >
@@ -254,7 +269,6 @@ const handleUpload = async () => {
                 {imageUrl && (
                   <button
                     type="button"
-                    disabled={isBusy}
                     onClick={() => setShowDeleteConfirm(true)}
                     className="bg-red-600 text-white px-4 py-2 rounded-full flex items-center gap-2"
                   >
@@ -263,7 +277,7 @@ const handleUpload = async () => {
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
-                    {loading === "delete" ? "Deleting..." : "Delete"}
+                    Delete
                   </button>
                 )}
               </>
@@ -271,7 +285,6 @@ const handleUpload = async () => {
           </div>
         </div>
 
-        {/* Error */}
         {validationError && (
           <div className="mt-3 flex items-center gap-2 text-sm text-red-600">
             <AlertCircle className="w-4 h-4" />
@@ -292,7 +305,6 @@ const handleUpload = async () => {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-
             <h2 className="text-lg font-bold text-center">
               Remove Profile Picture?
             </h2>
@@ -312,7 +324,6 @@ const handleUpload = async () => {
                 Yes, Remove
               </button>
             </div>
-
           </div>
         </div>
       )}
