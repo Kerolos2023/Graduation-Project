@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Edit2,
+  Pencil,
   Trash2,
   Search,
   X,
@@ -34,7 +34,7 @@ export default function ExamTermsPage() {
   const [searchValue, setSearchValue] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   
-   const formRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   
   const [togglingIds, setTogglingIds] = useState<Record<string, boolean>>({});
 
@@ -74,7 +74,6 @@ export default function ExamTermsPage() {
     }
   };
 
-  
   const handleStartEdit = (item: any) => {
     const typeObj = ExamTypeOptions.find(t => t.name === item.examType);
     setEditingId(item.id);
@@ -83,7 +82,6 @@ export default function ExamTermsPage() {
       startDate: item.startDate || "",
       endDate: item.endDate || ""
     });
-    
     
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -133,7 +131,7 @@ export default function ExamTermsPage() {
       return;
     }
 
-    setLoading(true);
+    loading || setLoading(true);
     try {
       const payload = {
         examType: parseInt(formData.examType),
@@ -172,95 +170,104 @@ export default function ExamTermsPage() {
 
   if (!isAcademicReady) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-        <p className="text-gray-500 font-bold text-lg">Please select academic program and semester first...</p>
+      <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
+        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+          <p className="text-[15px] font-bold text-gray-900">Please select academic program and semester first...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-10 bg-[#F5F5F5] min-h-screen font-sans">
+    <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
       
-       {statusMessage.type && (
-        <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-          statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-600 font-bold' :
-          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
-          'bg-emerald-50 border-emerald-200 text-emerald-800'
-        }`}>
-          <div className="flex items-center gap-3">
-            {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
-            <span>{statusMessage.text}</span>
+      {statusMessage.type && (
+        <div className={cn(
+          "border px-4 py-3 rounded-xl text-sm",
+          statusMessage.type === 'error' && 'bg-red-50 border-red-200 text-red-700 font-bold',
+          statusMessage.type === 'warning' && 'bg-amber-50 border-amber-200 text-amber-800 font-semibold',
+          statusMessage.type === 'success' && 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
+        )}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+              <span>{statusMessage.text}</span>
+            </div>
+            <button onClick={() => setStatusMessage({ text: "", type: null })} className="cursor-pointer">
+              <X className="w-4 h-4 opacity-50" />
+            </button>
           </div>
-          <button onClick={() => setStatusMessage({ text: "", type: null })}>
-            <X className="w-4 h-4 opacity-50" />
-          </button>
         </div>
       )}
 
-        <div ref={formRef} className="bg-[#FFFFFF] p-5 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-[#E9EAEB] scroll-mt-6">
+      {/* FORM CARD */}
+      <div ref={formRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0 scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg md:text-xl font-bold text-[#0A0D12]">
+          <h1 className="text-xl font-bold text-gray-900">
             {editingId ? "Updating Exam Term" : "Adding Exam Term"}
-          </h2>
+          </h1>
           {editingId && (
-            <Button variant="ghost" size="sm" onClick={resetForm} className="text-red-500 hover:bg-red-50 h-8">
-              <X size={14} className="mr-1" /> <span className="text-xs font-bold">Cancel Edit</span>
-            </Button>
+            <button onClick={resetForm} className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold h-9 px-3 cursor-pointer flex items-center gap-1 border border-transparent">
+              <X className="w-4 h-4" /> <span>Cancel Edit</span>
+            </button>
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="col-span-full space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Event</label>
-            <Select value={formData.examType} onValueChange={(val) => setFormData({ ...formData, examType: val })}>
-              <SelectTrigger className="h-11 rounded-xl border-slate-200 focus:ring-blue-600 bg-white">
-                <SelectValue placeholder="Select Exam Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {ExamTypeOptions.map((t) => (
-                  <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="col-span-full flex flex-col gap-1.5 w-full">
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Event</label>
+              <Select value={formData.examType} onValueChange={(val) => setFormData({ ...formData, examType: val })}>
+                <SelectTrigger className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto">
+                  <SelectValue placeholder="Select Exam Type" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {ExamTypeOptions.map((t) => (
+                    <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5 w-full">
+              <label className="text-[13px] font-bold text-gray-900 ml-1">Start Date</label>
+              <Input type="date" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
+            </div>
+
+            <div className="flex flex-col gap-1.5 w-full">
+              <label className="text-[13px] font-bold text-gray-900 ml-1">End Date</label>
+              <Input type="date" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">Start Date</label>
-            <Input type="date" className="h-11 rounded-xl border-slate-200 bg-white" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-[#090909]">End Date</label>
-            <Input type="date" className="h-11 rounded-xl border-slate-200 bg-white" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
-          </div>
-
-          <Button
+          <button
             type="submit"
             disabled={loading}
-            className={`col-span-full h-11 cursor-pointer font-bold rounded-xl transition-all text-white ${
+            className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center ${
               editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : editingId ? "Save Changes" : "Add Exam"}
-          </Button>
+            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : editingId ? "Save Changes" : "Add"}
+          </button>
         </form>
       </div>
 
-       <div className="bg-white p-4 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      {/* LIST CARD */}
+      <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl md:text-2xl font-semibold text-[#0A0D12]">Exams</h2>
-            <Badge className="bg-[#EFF8FF] text-[#2463F0] border-[#BEDAFF] px-3 py-1 rounded-full text-xs font-bold">
+            <h2 className="text-[22px] font-bold text-gray-900 leading-none">Exams</h2>
+            <Badge className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100 hover:bg-[#eff4ff] shadow-none">
               {filteredExams.length} Exams
             </Badge>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-[280px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input 
                 placeholder="Search" 
-                className="pl-10 h-10 border-slate-200 rounded-xl focus-visible:ring-slate-300 w-full" 
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto" 
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
               />
@@ -268,69 +275,80 @@ export default function ExamTermsPage() {
           </div>
         </div>
 
-         <div className="hidden md:grid grid-cols-[50px_1fr_1fr_1fr_250px] px-6 py-4 bg-slate-50 rounded-xl mb-4   font-semibold text-[#181D27] tracking-wider">
-          <div className="flex justify-center"></div>
-          <div>Name</div>
-          <div className="text-center">Start Date</div>
-          <div className="text-center">End Date</div>
-          <div className="text-right px-2">Actions</div>
+        {/* Table Header */}
+        <div className="hidden md:grid grid-cols-[1.5fr_1fr_1fr_250px] px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl font-bold text-gray-800">
+          <div className="text-[13px]">Name</div>
+          <div className="text-[13px] text-center">Start Date</div>
+          <div className="text-[13px] text-center">End Date</div>
+          <div className="text-right px-2 text-[13px]">Actions</div>
         </div>
 
-         <div className="space-y-4 md:space-y-2">
+        {/* Table Body */}
+        <div className="flex flex-col gap-3 mb-8">
           {fetching ? (
-            <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-blue-600 h-10 w-10" /></div>
+            <div className="text-center p-4 text-gray-500 text-sm">
+              <Loader2 className="animate-spin w-5 h-5 inline-block mr-2 text-blue-600" /> Loading...
+            </div>
           ) : filteredExams.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 border-2 border-dashed border-slate-50 rounded-2xl">
+            <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed">
               No exam terms found.
             </div>
           ) : (
             filteredExams.map((item) => (
-              <div key={item.id} className={cn(
-                "flex flex-col md:grid md:grid-cols-[50px_1fr_1fr_1fr_250px] items-start md:items-center px-4 md:px-6 py-4 border border-slate-100 md:border-transparent md:hover:bg-slate-50 rounded-2xl transition-all gap-3 md:gap-0 bg-white md:bg-transparent shadow-sm md:shadow-none",
-                editingId === item.id && "bg-blue-50/50 border-blue-200"
-              )}>
-                <div className="flex justify-between items-center w-full md:w-auto md:justify-center">
-                  <div className="w-4 h-4" /> 
-                  <div className="md:hidden flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50">
-                      <Edit2 size={16} />
+              <div 
+                key={item.id} 
+                className={cn(
+                  "flex flex-col md:grid md:grid-cols-[1.5fr_1fr_1fr_250px] items-start md:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 md:gap-0 relative",
+                  editingId === item.id && "bg-blue-50/50 border-blue-200"
+                )}
+              >
+                <div className="md:hidden flex justify-end w-full mb-2">
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50 cursor-pointer">
+                      <Pencil size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-9 w-9 text-red-500 bg-red-50/50">
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-9 w-9 text-red-500 bg-red-50/50 cursor-pointer">
                       <Trash2 size={16} />
                     </Button>
                   </div>
                 </div>
 
                 <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Name</span>
-                  <div className="font-semibold text-[#181D27] text-base md:text-sm truncate">{item.examType}</div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Name</span>
+                  <div className="text-[14px] font-bold text-gray-900 truncate">{item.examType}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">Start Date</span>
-                  <div className="text-[#181D27] text-sm font-semibold">{item.startDate}</div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Start Date</span>
+                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.startDate}</div>
                 </div>
 
                 <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 md:hidden mb-1">End Date</span>
-                  <div className="text-[#181D27] text-sm font-semibold">{item.endDate}</div>
+                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">End Date</span>
+                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.endDate}</div>
                 </div>
 
                 <div className="w-full md:w-auto flex justify-end items-center gap-2">
-                  <div className="hidden md:flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} className="h-8 w-8 text-blue-500 hover:bg-blue-100 transition-colors">
-                      <Edit2 size={16} />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="h-8 w-8 text-red-500 hover:bg-red-100 transition-colors">
-                      <Trash2 size={16} />
-                    </Button>
+                  <div className="hidden md:flex gap-2">
+                    <button
+                      onClick={() => handleStartEdit(item)}
+                      className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
+                    >
+                      <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
+                    >
+                      <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                    </button>
                   </div>
                   
                   <Button 
                     variant="outline" 
                     disabled={togglingIds[item.id]} 
                     onClick={() => handleToggleStatus(item.id)} 
-                    className={`h-8 min-w-[90px] rounded-lg font-bold text-[10px] border transition-all flex items-center justify-center gap-1 ${
+                    className={`h-8 min-w-[90px] rounded-lg font-bold text-[10px] border transition-all flex items-center justify-center gap-1 cursor-pointer ${
                       item.isPublished 
                         ? 'text-blue-600 border-blue-100 bg-blue-50 hover:bg-blue-100' 
                         : 'text-amber-600 border-amber-100 bg-amber-50 hover:bg-amber-100'
@@ -345,7 +363,7 @@ export default function ExamTermsPage() {
 
                   <Button 
                     onClick={() => router.push(`/student-affairs/commites/committee/${item.id}`)} 
-                    className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[10px] flex items-center gap-1"
+                    className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[10px] flex items-center gap-1 cursor-pointer"
                   >
                     Open <ExternalLink className="w-3 h-3" />
                   </Button>
