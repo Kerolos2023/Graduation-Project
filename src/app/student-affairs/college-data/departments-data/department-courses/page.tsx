@@ -279,9 +279,9 @@ const extractSemesterMapping = (rawYear: unknown): Partial<Record<SemesterType, 
   return result;
 };
 
-// ── Shared UI Styles matching DepartmentDataPage ──────────────────────────────
-const labelCls = 'text-[13px] font-semibold text-gray-700';
-const inputCls = 'w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed';
+// ── Shared UI Styles ─────────────────────────────────────────────────────────
+const labelCls = 'text-[13px] font-bold text-gray-900 ml-1';
+const inputCls = 'w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed h-auto';
 
 export default function DepartmentCoursesPage() {
   const { selectedProgramId, selectedSemesterId, selectedTermId, selectedYearId } = useAcademicContext();
@@ -907,42 +907,42 @@ export default function DepartmentCoursesPage() {
   const isLoadingHeaderData = loadingCourses || loadingAcademicYear;
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-screen space-y-6">
+    <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
       {/* Tabs */}
       <CollegeDataTabs />
 
       {/* No program selected */}
       {isMissingContext && (
-        <div className="bg-white rounded-[20px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center">
+        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
             <AlertCircle className="w-7 h-7 text-blue-400" strokeWidth={1.5} />
           </div>
-          <p className="text-[15px] font-semibold text-gray-700">No Program Selected</p>
+          <p className="text-[15px] font-bold text-gray-900">No Program Selected</p>
           <p className="text-[13px] text-gray-400">Select an academic program from the sidebar first.</p>
         </div>
       )}
 
       {/* Academic year missing */}
       {!isMissingContext && !effectiveAcademicYearId && (
-        <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 flex items-center gap-3 text-red-600">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0" />
-          <span className="text-sm font-medium">Current academic year is missing. Please check year setup.</span>
+          <span>Current academic year is missing. Please check year setup.</span>
         </div>
       )}
 
       {/* Form Section */}
       {!isMissingContext && effectiveAcademicYearId && (
-        <div ref={formRef} className="space-y-6">
-          <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-gray-800">
+        <div ref={formRef} className="flex flex-col gap-6 scroll-mt-6">
+          <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-xl font-bold text-gray-900">
                 {editingId ? "Update Department Course" : "Department Courses"}
-              </h2>
+              </h1>
               {editingId && (
                 <Button
                   variant="ghost"
                   onClick={resetForm}
-                  className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-semibold h-9 px-3"
+                  className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold h-9 px-3 cursor-pointer"
                 >
                   <X className="w-4 h-4 mr-1" />
                   Cancel Edit
@@ -950,7 +950,7 @@ export default function DepartmentCoursesPage() {
               )}
             </div>
 
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Course selection - full width */}
               <div className="flex flex-col gap-1.5 md:col-span-3">
                 <label className={labelCls}>Course</label>
@@ -958,10 +958,10 @@ export default function DepartmentCoursesPage() {
                   value={formData.courseId}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, courseId: value }))}
                 >
-                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                  <SelectTrigger className={inputCls}>
                     <SelectValue placeholder={loadingCourses ? "Loading courses..." : "Select course"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {sortedCourses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.name}
@@ -973,7 +973,7 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Semester */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Semester</label>
                 <Select
                   value={formData.semesterType}
@@ -981,10 +981,10 @@ export default function DepartmentCoursesPage() {
                     setFormData((prev) => ({ ...prev, semesterType: value as SemesterType }))
                   }
                 >
-                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                  <SelectTrigger className={inputCls}>
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {SEMESTER_OPTIONS.map((semester) => (
                       <SelectItem key={semester.value} value={semester.value}>
                         {semester.label}
@@ -995,13 +995,13 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Credit Hours */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Credit Hours</label>
                 <Input
                   type="number"
                   min={1}
                   placeholder="e.g. 3"
-                  className={`${inputCls} !h-11`}
+                  className={inputCls}
                   value={formData.creditHours}
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, creditHours: event.target.value }))
@@ -1010,16 +1010,16 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Level */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Level</label>
                 <Select
                   value={formData.levelId}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, levelId: value }))}
                 >
-                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                  <SelectTrigger className={inputCls}>
                     <SelectValue placeholder={loadingLevels ? "Loading levels..." : "Select level"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {levels.map((level) => (
                       <SelectItem key={level.id} value={level.id}>
                         {level.name}
@@ -1030,7 +1030,7 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Requirement Type */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Requirement Type</label>
                 <Select
                   value={formData.type}
@@ -1038,10 +1038,10 @@ export default function DepartmentCoursesPage() {
                     setFormData((prev) => ({ ...prev, type: value as RequirementType }))
                   }
                 >
-                  <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                  <SelectTrigger className={inputCls}>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {REQUIREMENT_OPTIONS.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -1052,14 +1052,14 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Pass Percentage */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Pass Percentage</label>
                 <Input
                   type="number"
                   min={1}
                   max={100}
                   placeholder="e.g. 25"
-                  className={`${inputCls} !h-11`}
+                  className={inputCls}
                   value={formData.successPercentage}
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, successPercentage: event.target.value }))
@@ -1068,13 +1068,13 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Total Grade */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Total Grade</label>
                 <Input
                   type="number"
                   min={1}
                   placeholder="e.g. 50"
-                  className={`${inputCls} !h-11`}
+                  className={inputCls}
                   value={formData.totalGrade}
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, totalGrade: event.target.value }))
@@ -1083,13 +1083,13 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Number of Groups */}
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 w-full">
                 <label className={labelCls}>Number of Groups</label>
                 <Input
                   type="number"
                   min={1}
                   placeholder="e.g. 1"
-                  className={`${inputCls} !h-11`}
+                  className={inputCls}
                   value={formData.numberOfGroups}
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, numberOfGroups: event.target.value }))
@@ -1098,9 +1098,9 @@ export default function DepartmentCoursesPage() {
               </div>
 
               {/* Checkboxes Wrapper */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                <div className="flex flex-col gap-1.5">
-                  <div className={`${inputCls} !h-11 px-3 flex items-center gap-3 bg-white`}>
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                <div className="flex flex-col gap-1.5 w-full">
+                  <div className={`${inputCls} px-3 flex items-center gap-3 bg-white`}>
                     <Checkbox
                       checked={formData.isOptional}
                       onCheckedChange={(checked) =>
@@ -1111,12 +1111,12 @@ export default function DepartmentCoursesPage() {
                         }))
                       }
                     />
-                    <span className="text-sm font-semibold text-gray-700">Optional Course</span>
+                    <span className="text-sm font-bold text-gray-900">Optional Course</span>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <div className={`${inputCls} !h-11 px-3 flex items-center gap-3 bg-white`}>
+                <div className="flex flex-col gap-1.5 w-full">
+                  <div className={`${inputCls} px-3 flex items-center gap-3 bg-white`}>
                     <Checkbox
                       checked={formData.isIncludedInGpa}
                       onCheckedChange={(checked) =>
@@ -1126,18 +1126,18 @@ export default function DepartmentCoursesPage() {
                         }))
                       }
                     />
-                    <span className="text-sm font-semibold text-gray-700">Included in GPA</span>
+                    <span className="text-sm font-bold text-gray-900">Included in GPA</span>
                   </div>
                 </div>
               </div>
 
               {/* Optional Group Code */}
               {formData.isOptional && (
-                <div className="flex flex-col gap-1.5 md:col-span-3">
+                <div className="flex flex-col gap-1.5 md:col-span-3 w-full">
                   <label className={labelCls}>Optional Group Code</label>
                   <Input
                     placeholder="e.g. OPT-G1"
-                    className={`${inputCls} !h-11`}
+                    className={inputCls}
                     value={formData.optionalGroupCode}
                     onChange={(event) =>
                       setFormData((prev) => ({ ...prev, optionalGroupCode: event.target.value }))
@@ -1148,15 +1148,15 @@ export default function DepartmentCoursesPage() {
             </div>
 
             {/* Assessments Area */}
-            <div className="mx-6 mb-6 p-4 rounded-[16px] border border-gray-100 bg-gray-50/50 space-y-4">
+            <div className="mt-6 p-4 rounded-xl border border-gray-100 bg-gray-50/50 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end">
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 w-full">
                   <label className={labelCls}>Max Degree</label>
                   <Input
                     type="number"
                     min={1}
                     placeholder="e.g. 40"
-                    className={`${inputCls} bg-white !h-11`}
+                    className={`${inputCls} bg-white`}
                     value={assessmentDraft.maxScore}
                     onChange={(event) =>
                       setAssessmentDraft((prev) => ({ ...prev, maxScore: event.target.value }))
@@ -1164,7 +1164,7 @@ export default function DepartmentCoursesPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 w-full">
                   <label className={labelCls}>Assessment Type</label>
                   <Select
                     value={assessmentDraft.type}
@@ -1172,10 +1172,10 @@ export default function DepartmentCoursesPage() {
                       setAssessmentDraft((prev) => ({ ...prev, type: value as AssessmentType }))
                     }
                   >
-                    <SelectTrigger className={`${inputCls} !h-11 bg-white text-left`}>
+                    <SelectTrigger className={inputCls}>
                       <SelectValue placeholder="Select assessment type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       {ASSESSMENT_OPTIONS.map((assessment) => (
                         <SelectItem key={assessment.value} value={assessment.value}>
                           {assessment.label}
@@ -1188,7 +1188,7 @@ export default function DepartmentCoursesPage() {
                 <Button
                   type="button"
                   onClick={handleAddAssessment}
-                  className="h-11 w-11 p-0 rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
+                  className="h-[42px] w-[42px] p-0 rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                 </Button>
@@ -1214,7 +1214,7 @@ export default function DepartmentCoursesPage() {
 
               {/* Assessments Render List */}
               {assessments.length === 0 ? (
-                <div className="text-sm text-gray-400 border border-dashed border-gray-200 bg-white rounded-[12px] px-4 py-4 text-center font-medium">
+                <div className="text-sm text-gray-400 border border-dashed border-gray-100 bg-white rounded-[12px] px-4 py-4 text-center font-medium">
                   No assessments added yet.
                 </div>
               ) : (
@@ -1224,7 +1224,7 @@ export default function DepartmentCoursesPage() {
                       key={item.type}
                       className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-center rounded-[12px] border border-gray-100 bg-white p-3 shadow-sm"
                     >
-                      <div className="text-sm font-semibold text-gray-700 px-1">
+                      <div className="text-sm font-bold text-gray-900 px-1">
                         {ASSESSMENT_OPTIONS.find((option) => option.value === item.type)?.label || item.type}
                       </div>
                       <Input
@@ -1232,14 +1232,14 @@ export default function DepartmentCoursesPage() {
                         min={0}
                         value={item.maxScore}
                         onChange={(event) => handleAssessmentScoreChange(item.type, event.target.value)}
-                        className={`${inputCls} !h-10`}
+                        className={`${inputCls} !py-1.5`}
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleRemoveAssessment(item.type)}
-                        className="text-red-500 hover:bg-red-50 rounded-lg"
+                        className="text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1252,9 +1252,9 @@ export default function DepartmentCoursesPage() {
 
           {/* Error Message */}
           {submitError && (
-            <div className="bg-red-50 border border-red-200 rounded-[16px] p-4 flex items-center gap-3 text-red-600">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-3">
               <AlertCircle className="w-5 h-5 shrink-0" />
-              <span className="text-sm font-medium whitespace-pre-line">{submitError}</span>
+              <span className="whitespace-pre-line">{submitError}</span>
             </div>
           )}
 
@@ -1263,14 +1263,16 @@ export default function DepartmentCoursesPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting || isMissingContext || isLoadingHeaderData}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-3.5 rounded-[16px] transition-all shadow-sm cursor-pointer"
+            className={`w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center active:scale-[0.99] ${
+              editingId ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             {submitting ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : editingId ? (
               "Save Changes"
             ) : (
-              "Add or Save"
+              "Add"
             )}
           </button>
         </div>
@@ -1278,14 +1280,14 @@ export default function DepartmentCoursesPage() {
 
       {/* Levels & Course Offerings List View */}
       {!isMissingContext && effectiveAcademicYearId && (
-        <div className="bg-white rounded-[20px] border border-[#eaebf0] shadow-sm overflow-hidden p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-            <h2 className="text-xl font-bold text-gray-800">Levels</h2>
+        <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
+            <h2 className="text-[22px] font-bold text-gray-900 leading-none">Levels</h2>
             {loadingLevels && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
           </div>
 
           {!loadingLevels && levels.length === 0 && (
-            <div className="rounded-[16px] border border-dashed border-gray-200 text-gray-400 text-sm p-8 text-center font-medium bg-white">
+            <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed">
               No levels found.
             </div>
           )}
@@ -1295,12 +1297,12 @@ export default function DepartmentCoursesPage() {
               const isLevelOpen = openLevelId === level.id;
 
               return (
-                <div key={level.id} className="rounded-[16px] border border-gray-200 bg-gray-50/30 overflow-hidden">
+                <div key={level.id} className="rounded-xl border border-gray-100 bg-gray-50/30 overflow-hidden">
                   <button
                     onClick={() => toggleLevel(level.id)}
                     className="w-full p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/60 transition-all"
                   >
-                    <h3 className="text-lg font-bold text-gray-800">{level.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-900">{level.name}</h3>
                     <div className="w-9 h-9 rounded-xl border border-gray-200 bg-white grid place-items-center shadow-sm">
                       {isLevelOpen ? (
                         <ChevronUp className="w-4 h-4 text-gray-600" />
@@ -1328,7 +1330,7 @@ export default function DepartmentCoursesPage() {
                               onClick={() => toggleSemester(level.id, semester.value)}
                               className="w-full p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50/30 transition-all"
                             >
-                              <h4 className="text-[15px] font-bold text-gray-700">{semester.label}</h4>
+                              <h4 className="text-[15px] font-bold text-gray-800">{semester.label}</h4>
                               <div className="w-8 h-8 rounded-lg border border-gray-100 bg-white grid place-items-center shadow-sm">
                                 {isSemesterOpen ? (
                                   <ChevronUp className="w-3.5 h-3.5 text-gray-500" />
@@ -1342,30 +1344,30 @@ export default function DepartmentCoursesPage() {
                               <div className="px-4 pb-4">
                                 {bucket.loading ? (
                                   <div className="py-8 flex justify-center">
-                                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                                    <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                                   </div>
                                 ) : bucket.error ? (
-                                  <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3.5 flex items-center justify-between gap-3">
-                                    <span className="font-medium">{bucket.error}</span>
+                                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium flex items-center justify-between gap-3">
+                                    <span>{bucket.error}</span>
                                     <Button
                                       type="button"
                                       size="sm"
                                       variant="outline"
                                       onClick={() => fetchOfferings(level.id, semester.value)}
-                                      className="cursor-pointer h-8 rounded-lg"
+                                      className="cursor-pointer h-8 rounded-lg border-red-200 text-red-700 hover:bg-red-100"
                                     >
                                       Retry
                                     </Button>
                                   </div>
                                 ) : bucket.items.length === 0 ? (
-                                  <div className="rounded-xl border border-dashed border-gray-100 text-gray-400 text-xs py-6 text-center font-medium bg-gray-50/20">
+                                  <div className="text-center p-6 text-gray-400 border border-gray-100 rounded-xl border-dashed text-xs bg-gray-50/20">
                                     No courses in this semester.
                                   </div>
                                 ) : (
                                   <div className="overflow-x-auto">
                                     <table className="w-full border-separate border-spacing-y-1.5">
                                       <thead>
-                                        <tr className="text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                        <tr className="text-left text-[11px] font-bold text-gray-800 uppercase tracking-wider">
                                           <th className="px-4 py-2">Name</th>
                                           <th className="px-4 py-2">Code</th>
                                           <th className="px-4 py-2">Groups</th>
@@ -1375,43 +1377,39 @@ export default function DepartmentCoursesPage() {
                                       <tbody>
                                         {bucket.items.map((offering) => (
                                           <tr key={offering.id} className="group">
-                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 rounded-l-xl border-y border-l border-gray-100 text-sm font-semibold text-gray-700 transition-all">
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 rounded-l-xl border-y border-l border-gray-100 text-[14px] font-bold text-gray-900 transition-all">
                                               {offering.name || "Unnamed Course"}
                                             </td>
-                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-sm font-medium text-gray-500 transition-all">
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-[14px] font-bold text-gray-500 transition-all">
                                               {offering.code || "-"}
                                             </td>
-                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-sm font-medium text-gray-600 transition-all">
+                                            <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 border-y border-gray-100 text-[14px] font-bold text-gray-500 sm:text-gray-900 transition-all">
                                               {offering.numberOfGroups}
                                             </td>
                                             <td className="bg-gray-50/40 group-hover:bg-gray-50 px-4 py-3 rounded-r-xl border-y border-r border-gray-100 transition-all">
-                                              <div className="flex items-center justify-end gap-1">
-                                                <Button
+                                              <div className="flex items-center justify-end gap-2">
+                                                <button
                                                   type="button"
-                                                  variant="ghost"
-                                                  size="icon"
                                                   onClick={() =>
                                                     handleEdit(offering.id, level.id, semester.value)
                                                   }
-                                                  className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                  className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer shadow-sm border border-gray-100"
                                                 >
                                                   {loadingEditId === offering.id ? (
-                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    <Loader2 className="w-[18px] h-[18px] animate-spin" />
                                                   ) : (
-                                                    <Pencil className="w-3.5 h-3.5" />
+                                                    <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                                   )}
-                                                </Button>
-                                                <Button
+                                                </button>
+                                                <button
                                                   type="button"
-                                                  variant="ghost"
-                                                  size="icon"
                                                   onClick={() =>
                                                     handleDelete(offering.id, level.id, semester.value)
                                                   }
-                                                  className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                                  className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer shadow-sm border border-gray-100"
                                                 >
-                                                  <Trash2 className="w-3.5 h-3.5" />
-                                                </Button>
+                                                  <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                                                </button>
                                               </div>
                                             </td>
                                           </tr>
