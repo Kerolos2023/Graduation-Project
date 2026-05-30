@@ -381,15 +381,6 @@ topRef.current?.scrollIntoView({
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px]"
               />
             </div>
-
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 min-w-[90px] rounded-[12px] border border-blue-200 text-blue-600 bg-white text-sm cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              Print
-            </button>
           </div>
         </div>
 

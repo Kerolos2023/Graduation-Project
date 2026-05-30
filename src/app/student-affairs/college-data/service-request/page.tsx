@@ -13,14 +13,14 @@ export default function ServiceRequestsPage() {
   const pageSize = 10;
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [search, setSearch] = useState("");
+  const [SearchValue, setsearchValue] = useState("");
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await axiosInstance.get(
         `${API}?pageNumber=${pageNumber}&pageSize=${pageSize}${
-          search ? `&status=${search}` : ""
+        SearchValue ? `&SearchValue=${SearchValue}` : ""
         }`);
 
       setData(res.data.items || []);
@@ -28,7 +28,7 @@ export default function ServiceRequestsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [pageNumber, search]);
+  }, [pageNumber, SearchValue]);
 
   useEffect(() => {
     fetchData();
@@ -53,7 +53,6 @@ export default function ServiceRequestsPage() {
   return (
     <div className="w-full p-4 md:p-6 bg-[#f7f8fa]">
       <div className="bg-white rounded-[20px] border p-4 md:p-6">
-
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
@@ -67,11 +66,11 @@ export default function ServiceRequestsPage() {
           </div>
 
           <input
-            placeholder="Search by Status"
-            value={search}
+            placeholder="Search by student"
+            value={SearchValue}
             onChange={(e) => {
               setPageNumber(1);
-              setSearch(e.target.value);
+              setsearchValue(e.target.value);
             }}
             className="w-full md:w-[220px] px-4 py-2 border rounded-[12px] text-sm focus:outline-none"
           />
