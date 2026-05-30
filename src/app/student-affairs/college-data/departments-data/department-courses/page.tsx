@@ -347,8 +347,8 @@ export default function DepartmentCoursesPage() {
     try {
       const response = await axiosInstance.get(`/colleges/${COLLEGE_ID}/courses`, {
         params: {
-          pageNumber: 1,
-          pageSize: 2000,
+          PageNumber: 1,
+          PageSize: 2000,
         },
       });
       const rows = readArray(response.data);
@@ -824,8 +824,17 @@ export default function DepartmentCoursesPage() {
 
       setAssessments(mappedAssessments);
 
+      const editCourseIdRaw = readString(raw?.courseId, raw?.CourseId);
+
+      // Match course using case-insensitive comparison (API may return
+      // lowercase UUIDs while the courses list has uppercase ones)
+      const matchedCourse = courses.find(
+        (c) => c.id.toLowerCase() === editCourseIdRaw.toLowerCase()
+      );
+      const resolvedCourseId = matchedCourse?.id ?? editCourseIdRaw;
+
       setFormData({
-        courseId: readString(raw?.courseId, raw?.CourseId),
+        courseId: resolvedCourseId,
         semesterType: responseSemesterType,
         creditHours: String(readNumber(raw?.creditHours, raw?.CreditHours)),
         levelId: readString(raw?.levelId, raw?.LevelId, levelId),
