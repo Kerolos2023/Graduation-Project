@@ -39,6 +39,12 @@ const STATUS_MAP: Record<string, { dot: string; bg: string; text: string; border
     text: "text-red-500",
     border: "border-red-200",
   },
+  Ready: {
+    dot: "bg-emerald-500",
+    bg: "bg-emerald-50",
+    text: "text-emerald-600",
+    border: "border-emerald-200",
+  },
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
@@ -126,7 +132,7 @@ export default function ServicesHistoryPage() {
           <input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search"
+            placeholder="Search by service name"
             className="w-full pl-10 pr-5 py-2.5 rounded-full border border-gray-200 bg-white text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition shadow-sm"
           />
         </div>
