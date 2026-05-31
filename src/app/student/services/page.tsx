@@ -179,7 +179,7 @@ function ServiceCard({ service, isPaying, onPay }: ServiceCardProps) {
             <span className="text-[11px] font-medium text-gray-400">Amount</span>
             <span className="text-[15px] font-bold text-gray-900 leading-snug whitespace-nowrap">
               ${service.price.toFixed(2)}{" "}
-              <span className="text-xs font-normal text-gray-400">USD</span>
+              <span className="text-xs font-normal text-gray-400">EGP</span>
             </span>
           </div>
 
