@@ -1,3 +1,5 @@
+
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
@@ -9,7 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Pagination } from '@/components/ui/pagination' 
+import { Pagination } from '@/components/ui/pagination'
 
 const PERMISSIONS_LIST = [
   { label: "AcademicAdvising", value: "AcademicAdvising" },
@@ -25,21 +27,33 @@ export default function StaffPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(["Staff"]);
   const [openSelect, setOpenSelect] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPageNumber(1);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   const scrollToForm = () => {
     if (!formRef.current) return;
     formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await staffService.getAllStaff(pageNumber, pageSize, searchQuery || undefined);          
+      const res = await staffService.getAllStaff(pageNumber, pageSize, debouncedSearch || undefined);
       const items = res.items ?? res.data ?? [];
       const pages = res.totalPages ?? res.meta?.totalPages ?? 1;
       const count = res.totalCount ?? res.totalNumber ?? items.length;
@@ -47,24 +61,24 @@ export default function StaffPage() {
       setStaff(Array.isArray(items) ? items : []);
       setTotalPages(pages);
       setTotalCount(count);
-    } catch (error) { 
-      console.error(error); 
-    } finally { 
-      setLoading(false); 
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  }, [pageNumber, pageSize, searchQuery]);
+  }, [pageNumber, pageSize, debouncedSearch]);
 
-  useEffect(() => { 
-    loadData(); 
+  useEffect(() => {
+    loadData();
   }, [loadData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
-    
+
     const formData = new FormData(e.currentTarget);
     const formFields = Object.fromEntries(formData.entries());
-    
+
     const payload = {
       ...formFields,
       roles: selectedRoles,
@@ -79,7 +93,7 @@ export default function StaffPage() {
         const newItem = await staffService.addStaff(payload);
         if (newItem) {
           cancelEdit();
-          loadData(); 
+          loadData();
         }
       }
     } catch (error: any) {
@@ -103,10 +117,10 @@ export default function StaffPage() {
   const handleEditClick = async (item: any) => {
     setEditingId(item.id);
     setErrorMessage(null);
-    
+
     try {
       const fullData = await staffService.getStaffById(item.id);
-      
+
       if (fullData.roles && Array.isArray(fullData.roles)) {
         setSelectedRoles(fullData.roles);
       } else {
@@ -126,7 +140,7 @@ export default function StaffPage() {
       setErrorMessage("Could not load staff details from server.");
     }
 
-    setTimeout(() => { scrollToForm(); }, 50);  
+    setTimeout(() => { scrollToForm(); }, 50);
   };
 
   const cancelEdit = () => {
@@ -141,7 +155,7 @@ export default function StaffPage() {
     if (!confirm("Are you sure?")) return;
     try {
       await staffService.deleteStaff(id);
-      loadData(); 
+      loadData();
     } catch (error) { console.error(error); }
   };
 
@@ -183,28 +197,29 @@ export default function StaffPage() {
               <label className="text-[13px] font-bold text-gray-900 ml-1">Name</label>
               <Input name="name" placeholder="Name" required className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
             </div>
+
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">National ID</label>
               <Input name="nationalId" placeholder="National ID" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
             </div>
+
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Username</label>
               <Input name="userName" placeholder="Username" required className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
             </div>
-            
-            {!editingId ? (
+
+            {!editingId && (
               <div className="flex flex-col gap-1.5 w-full">
                 <label className="text-[13px] font-bold text-gray-900 ml-1">Password</label>
                 <Input name="password" type="password" placeholder="Password" required className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
               </div>
-            ) : (
-              <div className="hidden md:block"></div>
             )}
 
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Email</label>
               <Input name="email" type="email" placeholder="Email" className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
             </div>
+
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Phone Number</label>
               <Input name="phoneNumber" placeholder="Phone Number" required className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" />
@@ -217,8 +232,22 @@ export default function StaffPage() {
                   <Button variant="outline" className="w-full h-auto min-h-[42px] justify-between rounded-[12px] border border-gray-200 bg-white px-4 py-2 flex-wrap gap-2 text-slate-500 font-normal focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm">
                     <div className="flex flex-wrap gap-1">
                       {selectedRoles.map((role) => (
-                        <Badge key={role} className="bg-[#eff4ff] text-blue-600 border border-blue-100 hover:bg-[#eff4ff] rounded-lg font-medium px-2 py-0.5 shadow-none text-xs">
-                          {role} <X className="ml-1 h-3 w-3 cursor-pointer text-blue-500" onClick={(e) => { e.stopPropagation(); toggleRole(role); }} />
+                        <Badge key={role} className="bg-[#eff4ff] text-blue-600 border border-blue-100 hover:bg-[#eff4ff] rounded-lg font-medium px-2 py-0.5 shadow-none text-xs flex items-center gap-1">
+                          {role}
+                          <span
+                            className="ml-1 h-3 w-3 cursor-pointer text-blue-500 hover:text-blue-700 flex items-center justify-center"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleRole(role);
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </span>
                         </Badge>
                       ))}
                     </div>
@@ -244,9 +273,8 @@ export default function StaffPage() {
             </div>
           </div>
 
-          <button type="submit" className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center ${
-            editingId ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"
-          }`}>
+          <button type="submit" className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center ${editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
+            }`}>
             {editingId ? "Save Changes" : "Add"}
           </button>
         </form>
@@ -264,15 +292,14 @@ export default function StaffPage() {
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-[280px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
+              <input
                 type="text"
-                placeholder="Search" 
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto" 
+                placeholder="Search"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setPageNumber(1); 
-                }} 
+                }}
               />
             </div>
           </div>
@@ -298,10 +325,9 @@ export default function StaffPage() {
             </div>
           ) : (
             staff.map((item) => (
-              <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative ${
-                editingId === item.id ? "bg-blue-50/50 border-blue-200" : ""
-              }`}>
-                
+              <div key={item.id} className={`flex flex-col sm:flex-row sm:items-center w-full px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 sm:gap-4 relative ${editingId === item.id ? "bg-blue-50/50 border-blue-200" : ""
+                }`}>
+
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 flex-1 w-full">
                   <div className="w-full sm:w-1/2 truncate">
                     <span className="text-[10px] uppercase font-bold text-gray-400 sm:hidden block mb-1">Name</span>
@@ -310,14 +336,14 @@ export default function StaffPage() {
                 </div>
 
                 <div className="flex items-center justify-end gap-2 absolute right-4 top-4 sm:relative sm:right-auto sm:top-auto">
-                  <button 
-                    onClick={() => handleEditClick(item)} 
+                  <button
+                    onClick={() => handleEditClick(item)}
                     className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
                     <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                   </button>
-                  <button 
-                    onClick={() => onDelete(item.id)} 
+                  <button
+                    onClick={() => onDelete(item.id)}
                     className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
                     <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />

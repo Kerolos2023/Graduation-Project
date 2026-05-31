@@ -15,9 +15,7 @@ export default function CommitteesPage() {
   const params = useParams();
   const examTermId = params.id as string;
   const { selectedProgramId } = useAcademicContext();
- 
   const formRef = useRef<HTMLDivElement>(null);
-
   const [committees, setCommittees] = useState<any[]>([]);
   const [buildings, setBuildings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
@@ -25,8 +23,9 @@ export default function CommitteesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
 
   const [form, setForm] = useState({
@@ -43,6 +42,7 @@ export default function CommitteesPage() {
       try {
         setIsLoading(true);
         setErrorMsg(null);
+        setValidationErrors([]);
         const [commRes, buildRes] = await Promise.all([
           committeeService.getAll(examTermId),
           committeeService.getBuildings()
@@ -59,12 +59,12 @@ export default function CommitteesPage() {
     init();
   }, [examTermId]);
 
-   
+
   useEffect(() => {
     if (!isLoading && examTermId && examTermId !== 'undefined') {
       const timer = setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100); 
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [isLoading, examTermId]);
@@ -85,6 +85,7 @@ export default function CommitteesPage() {
     setForm((prev) => ({ ...prev, buildingId: bId, roomId: "" }));
     setRooms([]);
     setErrorMsg(null);
+    setValidationErrors([]);
     setIsLoadingRooms(true);
 
     try {
@@ -102,11 +103,15 @@ export default function CommitteesPage() {
       toast.error("Exam ID is missing");
       return;
     }
+
     setErrorMsg(null);
+    setValidationErrors([]);
+
     if (!form.number || (!editingId && !form.roomId)) {
       setErrorMsg("Please fill in all required fields (Number and Room).");
       return;
     }
+
     setIsSubmitting(true);
     try {
       const payload = { CommitteeNumber: Number(form.number), MaxCapacity: Number(form.capacity) };
@@ -122,7 +127,12 @@ export default function CommitteesPage() {
       setCommittees(res?.items || []);
     } catch (error: any) {
       const apiError = error.response?.data;
-      setErrorMsg(apiError?.errors?.[0] || apiError?.title || "Operation failed");
+      if (apiError?.errors && typeof apiError.errors === 'object') {
+        setErrorMsg(apiError.title || "One or more validation errors occurred.");
+        setValidationErrors(Object.values(apiError.errors).flat() as string[]);
+      } else {
+        setErrorMsg(apiError?.errors?.[0] || apiError?.title || "Operation failed");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -132,12 +142,14 @@ export default function CommitteesPage() {
     setEditingId(null);
     setForm({ number: "", capacity: "", buildingId: "", roomId: "" });
     setErrorMsg(null);
+    setValidationErrors([]);
     setRooms([]);
   };
 
   const startEdit = (item: any) => {
     setEditingId(item.id);
     setErrorMsg(null);
+    setValidationErrors([]);
     setForm({
       number: item.committeeNumber.toString(),
       capacity: item.maxCapacity.toString(),
@@ -154,8 +166,8 @@ export default function CommitteesPage() {
       await committeeService.delete(examTermId, id);
       setCommittees(p => p.filter(c => c.id !== id));
       toast.success("Committee deleted successfully");
-    } catch (e) { 
-      toast.error("Delete failed"); 
+    } catch (e) {
+      toast.error("Delete failed");
     }
   };
 
@@ -183,7 +195,28 @@ export default function CommitteesPage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
-      
+      {errorMsg && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-700 text-sm relative transition-all">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-1.5 flex-1">
+            <span className="font-bold block">{errorMsg}</span>
+            {validationErrors.length > 0 && (
+              <ul className="list-disc list-inside space-y-1 font-medium pl-1 text-[13px] opacity-90">
+                {validationErrors.map((msg, index) => (
+                  <li key={index}>{msg}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <button
+            onClick={() => { setErrorMsg(null); setValidationErrors([]); }}
+            className="absolute top-3 right-3 opacity-50 hover:opacity-100 transition-opacity cursor-pointer text-red-900"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* FORM CARD */}
       <div ref={formRef} className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0 scroll-mt-6">
         <div className="flex justify-between items-center mb-6">
@@ -253,23 +286,24 @@ export default function CommitteesPage() {
             </>
           )}
         </div>
-        
-        <button 
-          onClick={handleSubmit} 
-          disabled={isSubmitting} 
-          className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center mb-4 ${
-            editingId ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
+
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2 ${editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
+            } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-          {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : editingId ? "Save Changes" : "Add"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="animate-spin w-4 h-4" />
+              <span>Saving Changes...</span>
+            </>
+          ) : editingId ? (
+            "Save Changes"
+          ) : (
+            "Add"
+          )}
         </button>
-        
-        {errorMsg && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 font-bold text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
       </div>
 
       {/* LIST CARD */}
@@ -307,7 +341,10 @@ export default function CommitteesPage() {
             filteredCommittees.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col lg:grid lg:grid-cols-[1.5fr_1.5fr_1fr_100px] items-start lg:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 lg:gap-0 relative"
+                className={cn(
+                  "flex flex-col lg:grid lg:grid-cols-[1.5fr_1.5fr_1fr_100px] items-start lg:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 lg:gap-0 relative",
+                  editingId === item.id && "bg-blue-50/50 border-blue-200"
+                )}
               >
                 <div className="flex flex-col lg:block w-full lg:w-auto">
                   <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Name</span>
@@ -318,7 +355,7 @@ export default function CommitteesPage() {
                   <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Place</span>
                   <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.place || "Not Assigned"}</div>
                 </div>
-                
+
                 <div className="flex flex-col lg:block w-full lg:w-auto lg:text-center">
                   <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Capacity</span>
                   <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.maxCapacity} Seats</div>

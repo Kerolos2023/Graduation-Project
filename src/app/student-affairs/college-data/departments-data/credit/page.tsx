@@ -17,9 +17,7 @@ import { cn } from "@/lib/utils";
 
 export default function CreditLoadPage() {
   const { selectedProgramId, selectedYearId, isAcademicReady, academicVersion } = useAcademicContext();
-
   const formRef = useRef<HTMLDivElement>(null);
-
   const [data, setData] = useState<StudyLoadResponse[]>([]);
   const [availableLevels, setAvailableLevels] = useState<AcademicLevel[]>([]);
   const [search, setSearch] = useState("");
@@ -99,9 +97,11 @@ export default function CreditLoadPage() {
   }, [data, search]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
   const paginatedData = useMemo(() => {
+    if (search.trim()) return filteredData;
     return filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  }, [filteredData, currentPage, itemsPerPage]);
+  }, [filteredData, currentPage, itemsPerPage, search]);
 
   const handleSave = async () => {
     if (!selectedProgramId || !selectedYearId) {
@@ -114,7 +114,7 @@ export default function CreditLoadPage() {
     }
 
     setStatusMessage({ text: "", type: null });
-    loading && setLoading(true);
+    setLoading(true);
     try {
       const payload = {
         academicYearId: selectedYearId,
@@ -164,6 +164,7 @@ export default function CreditLoadPage() {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setStatusMessage({ text: "", type: null });
     setFormData({ levelId: "", semesterType: "", minHours: "", maxHours: "" });
   };
 
@@ -280,13 +281,21 @@ export default function CreditLoadPage() {
           onClick={handleSave}
           disabled={loading}
           className={cn(
-            "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center active:scale-[0.99]",
-            editingId
-              ? "bg-purple-600 hover:bg-purple-700"
-              : "bg-blue-600 hover:bg-blue-700"
+            "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center active:scale-[0.99] gap-2",
+            editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700",
+            loading && "opacity-70 cursor-not-allowed"
           )}
         >
-          {loading ? <Loader2 className="animate-spin" /> : editingId ? "Save Changes" : "Add"}
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin w-4 h-4" />
+              <span>Saving...</span>
+            </>
+          ) : editingId ? (
+            "Save Changes"
+          ) : (
+            "Add"
+          )}
         </button>
       </div>
 
@@ -380,8 +389,7 @@ export default function CreditLoadPage() {
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 1 && !search.trim() && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-100">
             <p className="text-sm text-gray-500 font-medium">
               Showing Page <strong className="text-gray-900">{currentPage}</strong> of <strong className="text-gray-900">{totalPages}</strong>

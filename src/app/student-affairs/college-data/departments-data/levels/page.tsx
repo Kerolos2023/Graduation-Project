@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react"; 
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Trash2, Pencil, Loader2, X, Search, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,17 +16,14 @@ import { cn } from "@/lib/utils";
 
 export default function AcademicLevelsPage() {
   const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
-
   const formRef = useRef<HTMLDivElement>(null);
-
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize] = useState(10);
-  const [loading, setLoading] = useState(false);         
+  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
     text: "",
     type: null
@@ -34,7 +31,6 @@ export default function AcademicLevelsPage() {
 
   const [formData, setFormData] = useState({ name: "", minHours: "", maxHours: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const loadLevels = useCallback(async () => {
     if (!selectedProgramId) return;
 
@@ -43,25 +39,24 @@ export default function AcademicLevelsPage() {
       const response = await levelService.getAllLevels(selectedProgramId, {
         PageNumber: pageNumber,
         PageSize: pageSize,
-        SearchValue: searchValue,
       });
 
       setLevels(response.items || []);
       setTotalPages(response.totalPages || 1);
     } catch (error: any) {
       console.error("Load Error:", error.response?.data);
-      const errorMsg = 
+      const errorMsg =
         typeof error.response?.data === "string" ? error.response.data :
-        error.response?.data?.errors?.[0] || 
-        error.response?.data?.Message || 
-        error.response?.data?.message || 
-        error.message;
-        
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
+
       setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
       setLoading(false);
     }
-  }, [pageNumber, pageSize, selectedProgramId, searchValue]);
+  }, [pageNumber, pageSize, selectedProgramId]);
 
   useEffect(() => {
     if (isAcademicReady && selectedProgramId) {
@@ -71,7 +66,7 @@ export default function AcademicLevelsPage() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    setPageNumber(1); 
+    setPageNumber(1);
   };
 
   const filteredLevels = useMemo(() => {
@@ -117,13 +112,13 @@ export default function AcademicLevelsPage() {
       cancelEdit();
       loadLevels();
     } catch (error: any) {
-      const errorMsg = 
+      const errorMsg =
         typeof error.response?.data === "string" ? error.response.data :
-        error.response?.data?.errors?.[0] || 
-        (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
-        error.response?.data?.Message || 
-        error.response?.data?.message || 
-        error.message;
+          error.response?.data?.errors?.[0] ||
+          (error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join(" - ") : null) ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
 
       setStatusMessage({ text: errorMsg, type: 'error' });
     } finally {
@@ -149,20 +144,20 @@ export default function AcademicLevelsPage() {
 
   const handleDelete = async (id: string, name: string) => {
     if (!selectedProgramId || !confirm(`Delete ${name}?`)) return;
-    
+
     setStatusMessage({ text: "", type: null });
-    
+
     try {
       await levelService.deleteLevel(selectedProgramId, id);
       toast.success("Deleted successfully");
       loadLevels();
     } catch (error: any) {
-      const errorMsg = 
+      const errorMsg =
         typeof error.response?.data === "string" ? error.response.data :
-        error.response?.data?.errors?.[0] || 
-        error.response?.data?.Message || 
-        error.response?.data?.message || 
-        error.message;
+          error.response?.data?.errors?.[0] ||
+          error.response?.data?.Message ||
+          error.response?.data?.message ||
+          error.message;
 
       setStatusMessage({ text: errorMsg, type: 'error' });
     }
