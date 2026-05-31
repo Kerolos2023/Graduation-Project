@@ -3,12 +3,10 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Search, Pencil, Trash2, Loader2, X, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-
 import { StudyLoadService, StudyLoadResponse } from "@/services/studyLoadServices";
 import { levelService, AcademicLevel } from "@/services/levelsServices";
 import CollegeDataTabs from "@/components/departmentsTabs";
@@ -32,7 +30,6 @@ export default function CreditLoadPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
   const [formData, setFormData] = useState({
     levelId: "",
     semesterType: "",
@@ -233,8 +230,8 @@ export default function CreditLoadPage() {
             {editingId ? "Update Credit Load" : "Credit Load by Level"}
           </h1>
           {editingId && (
-            <button onClick={cancelEdit} className="flex items-center gap-1 text-red-500 hover:text-red-600 text-sm font-bold cursor-pointer">
-              <X size={14} /> <span>Cancel Edit</span>
+            <button type="button" onClick={cancelEdit} className="text-red-500 hover:bg-red-50 rounded-xl text-xs font-bold h-8 px-3 cursor-pointer flex items-center transition-colors gap-1">
+              <X size={14} className="mr-1" /> <span>Cancel Edit</span>
             </button>
           )}
         </div>
@@ -278,10 +275,11 @@ export default function CreditLoadPage() {
         </div>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={loading}
           className={cn(
-            "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center active:scale-[0.99] gap-2",
+            "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer flex items-center justify-center text-sm active:scale-[0.99] gap-2",
             editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700",
             loading && "opacity-70 cursor-not-allowed"
           )}
@@ -311,7 +309,7 @@ export default function CreditLoadPage() {
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-[280px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input placeholder="Search" value={search} onChange={handleSearchChange} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto" />
+              <input type="text" placeholder="Search" value={search} onChange={handleSearchChange} className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto bg-white placeholder:text-gray-400" />
             </div>
           </div>
         </div>
@@ -343,41 +341,34 @@ export default function CreditLoadPage() {
                   editingId === row.id && "bg-blue-50/50 border-blue-200"
                 )}
               >
-                <div className="md:hidden flex justify-end w-full mb-2">
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(row)} className="h-9 w-9 text-blue-500 bg-blue-50/50 cursor-pointer">
-                      <Pencil size={16} />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)} className="h-9 w-9 text-red-500 bg-red-50/50 cursor-pointer">
-                      <Trash2 size={16} />
-                    </Button>
+                <div className="flex flex-col md:contents gap-1 w-full">
+                  <div className="flex flex-col md:block">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Level / Semester</span>
+                    <div className="text-[14px] font-bold text-gray-900 truncate">{row.levelName}</div>
+                    <div className="text-[11px] text-blue-600 font-bold mt-0.5">{row.semesterName} Semester</div>
+                  </div>
+
+                  <div className="flex flex-col md:text-center w-full md:w-auto">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Min Hours</span>
+                    <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{row.minHours}</div>
+                  </div>
+
+                  <div className="flex flex-col md:text-center w-full md:w-auto">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Max Hours</span>
+                    <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{row.maxHours}</div>
                   </div>
                 </div>
 
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Level / Semester</span>
-                  <div className="text-[14px] font-bold text-gray-900 truncate">{row.levelName}</div>
-                  <div className="text-[11px] text-blue-600 font-bold mt-0.5">{row.semesterName} Semester</div>
-                </div>
-
-                <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Min Hours</span>
-                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{row.minHours}</div>
-                </div>
-
-                <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Max Hours</span>
-                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{row.maxHours}</div>
-                </div>
-
-                <div className="hidden md:flex justify-end gap-2">
+                <div className="flex items-center justify-end gap-2 absolute right-4 top-4 md:relative md:right-auto md:top-auto">
                   <button
+                    type="button"
                     onClick={() => handleEdit(row)}
                     className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
                     <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDelete(row.id)}
                     className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
@@ -390,17 +381,17 @@ export default function CreditLoadPage() {
         </div>
 
         {totalPages > 1 && !search.trim() && (
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 pt-6 border-t border-gray-100 gap-4">
             <p className="text-sm text-gray-500 font-medium">
               Showing Page <strong className="text-gray-900">{currentPage}</strong> of <strong className="text-gray-900">{totalPages}</strong>
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto justify-end">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="rounded-[12px] border-gray-200 cursor-pointer font-semibold text-sm px-3 py-2"
+                className="rounded-[12px] border-gray-200 cursor-pointer font-semibold text-sm px-3 py-2 flex-1 sm:flex-none"
               >
                 <ChevronLeft size={16} className="mr-1" /> Previous
               </Button>
@@ -409,7 +400,7 @@ export default function CreditLoadPage() {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="rounded-[12px] border-gray-200 cursor-pointer font-semibold text-sm px-3 py-2"
+                className="rounded-[12px] border-gray-200 cursor-pointer font-semibold text-sm px-3 py-2 flex-1 sm:flex-none"
               >
                 Next <ChevronRight size={16} className="ml-1" />
               </Button>
