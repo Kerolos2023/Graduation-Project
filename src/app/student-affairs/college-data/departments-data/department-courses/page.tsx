@@ -1273,7 +1273,7 @@ export default function DepartmentCoursesPage() {
             onClick={handleSubmit}
             disabled={submitting || isMissingContext || isLoadingHeaderData}
             className={`w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center active:scale-[0.99] ${
-              editingId ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"
+              editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             {submitting ? (
