@@ -18,16 +18,12 @@ export default function GradesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const { selectedProgramId, isAcademicReady, academicVersion } = useAcademicContext();
-
   const formRef = useRef<HTMLDivElement>(null);
-
   const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'error' | 'success' | 'warning' | null }>({
     text: "",
     type: null
   });
-
   const { register, handleSubmit, reset, setValue } = useForm<GradeRequest>();
-
   const fetchGrades = useCallback(async () => {
     if (!selectedProgramId) return;
     try {
@@ -55,9 +51,12 @@ export default function GradesPage() {
   }, [fetchGrades, isAcademicReady, academicVersion, selectedProgramId]);
 
   const filteredGrades = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return grades;
+
     return grades.filter(g =>
-      g.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      g.code.toLowerCase().includes(searchTerm.toLowerCase())
+      (g.name && g.name.toLowerCase().includes(term)) ||
+      (g.code && g.code.toLowerCase().includes(term))
     );
   }, [grades, searchTerm]);
 
@@ -193,64 +192,64 @@ export default function GradesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Grade Name</label>
-              <Input 
-                {...register("name")} 
-                placeholder="e.g. Excellent" 
-                required 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                {...register("name")}
+                placeholder="e.g. Excellent"
+                required
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Equivalent Grade (Code)</label>
-              <Input 
-                {...register("code")} 
-                placeholder="e.g. A+" 
-                required 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                {...register("code")}
+                placeholder="e.g. A+"
+                required
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Percentage From</label>
-              <Input 
-                type="number" 
-                {...register("minScore")} 
-                placeholder="0" 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                type="number"
+                {...register("minScore")}
+                placeholder="0"
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">To</label>
-              <Input 
-                type="number" 
-                {...register("maxScore")} 
-                placeholder="100" 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                type="number"
+                {...register("maxScore")}
+                placeholder="100"
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">Points From</label>
-              <Input 
-                type="number" 
-                step="0.01" 
-                {...register("minGradePoint")} 
-                placeholder="0.00" 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                type="number"
+                step="0.01"
+                {...register("minGradePoint")}
+                placeholder="0.00"
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-[13px] font-bold text-gray-900 ml-1">To</label>
-              <Input 
-                type="number" 
-                step="0.01" 
-                {...register("maxGradePoint")} 
-                placeholder="4.00" 
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto" 
+              <Input
+                type="number"
+                step="0.01"
+                {...register("maxGradePoint")}
+                placeholder="4.00"
+                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
               />
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={cn(
               "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm active:scale-[0.99]",
               editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
@@ -275,8 +274,9 @@ export default function GradesPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Search"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
               />
             </div>
           </div>
@@ -303,8 +303,8 @@ export default function GradesPage() {
             </div>
           ) : (
             filteredGrades.map((item) => (
-              <div 
-                key={item.id} 
+              <div
+                key={item.id}
                 className={cn(
                   "flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr_100px] items-start md:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 md:gap-0 relative print:grid print:grid-cols-[2fr_1fr_1fr_1fr] print:border-b print:border-slate-100 print:rounded-none print:px-2 print:py-3 print:shadow-none",
                   editingId === item.id && "bg-blue-50/50 border-blue-200 print:bg-transparent"
