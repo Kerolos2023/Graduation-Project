@@ -15,20 +15,16 @@ export default function CommitteesPage() {
   const params = useParams();
   const examTermId = params.id as string;
   const { selectedProgramId } = useAcademicContext();
- 
   const formRef = useRef<HTMLDivElement>(null);
-
   const [committees, setCommittees] = useState<any[]>([]);
   const [buildings, setBuildings] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  
-  // الأخطاء مقسمة إلى الرسالة الرئيسية ومصفوفة تفاصيل الـ Validation
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
 
@@ -63,12 +59,12 @@ export default function CommitteesPage() {
     init();
   }, [examTermId]);
 
-   
+
   useEffect(() => {
     if (!isLoading && examTermId && examTermId !== 'undefined') {
       const timer = setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100); 
+      }, 100);
       return () => clearTimeout(timer);
     }
   }, [isLoading, examTermId]);
@@ -131,8 +127,6 @@ export default function CommitteesPage() {
       setCommittees(res?.items || []);
     } catch (error: any) {
       const apiError = error.response?.data;
-
-      // هندسة استخراج كائن الـ Validation المعقد من السيرفر وعمله Flatting
       if (apiError?.errors && typeof apiError.errors === 'object') {
         setErrorMsg(apiError.title || "One or more validation errors occurred.");
         setValidationErrors(Object.values(apiError.errors).flat() as string[]);
@@ -172,8 +166,8 @@ export default function CommitteesPage() {
       await committeeService.delete(examTermId, id);
       setCommittees(p => p.filter(c => c.id !== id));
       toast.success("Committee deleted successfully");
-    } catch (e) { 
-      toast.error("Delete failed"); 
+    } catch (e) {
+      toast.error("Delete failed");
     }
   };
 
@@ -201,15 +195,11 @@ export default function CommitteesPage() {
 
   return (
     <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
-      
-      {/* 🚨 صندوق عرض الأخطاء المجمع - تم نقله هنا ليصبح بالأعلى تماماً */}
       {errorMsg && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-700 text-sm relative transition-all">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="flex flex-col gap-1.5 flex-1">
             <span className="font-bold block">{errorMsg}</span>
-            
-            {/* في حال وجود تفاصيل فرعية يتم فرشها كنقاط أسفل العنوان */}
             {validationErrors.length > 0 && (
               <ul className="list-disc list-inside space-y-1 font-medium pl-1 text-[13px] opacity-90">
                 {validationErrors.map((msg, index) => (
@@ -218,8 +208,8 @@ export default function CommitteesPage() {
               </ul>
             )}
           </div>
-          <button 
-            onClick={() => { setErrorMsg(null); setValidationErrors([]); }} 
+          <button
+            onClick={() => { setErrorMsg(null); setValidationErrors([]); }}
             className="absolute top-3 right-3 opacity-50 hover:opacity-100 transition-opacity cursor-pointer text-red-900"
           >
             <X className="w-4 h-4" />
@@ -296,13 +286,12 @@ export default function CommitteesPage() {
             </>
           )}
         </div>
-        
-        <button 
-          onClick={handleSubmit} 
-          disabled={isSubmitting} 
-          className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2 ${
-            editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
-          } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`w-full active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2 ${editingId ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'
+            } ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {isSubmitting ? (
             <>
@@ -366,7 +355,7 @@ export default function CommitteesPage() {
                   <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Place</span>
                   <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.place || "Not Assigned"}</div>
                 </div>
-                
+
                 <div className="flex flex-col lg:block w-full lg:w-auto lg:text-center">
                   <span className="text-[10px] uppercase font-bold text-gray-400 lg:hidden mb-1">Capacity</span>
                   <div className="text-[14px] font-bold text-gray-500 md:text-gray-900 truncate">{item.maxCapacity} Seats</div>
