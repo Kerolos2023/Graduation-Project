@@ -625,9 +625,9 @@ export default function AdvisorRegisterPage() {
               {selectedLevelId ? "No courses found for this level." : "Select a level to view courses."}
             </div>
           ) : (
-            <div className="overflow-x-auto custom-scrollbar -mx-4 sm:-mx-6 px-4 sm:px-6">
-              <table className="min-w-max w-full text-sm">
-                <thead>
+            <div className="overflow-auto custom-scrollbar -mx-4 sm:-mx-6 px-4 sm:px-6 max-h-[450px]">
+              <table className="min-w-max w-full text-sm relative">
+                <thead className="sticky top-0 z-10 bg-white shadow-sm">
                   <tr className="border-b border-gray-100">
                     <th className="text-left py-3 px-3 text-xs font-semibold text-gray-500">Name</th>
                     <th className="text-left py-3 px-3 text-xs font-semibold text-gray-500">Code</th>
@@ -642,7 +642,7 @@ export default function AdvisorRegisterPage() {
                     <th className="py-3 px-3" />
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white">
                   {courses.map((course) => {
                     // Check draft state (local) — reflects pending additions/removals before save
                     const isEnrolled = draftSessions.some(
@@ -668,7 +668,7 @@ export default function AdvisorRegisterPage() {
                           key={`${course.courseOfferingId}-${session.sessionId}`}
                           className={cn(
                             "border-b border-gray-50 transition-colors",
-                            isSessionEnrolled ? "bg-green-50/40 hover:bg-green-50/70" : "hover:bg-gray-50/50"
+                            isSessionEnrolled ? "bg-green-100/50 hover:bg-green-200/60" : "hover:bg-gray-100"
                           )}
                         >
                           {si === 0 && (
@@ -709,8 +709,13 @@ export default function AdvisorRegisterPage() {
                             ) : (
                               <button
                                 onClick={() => handleAddSessionToDraft(course.courseOfferingId, session.sessionId)}
-                                disabled={isSaving}
-                                className="w-7 h-7 rounded-full bg-green-100 hover:bg-green-200 text-green-600 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+                                disabled={isSaving || session.availableSeats === 0}
+                                className={cn(
+                                  "w-7 h-7 rounded-full flex items-center justify-center transition-colors cursor-pointer",
+                                  isSaving || session.availableSeats === 0
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
+                                    : "bg-green-100 hover:bg-green-200 text-green-600"
+                                )}
                                 title="Add session to enrollment"
                               >
                                 <Plus className="w-3.5 h-3.5" />
