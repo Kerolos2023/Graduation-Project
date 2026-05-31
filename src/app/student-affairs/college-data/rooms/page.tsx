@@ -372,7 +372,7 @@ topRef.current?.scrollIntoView({
 
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search by room name or number"
                 value={searchValue}
                 onChange={(e) => {
                   setSearchValue(e.target.value);
