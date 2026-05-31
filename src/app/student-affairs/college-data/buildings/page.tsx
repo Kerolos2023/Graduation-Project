@@ -199,11 +199,6 @@ export default function BuildingsPage() {
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium"
               />
             </div>
-
-            <button className="flex items-center justify-center gap-2 px-4 py-2.5 min-w-[90px] rounded-[12px] border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors bg-white text-sm cursor-pointer">
-              <Printer className="w-4 h-4" />
-              Print
-            </button>
           </div>
         </div>
 
