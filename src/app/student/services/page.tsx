@@ -92,7 +92,7 @@ export default function ServicesPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search"
-            className="w-56 pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition shadow-sm"
+            className="w-full min-w-[180px] max-w-[224px] pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition shadow-sm"
           />
         </div>
       </div>
@@ -101,10 +101,10 @@ export default function ServicesPage() {
       {payError && (
         <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium shrink-0">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{payError}</span>
+          <span className="flex-1 min-w-0">{payError}</span>
           <button
             onClick={() => setPayError(null)}
-            className="ml-auto text-red-400 hover:text-red-600 transition cursor-pointer"
+            className="ml-auto shrink-0 text-red-400 hover:text-red-600 transition cursor-pointer"
           >
             ✕
           </button>
@@ -123,7 +123,7 @@ export default function ServicesPage() {
           <p className="text-gray-400 text-sm font-medium">No services available</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0 overflow-y-auto custom-scrollbar pb-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2 items-start">
           {items.map((service) => (
             <ServiceCard
               key={service.id}
@@ -159,41 +159,44 @@ interface ServiceCardProps {
 
 function ServiceCard({ service, isPaying, onPay }: ServiceCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all">
+    <div className="bg-white rounded-2xl border border-gray-200 flex flex-col hover:shadow-md transition-all">
 
       {/* ── Top row: Name | Amount | Pay ── */}
-      <div className="flex items-center px-5 pt-5 pb-4 gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center px-5 pt-5 pb-4 gap-3">
 
         {/* Service Name */}
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <span className="text-[11px] font-medium text-gray-400">Service Name</span>
-          <span className="text-[15px] font-bold text-gray-900 truncate leading-snug">
+          <span className="text-[15px] font-bold text-gray-900 break-words leading-snug">
             {service.name}
           </span>
         </div>
 
-        {/* Amount */}
-        <div className="flex flex-col gap-0.5 shrink-0">
-          <span className="text-[11px] font-medium text-gray-400">Amount</span>
-          <span className="text-[15px] font-bold text-gray-900 leading-snug">
-            ${service.price.toFixed(2)}{" "}
-            <span className="text-xs font-normal text-gray-400">USD</span>
-          </span>
-        </div>
+        {/* Amount + Pay — stay on one row always */}
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Amount */}
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[11px] font-medium text-gray-400">Amount</span>
+            <span className="text-[15px] font-bold text-gray-900 leading-snug whitespace-nowrap">
+              ${service.price.toFixed(2)}{" "}
+              <span className="text-xs font-normal text-gray-400">USD</span>
+            </span>
+          </div>
 
-        {/* Pay button */}
-        <button
-          onClick={onPay}
-          disabled={isPaying}
-          className="ml-auto shrink-0 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-sm shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {isPaying ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <ShoppingCart className="w-4 h-4" />
-          )}
-          <span>{isPaying ? "Processing…" : "Pay"}</span>
-        </button>
+          {/* Pay button */}
+          <button
+            onClick={onPay}
+            disabled={isPaying}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-sm shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
+          >
+            {isPaying ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ShoppingCart className="w-4 h-4" />
+            )}
+            <span>{isPaying ? "Processing…" : "Pay"}</span>
+          </button>
+        </div>
       </div>
 
       {/* ── Divider ── */}
@@ -206,4 +209,3 @@ function ServiceCard({ service, isPaying, onPay }: ServiceCardProps) {
     </div>
   );
 }
-
