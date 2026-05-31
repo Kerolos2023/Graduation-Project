@@ -24,6 +24,7 @@ export default function GradesPage() {
     type: null
   });
   const { register, handleSubmit, reset, setValue } = useForm<GradeRequest>();
+
   const fetchGrades = useCallback(async () => {
     if (!selectedProgramId) return;
     try {
@@ -49,6 +50,10 @@ export default function GradesPage() {
       fetchGrades();
     }
   }, [fetchGrades, isAcademicReady, academicVersion, selectedProgramId]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
 
   const filteredGrades = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
@@ -251,7 +256,7 @@ export default function GradesPage() {
           <button
             type="submit"
             className={cn(
-              "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm active:scale-[0.99]",
+              "w-full text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer flex items-center justify-center text-sm active:scale-[0.99]",
               editingId ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"
             )}
           >
@@ -272,11 +277,12 @@ export default function GradesPage() {
           <div className="flex items-center gap-3 w-full md:w-auto print:hidden">
             <div className="relative w-full md:w-[280px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
+              <input
+                type="text"
                 placeholder="Search"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto bg-white placeholder:text-gray-400"
               />
             </div>
           </div>
@@ -310,45 +316,39 @@ export default function GradesPage() {
                   editingId === item.id && "bg-blue-50/50 border-blue-200 print:bg-transparent"
                 )}
               >
-                <div className="md:hidden flex justify-end w-full mb-2 print:hidden">
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="h-9 w-9 text-blue-500 bg-blue-50/50 cursor-pointer">
-                      <Pencil size={16} />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(item.id)} className="h-9 w-9 text-red-500 bg-red-50/50 cursor-pointer">
-                      <Trash2 size={16} />
-                    </Button>
+                
+                <div className="flex flex-col md:contents gap-1 w-full">
+                  <div className="flex flex-col md:block">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Grade Name</span>
+                    <div className="text-[14px] font-bold text-gray-900 truncate">{item.name}</div>
+                  </div>
+
+                  <div className="flex flex-col md:text-center w-full md:w-auto">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Code</span>
+                    <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.code}</div>
+                  </div>
+
+                  <div className="flex flex-col md:text-center w-full md:w-auto">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Min Score</span>
+                    <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.minScore}</div>
+                  </div>
+
+                  <div className="flex flex-col md:text-center w-full md:w-auto">
+                    <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Max Score</span>
+                    <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.maxScore}</div>
                   </div>
                 </div>
 
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Grade Name</span>
-                  <div className="text-[14px] font-bold text-gray-900 truncate">{item.name}</div>
-                </div>
-
-                <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Code</span>
-                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.code}</div>
-                </div>
-
-                <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Min Score</span>
-                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.minScore}</div>
-                </div>
-
-                <div className="flex flex-col md:text-center w-full md:w-auto">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden print:hidden mb-1">Max Score</span>
-                  <div className="text-[14px] font-bold text-gray-500 md:text-gray-900">{item.maxScore}</div>
-                </div>
-
-                <div className="hidden md:flex justify-end gap-2 print:hidden">
+                 <div className="flex items-center justify-end gap-2 absolute right-4 top-4 md:relative md:right-auto md:top-auto print:hidden">
                   <button
+                    type="button"
                     onClick={() => handleEditClick(item)}
                     className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
                     <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => onDelete(item.id)}
                     className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
                   >
