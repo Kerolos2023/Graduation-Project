@@ -1,4 +1,4 @@
-// services/committeeDistributionService.ts
+
 import axiosInstance from "@/lib/axios";
 
 export const committeeDistributionService = {
@@ -7,7 +7,12 @@ export const committeeDistributionService = {
     return response.data?.items || [];
   },
   
-   addDistribution: async (termId: string, courseOfferingId: string, body: any) => {
+   getExamDetails: async (termId: string, examId: string) => {
+    const response = await axiosInstance.get(`/exam-terms/${termId}/course-offering-exam/${examId}`);
+    return response.data;
+  },
+  
+  addDistribution: async (termId: string, courseOfferingId: string, body: any) => {
     return await axiosInstance.post(
       `/exam-terms/${termId}/course-offering-exam?courseOfferingId=${courseOfferingId}`,
       body

@@ -1,14 +1,12 @@
 "use client";
-
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Loader2, AlertCircle, X } from "lucide-react";
+import { Trash2, Loader2, AlertCircle, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import axiosInstance from "@/lib/axios";
 import { committeeDistributionService } from "@/services/addingServices";
 
 export default function AddingExaminationCommitteeDistributionPage() {
@@ -16,14 +14,16 @@ export default function AddingExaminationCommitteeDistributionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
 
-  const courseOfferingId = params.courseId as string; 
+  const courseOfferingId = params.courseId as string;
   const termId = searchParams.get("termId") || "019e2720-94e6-7743-9362-bbb1a87cd280";
   const searchParamExamId = searchParams.get("examId") || "";
   const courseName = searchParams.get("courseName") || "Course Subject";
-
-  const cleanExamId = (searchParamExamId === "null" || searchParamExamId === "undefined" || searchParamExamId === "00000000-0000-0000-0000-000000000000") 
-    ? "" 
-    : searchParamExamId;
+  const isUpdateState = (
+    searchParamExamId &&
+    searchParamExamId !== "null" &&
+    searchParamExamId !== "undefined" &&
+    searchParamExamId !== "00000000-0000-0000-0000-000000000000"
+  );
 
   const [formData, setFormData] = useState({ day: "", periodFrom: "", periodTo: "" });
   const [availableCommittees, setAvailableCommittees] = useState<any[]>([]);
@@ -45,20 +45,45 @@ export default function AddingExaminationCommitteeDistributionPage() {
   };
 
   useEffect(() => {
-    const fetchCommittees = async () => {
+    const initPageData = async () => {
       if (!termId) return;
       try {
         setIsLoading(true);
-        const data = await committeeDistributionService.getAvailableCommittees(termId);
-        setAvailableCommittees(data || []);
+        const committeesData = await committeeDistributionService.getAvailableCommittees(termId);
+        setAvailableCommittees(committeesData || []);
+        if (isUpdateState) {
+          console.log("Fetching existing exam details for id:", searchParamExamId);
+          const examDetails = await committeeDistributionService.getExamDetails(termId, searchParamExamId);
+
+          if (examDetails) {
+            const startTimeClean = examDetails.startTime ? examDetails.startTime.substring(0, 5) : "";
+            const endTimeClean = examDetails.endTime ? examDetails.endTime.substring(0, 5) : "";
+
+            setFormData({
+              day: examDetails.date ? examDetails.date.substring(0, 10) : "",
+              periodFrom: startTimeClean,
+              periodTo: endTimeClean
+            });
+
+            if (examDetails.examCommittees && Array.isArray(examDetails.examCommittees)) {
+              const mappedCommittees = examDetails.examCommittees.map((c: any) => ({
+                id: c.id,
+                name: `Committee ${c.committeeNumber || c.id.substring(0, 4)}`,
+                capacity: c.maxCapacity || c.capacity || 0,
+                place: c.place || "N/A"
+              }));
+              setAddedCommittees(mappedCommittees);
+            }
+          }
+        }
       } catch (error) {
-        console.error("Error fetching committees:", error);
+        console.error("Error initializing page data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchCommittees();
-  }, [termId]);
+    initPageData();
+  }, [termId, searchParamExamId, isUpdateState]);
 
   const handleAddCommittee = () => {
     if (!selectedCommitteeId) return;
@@ -87,67 +112,50 @@ export default function AddingExaminationCommitteeDistributionPage() {
       return;
     }
     if (!formData.day || !formData.periodFrom || !formData.periodTo) {
-      setStatusMessage({ text: "Please fill in all general fields (Day and Time Period).", type: 'warning' });
+      setStatusMessage({ text: "Please fill in all fields (Day and Time Period).", type: 'warning' });
       scrollToTop();
       return;
     }
 
     setIsSubmitting(true);
+    const cleanStartTime = formData.periodFrom.includes(":") && formData.periodFrom.split(":").length === 2
+      ? `${formData.periodFrom}:00`
+      : formData.periodFrom;
 
-    const postBody = {
-      date: formData.day,
-      startTime: `${formData.periodFrom}:00`,
-      endTime: `${formData.periodTo}:00`,
-      examCommitteesIds: addedCommittees.map((c) => c.id),
-    };
+    const cleanEndTime = formData.periodTo.includes(":") && formData.periodTo.split(":").length === 2
+      ? `${formData.periodTo}:00`
+      : formData.periodTo;
 
     try {
-      if (cleanExamId) {
-        console.log("Direct PUT Route Activated with examId:", cleanExamId);
-        const putBody = {
-          ...postBody,
-          examCommitteesIds: addedCommittees.map((c) => ({ id: c.id }))
+      if (isUpdateState) {
+        const putPayload = {
+          date: formData.day,
+          startTime: cleanStartTime,
+          endTime: cleanEndTime,
+          ExamCommitteesIds: addedCommittees.map((c) => c.id)
         };
-        await committeeDistributionService.updateDistributionByPath(termId, cleanExamId, putBody);
+
+        console.log("Executing direct PUT route matching Apidog path layout...");
+        await committeeDistributionService.updateDistributionByPath(termId, searchParamExamId, putPayload);
         setStatusMessage({ text: "Committee distribution updated successfully!", type: 'success' });
         setTimeout(() => router.back(), 1500);
-        return;
-      }
+      } else {
+        const postPayload = {
+          courseOfferingId: courseOfferingId,
+          date: formData.day,
+          startTime: cleanStartTime,
+          endTime: cleanEndTime,
+          ExamCommitteesIds: addedCommittees.map((c) => c.id)
+        };
 
-      try {
-        console.log("Executing POST route...");
-        await committeeDistributionService.addDistribution(termId, courseOfferingId, postBody);
+        console.log("Executing direct POST route matching Apidog query layout...");
+        await committeeDistributionService.addDistribution(termId, courseOfferingId, postPayload);
         setStatusMessage({ text: "Committee distribution saved successfully!", type: 'success' });
         setTimeout(() => router.back(), 1500);
-      } catch (postError: any) {
-        if (postError.response?.status === 409) {
-          console.warn("409 Conflict caught! Handling server state desync...");
-
-          try {
-            const putBody = {
-              ...postBody,
-              examCommitteesIds: addedCommittees.map((c) => ({ id: c.id }))
-            };
-            
-            await axiosInstance.put(
-              `/exam-terms/${termId}/course-offering-exam?courseOfferingId=${courseOfferingId}`, 
-              putBody
-            );
-            
-            setStatusMessage({ text: "Committee distribution updated and saved successfully!", type: 'success' });
-            setTimeout(() => router.back(), 1500);
-          } catch (innerPutError) {
-            console.log("Server rejected fallback PUT. Forcing client-side navigation bypass...");
-            setStatusMessage({ text: "Committee distribution updated and saved for this course successfully!", type: 'success' });
-            setTimeout(() => router.back(), 1500);
-          }
-        } else {
-          throw postError;
-        }
       }
     } catch (error: any) {
-      console.error("Final saving error logs:", error);
-      const errorMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || "Failed to save data, please check your inputs.";
+      console.error("Saving request error logs:", error);
+      const errorMsg = error.response?.data?.errors?.request?.[0] || error.response?.data?.errors?.[0] || error.response?.data?.detail || error.response?.data?.message || "Failed to save data.";
       setStatusMessage({ text: `Server Error: ${errorMsg}`, type: 'error' });
       scrollToTop();
     } finally {
@@ -157,82 +165,79 @@ export default function AddingExaminationCommitteeDistributionPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-full flex flex-col gap-6 font-inter pb-8">
-        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+      <div className="w-full h-full min-h-screen bg-[#F5F5F5] p-4 md:p-8 flex items-center justify-center font-sans">
+        <div className="bg-white rounded-[24px] border border-[#eaebf0] p-12 flex flex-col items-center justify-center gap-3 text-center shadow-[0_4px_24px_rgba(0,0,0,0.02)] max-w-md w-full">
           <Loader2 className="animate-spin text-blue-600 w-12 h-12" />
-          <span className="text-gray-900 font-bold text-lg">Loading data...</span>
+          <span className="text-gray-900 font-bold text-lg">Loading exam data...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-6 font-inter pb-8" ref={topRef}>
-      
+    <div className="w-full min-h-screen bg-[#F5F5F5] p-4 md:p-8 flex flex-col gap-6 font-sans antialiased" ref={topRef} dir="ltr">
+
       {statusMessage.type && (
-        <div className={`border px-4 py-3 rounded-xl text-sm transition-all ${
-          statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-700 font-bold' :
-          statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800 font-semibold' :
-          'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
-        }`}>
+        <div className={`border px-5 py-4 rounded-xl text-sm transition-all shadow-sm max-w-6xl w-full mx-auto ${statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-700 font-bold' :
+            statusMessage.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800 font-semibold' :
+              'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
+          }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5" />}
+              {statusMessage.type === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
               <span>{statusMessage.text}</span>
             </div>
-            <button onClick={() => setStatusMessage({ text: "", type: null })} className="cursor-pointer">
+            <button onClick={() => setStatusMessage({ text: "", type: null })} className="cursor-pointer p-0.5 hover:bg-black/5 rounded-md">
               <X className="w-4 h-4 opacity-50" />
             </button>
           </div>
         </div>
       )}
 
-      {/* FORM CARD */}
-      <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0] shrink-0">
-        <h1 className="text-xl font-bold text-gray-900 mb-6">
-          Adding Examination Committee Distribution
-          <span className="block text-xs font-normal text-gray-400 mt-1">{courseName}</span>
-        </h1>
+      <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.01)] border border-[#eaebf0] max-w-6xl w-full mx-auto shrink-0 space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#0D1B2A]">
+            Adding Examination Committee Distribution
+          </h1>
+          <span className="block text-xs font-medium text-gray-400 mt-1.5">{courseName}</span>
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 mb-6">
-          {/* Day Field */}
-          <div className="flex flex-col gap-1.5 w-full">
-            <Label className="text-[13px] font-bold text-gray-900 ml-1">Day</Label>
+        <div className="space-y-5">
+          <div className="flex flex-col gap-2">
+            <Label className="text-[14px] font-semibold text-gray-700">Day</Label>
             <Input
               type="date"
               value={formData.day}
               onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium h-12 shadow-none"
             />
           </div>
 
-          {/* Period Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-1.5 w-full">
-              <Label className="text-[13px] font-bold text-gray-900 ml-1">Period From</Label>
+            <div className="flex flex-col gap-2">
+              <Label className="text-[14px] font-semibold text-gray-700">Period From</Label>
               <Input
                 type="time"
                 value={formData.periodFrom}
                 onChange={(e) => setFormData({ ...formData, periodFrom: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium h-12 shadow-none"
               />
             </div>
-            <div className="flex flex-col gap-1.5 w-full">
-              <Label className="text-[13px] font-bold text-gray-900 ml-1">To</Label>
+            <div className="flex flex-col gap-2">
+              <Label className="text-[14px] font-semibold text-gray-700">To</Label>
               <Input
                 type="time"
                 value={formData.periodTo}
                 onChange={(e) => setFormData({ ...formData, periodTo: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium h-12 shadow-none"
               />
             </div>
           </div>
 
-          {/* Committees Selection */}
-          <div className="flex flex-col gap-1.5 w-full">
-            <Label className="text-[13px] font-bold text-gray-900 ml-1">Committees</Label>
+          <div className="flex flex-col gap-2">
+            <Label className="text-[14px] font-semibold text-gray-700">Committees</Label>
             <Select value={selectedCommitteeId} onValueChange={setSelectedCommitteeId}>
-              <SelectTrigger className="w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto">
+              <SelectTrigger className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium h-12 text-gray-700 shadow-none">
                 <SelectValue placeholder="Select Committee" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -246,89 +251,83 @@ export default function AddingExaminationCommitteeDistributionPage() {
               </SelectContent>
             </Select>
           </div>
-        </div>
 
-         <button 
-          type="button" 
-          onClick={handleAddCommittee}
-          className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold py-3.5 rounded-[12px] transition-all shadow-sm cursor-pointer text-sm flex items-center justify-center gap-2"
-        >
-          Add
-        </button>
+          <button
+            type="button"
+            onClick={handleAddCommittee}
+            className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-[0.995] text-white font-semibold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2 h-12 cursor-pointer mt-2"
+          >
+            Add
+          </button>
+        </div>
       </div>
 
-      {/* LIST CARD */}
-      <div className="bg-white rounded-[24px] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-[#eaebf0]">
-        
-        {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="bg-white rounded-[24px] p-6 md:p-8 shadow-[0_4px_24px_rgba(0,0,0,0.01)] border border-[#eaebf0] max-w-6xl w-full mx-auto space-y-6">
+
+        <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h2 className="text-[22px] font-bold text-gray-900 leading-none">Committees</h2>
-            <Badge className="bg-[#eff4ff] text-blue-600 text-[11px] font-bold px-3 py-1.5 rounded-full border border-blue-100 hover:bg-[#eff4ff] shadow-none">
+            <h2 className="text-2xl font-bold text-[#0D1B2A]">Committees</h2>
+            <Badge className="bg-[#EFF4FF] text-[#2563EB] hover:bg-[#EFF4FF] text-xs font-bold px-3 py-1.5 rounded-full border border-blue-50 shadow-none">
               {addedCommittees.length} Room
             </Badge>
           </div>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button 
-              onClick={handleGlobalSave} 
-              disabled={isSubmitting || addedCommittees.length === 0} 
-              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-[12px] border border-blue-200 text-blue-600 font-semibold hover:bg-blue-50 transition-colors bg-white text-sm cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed h-auto"
-              variant="outline"
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </Button>
+
+          <Button
+            onClick={handleGlobalSave}
+            disabled={isSubmitting || addedCommittees.length === 0}
+            className="h-10 border border-[#2563EB] text-[#2563EB] bg-white hover:bg-blue-50 rounded-xl px-6 font-semibold transition-all shadow-none text-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            variant="outline"
+          >
+            {isSubmitting ? "Saving..." : "Save"}
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_1.2fr_1fr_60px] px-6 py-4 border border-gray-100 bg-[#FAFAFA] rounded-xl font-bold text-gray-500 text-[13px]">
+            <div>Name</div>
+            <div>Capacity</div>
+            <div>Number of Registered Students</div>
+            <div>Start Distribution</div>
+            <div>Place</div>
+            <div></div>
           </div>
-        </div>
 
-        {/* Table Header */}
-        <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_80px] px-5 py-4 mb-3 border border-gray-100 bg-[#fafafa] rounded-xl font-bold text-gray-800">
-          <div className="text-[13px]">Name</div>
-          <div className="text-[13px]">Capacity</div>
-          <div className="text-[13px]">Number of Registered Students</div>
-          <div className="text-[13px]">Start Distribution</div>
-          <div className="text-[13px]">Place</div>
-          <div></div>
-        </div>
-
-        {/* Table Body */}
-        <div className="flex flex-col gap-3 mb-8">
           {addedCommittees.length === 0 ? (
-            <div className="text-center p-8 text-gray-400 border border-gray-100 rounded-xl border-dashed text-sm font-medium">
+            <div className="text-center p-12 text-gray-400 border border-gray-100 rounded-xl border-dashed text-sm font-medium bg-gray-50/40">
               No committees added yet. Select a committee and click "Add" above.
             </div>
           ) : (
             addedCommittees.map((committee) => (
-              <div 
+              <div
                 key={committee.id}
-                className="flex flex-col md:grid md:grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_80px] items-start md:items-center px-5 py-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow bg-white group gap-3 md:gap-0 relative text-[14px]"
+                className="flex flex-col md:grid md:grid-cols-[1fr_1fr_1.5fr_1.2fr_1fr_60px] items-start md:items-center px-6 py-4 border border-gray-100 rounded-xl hover:shadow-sm transition-all bg-white gap-3 md:gap-0 relative text-[14px] text-gray-700"
               >
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Name</span>
-                  <span className="font-bold text-gray-900 truncate">{committee.name}</span>
+                <div>
+                  <span className="md:hidden text-[11px] uppercase font-bold text-gray-400 block mb-1">Name</span>
+                  <span className="font-bold text-gray-900">{committee.name}</span>
                 </div>
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Capacity</span>
-                  <span className="font-bold text-gray-500 md:text-gray-900">{committee.capacity}</span>
+                <div>
+                  <span className="md:hidden text-[11px] uppercase font-bold text-gray-400 block mb-1">Capacity</span>
+                  <span className="font-medium text-gray-600 md:text-gray-900">{committee.capacity}</span>
                 </div>
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Registered Students</span>
-                  <span className="font-bold text-gray-500 md:text-gray-900">0</span>
+                <div>
+                  <span className="md:hidden text-[11px] uppercase font-bold text-gray-400 block mb-1">Number of Registered Students</span>
+                  <span className="font-medium text-gray-600 md:text-gray-900">0</span>
                 </div>
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Start Distribution</span>
-                  <span className="font-bold text-gray-500 md:text-gray-900">01</span>
+                <div>
+                  <span className="md:hidden text-[11px] uppercase font-bold text-gray-400 block mb-1">Start Distribution</span>
+                  <span className="font-medium text-gray-600 md:text-gray-900">01</span>
                 </div>
-                <div className="flex flex-col md:block">
-                  <span className="text-[10px] uppercase font-bold text-gray-400 md:hidden mb-1">Place</span>
-                  <span className="font-bold text-gray-500 md:text-gray-900 truncate">{committee.place}</span>
+                <div>
+                  <span className="md:hidden text-[11px] uppercase font-bold text-gray-400 block mb-1">Place</span>
+                  <span className="font-medium text-gray-600 md:text-gray-900 truncate">{committee.place}</span>
                 </div>
-                <div className="flex items-center justify-end gap-2 absolute right-4 top-4 md:relative md:right-auto md:top-auto">
+                <div className="flex items-center justify-end absolute right-4 top-4 md:relative md:right-auto md:top-auto">
                   <button
                     onClick={() => handleRemoveCommittee(committee.id)}
-                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors bg-white cursor-pointer"
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer bg-white"
                   >
-                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2.5} />
+                    <Trash2 className="w-[18px] h-[18px]" strokeWidth={2} />
                   </button>
                 </div>
               </div>
@@ -336,11 +335,31 @@ export default function AddingExaminationCommitteeDistributionPage() {
           )}
         </div>
 
+        {/* PAGINATION */}
+        {addedCommittees.length > 0 && (
+          <div className="flex items-center justify-center pt-4">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600">
+              <button className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-400 transition-colors cursor-pointer flex items-center gap-1">
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 border border-gray-200 font-bold text-gray-900 text-xs">01</button>
+              <button className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 text-xs transition-colors">02</button>
+              <button className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 text-xs transition-colors">03</button>
+              <span className="px-1 text-gray-400 text-xs">...</span>
+              <button className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 text-xs transition-colors">10</button>
+              <button className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-[#2563EB] border-blue-100 bg-white transition-colors cursor-pointer flex items-center gap-1 ml-1 font-semibold">
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
 
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
-}
+
+
