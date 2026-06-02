@@ -41,7 +41,7 @@ function ExamTable({ exam }: { exam: StudentExamTimeData }) {
       </h2>
       <div className="w-full">
         {/* Desktop Header Row */}
-        <div className="hidden lg:grid grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_1.5fr_1fr] gap-4 px-6 py-4 bg-[#f8f9fb] rounded-xl mb-4 text-[13px] font-bold text-gray-700 items-center">
+        <div className="hidden lg:grid grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_1.5fr_1fr] gap-4 px-6 py-4 bg-gray-100 border border-gray-200 rounded-xl mb-4 text-[13px] font-bold text-gray-800 items-center">
           <div>Date</div>
           <div>Course Code</div>
           <div>Course Name</div>
@@ -56,13 +56,13 @@ function ExamTable({ exam }: { exam: StudentExamTimeData }) {
           {exam.courses?.map((course, idx) => (
             <div 
               key={idx}
-              className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_1.5fr_1fr] lg:gap-4 lg:px-6 lg:py-5 bg-white border border-gray-300 lg:border-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.06)] lg:shadow-none rounded-2xl items-start lg:items-center text-[13px] text-gray-800 font-semibold transition-colors hover:border-gray-400 lg:hover:border-gray-300 divide-y divide-gray-100 lg:divide-y-0 overflow-hidden"
+              className="flex flex-col lg:grid lg:grid-cols-[1fr_1fr_1.5fr_1.5fr_1fr_1.5fr_1fr] lg:gap-4 lg:px-6 lg:py-5 bg-gray-50 border border-gray-300 lg:border-gray-200 shadow-[0_4px_16px_rgba(0,0,0,0.06)] lg:shadow-none rounded-2xl items-start lg:items-center text-[13px] text-gray-800 font-semibold transition-colors hover:border-gray-400 lg:hover:border-gray-300 divide-y divide-gray-200 lg:divide-y-0 overflow-hidden"
             >
               <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0">
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Date</span>
                 <span className="text-right max-w-[60%] lg:max-w-none">{formatDate(course.date)}</span>
               </div>
-              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-[#f8f9fb]/50 lg:bg-transparent">
+              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-white/60 lg:bg-transparent">
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Course Code</span>
                 <span className="text-right max-w-[60%] lg:max-w-none">{course.courseCode}</span>
               </div>
@@ -70,7 +70,7 @@ function ExamTable({ exam }: { exam: StudentExamTimeData }) {
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Course Name</span>
                 <span className="text-right max-w-[60%] lg:max-w-none text-right">{course.courseName}</span>
               </div>
-              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-[#f8f9fb]/50 lg:bg-transparent">
+              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-white/60 lg:bg-transparent">
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Time</span>
                 <span className="text-gray-600 text-right max-w-[60%] lg:max-w-none">{formatTimeRange(course.startTime, course.endTime)}</span>
               </div>
@@ -78,7 +78,7 @@ function ExamTable({ exam }: { exam: StudentExamTimeData }) {
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Seat Number</span>
                 <span className="text-right max-w-[60%] lg:max-w-none">{course.seatNumber}</span>
               </div>
-              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-[#f8f9fb]/50 lg:bg-transparent">
+              <div className="flex justify-between items-center w-full lg:w-auto lg:block px-5 py-3.5 lg:p-0 bg-white/60 lg:bg-transparent">
                 <span className="lg:hidden text-gray-500 font-normal text-xs">Place</span>
                 <span className="text-right max-w-[60%] lg:max-w-none">{course.place}</span>
               </div>
