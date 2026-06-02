@@ -6,7 +6,13 @@ import axiosInstance from "@/lib/axios";
 import { Pagination } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 const ROOM_TYPES = [
   { id: 1, name: "LectureHall", label: "Lecture Hall" },
   { id: 2, name: "ClassRoom", label: "Class Room" },
@@ -312,42 +318,69 @@ export default function RoomsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="flex flex-col gap-1.5 w-full">
-              <label className={labelCls}>Room Type</label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                className={cn(inputCls, "cursor-pointer")}
-              >
-                <option value="">Select Room Type</option>
-                {ROOM_TYPES.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+  <label className={labelCls}>Room Type</label>
+
+  <Select
+    value={formData.type}
+    onValueChange={(value) =>
+      setFormData((prev) => ({
+        ...prev,
+        type: value,
+      }))
+    }
+  >
+    <SelectTrigger className={cn(inputCls, "justify-between")}>
+      <SelectValue placeholder="Select Room Type" />
+    </SelectTrigger>
+
+<SelectContent className="max-h-[200px] overflow-y-auto">
+  <div className="max-h-[200px] overflow-y-auto">
+    {ROOM_TYPES.map((type) => (
+      <SelectItem key={type.id} value={String(type.id)}>
+        {type.label}
+      </SelectItem>
+    ))}
+  </div>
+</SelectContent>
+  </Select>
+</div>
 
             <div className="flex flex-col gap-1.5 w-full">
-              <label className={labelCls}>Building</label>
-              <select
-                value={selectedBuildingId}
-                onChange={(e) => setSelectedBuildingId(e.target.value)}
-                disabled={!!editingId}
-                className={cn(
-                  inputCls, 
-                  "cursor-pointer",
-                  editingId && "bg-gray-50 text-gray-400 cursor-not-allowed"
-                )}
-              >
-                <option value="">Select Building</option>
-                {buildings.map((b) => (
-                  <option key={b.id} value={String(b.id)}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+  <label className={labelCls}>Building</label>
+
+  <Select
+    value={selectedBuildingId}
+    onValueChange={(value) => {
+      setSelectedBuildingId(value);
+      setPageNumber(1);
+    }}
+    disabled={!!editingId}
+  >
+    <SelectTrigger
+      className={cn(
+        inputCls,
+        "justify-between",
+        editingId && "bg-gray-50 text-gray-400 cursor-not-allowed"
+      )}
+    >
+      <SelectValue placeholder="Select Building" />
+    </SelectTrigger>
+
+    <SelectContent className="max-h-[200px] overflow-y-auto">
+      <div className="max-h-[200px] overflow-y-auto">
+      {buildings.map((building) => (
+        <SelectItem
+          key={building.id}
+          value={String(building.id)}
+          className="cursor-pointer"
+        >
+          {building.name}
+        </SelectItem>
+      ))}
+      </div>
+    </SelectContent>
+  </Select>
+</div>
           </div>
 
           <button
@@ -378,7 +411,7 @@ export default function RoomsPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name or number"
+                placeholder="Search by room name or number"
                 value={searchValue}
                 onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
