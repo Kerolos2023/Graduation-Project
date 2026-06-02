@@ -1,4 +1,3 @@
-
 import axiosInstance from "@/lib/axios";
 
 export const committeeDistributionService = {
@@ -12,7 +11,7 @@ export const committeeDistributionService = {
     return response.data;
   },
   
-  addDistribution: async (termId: string, courseOfferingId: string, body: any) => {
+   addDistribution: async (termId: string, courseOfferingId: string, body: any) => {
     return await axiosInstance.post(
       `/exam-terms/${termId}/course-offering-exam?courseOfferingId=${courseOfferingId}`,
       body
@@ -24,5 +23,10 @@ export const committeeDistributionService = {
       `/exam-terms/${termId}/course-offering-exam/${examId}`,
       body
     );
+  },
+
+   getAssignedExamCommittees: async (termId: string, examId: string) => {
+    const response = await axiosInstance.get(`/exam-terms/${termId}/course-offering-exam/${examId}/committees`);
+    return response.data?.items || [];
   }
 };
