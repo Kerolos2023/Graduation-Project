@@ -2,23 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { FcViewDetails } from "react-icons/fc";
+import { FiInbox } from "react-icons/fi";
 import axiosInstance from "@/lib/axios";
 import { studentProfileService } from "@/services/studentProfileServices";
 
 export default function AcademicHistory() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [assessmentDetails, setAssessmentDetails] = useState<any[]>([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState("");
+  const [emptyMessage, setEmptyMessage] = useState("");
   const [selectedCourseName, setSelectedCourseName] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await studentProfileService.getAcademicHistory();
-        setData(data);
+        const res = await studentProfileService.getAcademicHistory();
+        setData(res);
       } catch (err) {
         console.error(err);
       } finally {
@@ -29,80 +31,34 @@ export default function AcademicHistory() {
     fetchData();
   }, []);
 
-  const getGradeColor = (grade: string) => {
-    if (!grade) return "bg-gray-100 text-gray-600";
-
-    const normalized = grade.toUpperCase();
-
-    const green = ["A+", "A", "A-"];
-    const yellow = ["B+", "B", "B-"];
-    const red = ["C+", "C", "C-", "D", "F"];
-
-    if (green.includes(normalized)) return "bg-green-50 text-green-600";
-    if (yellow.includes(normalized)) return "bg-yellow-50 text-yellow-600";
-    if (red.includes(normalized)) return "bg-red-50 text-red-600";
-
-    return "bg-gray-100 text-gray-600";
-  };
-
-  const getDotColor = (grade: string) => {
-    const normalized = grade?.toUpperCase();
-
-    if (["A+", "A", "A-"].includes(normalized)) return "bg-green-500";
-    if (["B+", "B", "B-"].includes(normalized)) return "bg-yellow-500";
-    if (["C+", "C", "C-", "D", "D-", "D+", "F-", "F+", "F"].includes(normalized))
-      return "bg-red-500";
-
-    return "bg-gray-400";
-  };
-
-  const getErrorMessage = (err: unknown, fallback: string) => {
-    const axiosErr = err as {
-      message?: string;
-      response?: { data?: any };
-    };
-
-    const responseData = axiosErr.response?.data;
-    if (!responseData) return axiosErr.message || fallback;
-    if (typeof responseData === "string") return responseData;
-    if (responseData.message) return responseData.message;
-    if (responseData.error) return responseData.error;
-    if (Array.isArray(responseData.errors)) return responseData.errors.join(" ");
-
-    if (typeof responseData === "object") {
-      const values = Object.values(responseData).flat();
-      return values.filter(Boolean).join(" ") || axiosErr.message || fallback;
-    }
-
-    return axiosErr.message || fallback;
-  };
-
   const handleOpenDetails = async (course: any) => {
-    const courseOfferingId =
+    const id =
       course.courseOfferingId || course.id || course.courseId;
 
-    if (!courseOfferingId) {
-      setDetailsError("Course details are not available.");
-      setIsDetailsOpen(true);
-      return;
-    }
+    if (!id) return;
 
-    setSelectedCourseName(
-      course.courseName || course.courseCode || "Course details"
-    );
-    setDetailsLoading(true);
-    setDetailsError("");
-    setAssessmentDetails([]);
+    setSelectedCourseName(course.courseName || "Course Details");
     setIsDetailsOpen(true);
+
+    setDetailsLoading(true);
+    setAssessmentDetails([]);
+    setEmptyMessage("");
 
     try {
       const res = await axiosInstance.get(
         "/students/assessments-in-course",
-        { params: { courseOfferingId } }
+        { params: { courseOfferingId: id } }
       );
-      setAssessmentDetails(res.data || []);
+
+      const result = Array.isArray(res.data) ? res.data : [];
+
+      if (result.length === 0) {
+        setEmptyMessage("Results not published yet");
+      } else {
+        setAssessmentDetails(result);
+      }
     } catch (err) {
-      setDetailsError(getErrorMessage(err, "Failed to load degree details."));
+      setEmptyMessage("Failed to load data");
     } finally {
       setDetailsLoading(false);
     }
@@ -111,72 +67,98 @@ export default function AcademicHistory() {
   const handleCloseDetails = () => {
     setIsDetailsOpen(false);
     setAssessmentDetails([]);
+    setEmptyMessage("");
     setDetailsLoading(false);
-    setDetailsError("");
     setSelectedCourseName("");
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  const getGradeColor = (grade: string) => {
+    if (!grade) return "bg-gray-100 text-gray-600";
+
+    const g = grade.toUpperCase();
+
+    if (["A+", "A", "A-"].includes(g)) return "bg-green-50 text-green-600";
+    if (["B+", "B", "B-"].includes(g)) return "bg-yellow-50 text-yellow-600";
+    if (["C+", "C", "C-", "D", "F"].includes(g)) return "bg-red-50 text-red-600";
+
+    return "bg-gray-100 text-gray-600";
+  };
+
+  const getDotColor = (grade: string) => {
+    const g = grade?.toUpperCase();
+
+    if (["A+", "A", "A-"].includes(g)) return "bg-green-500";
+    if (["B+", "B", "B-"].includes(g)) return "bg-yellow-500";
+    if (["C+", "C", "C-", "D", "F"].includes(g)) return "bg-red-500";
+
+    return "bg-gray-400";
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-20 bg-white border rounded-xl animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 p-3 sm:p-4 bg-[#f6f7fb] min-h-screen">
+    <div className="space-y-6 p-4 bg-[#f6f7fb] min-h-screen">
+
+      {/* SEMESTERS */}
       {data.map((semester, index) => (
         <div
           key={index}
-          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6"
+          className="bg-white rounded-2xl shadow-sm border p-5"
         >
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
-            <h2 className="font-semibold text-[15px] sm:text-[16px] text-gray-800">
+          <div className="flex justify-between mb-4">
+            <h2 className="font-semibold">
               {semester.semesterName} {semester.academicYear}
             </h2>
 
-            <div className="text-sm font-medium text-gray-500">
-              GPA: <span className="text-gray-800">{semester.semesterGPA}</span>
-            </div>
+            <span className="text-gray-500">
+              GPA: <b>{semester.semesterGPA}</b>
+            </span>
           </div>
 
-          {/* Table */}
-          <div className="w-full overflow-x-auto rounded-xl border border-gray-300">
-            <table className="min-w-[700px] w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-[12px]">
+          <div className="overflow-x-auto border rounded-xl">
+            <table className="w-full min-w-[700px] text-sm">
+              <thead className="bg-gray-50 text-gray-500">
                 <tr>
-                  <th className="px-4 py-3 text-left">Course Code</th>
-                  <th className="px-4 py-3 text-left">Course Name</th>
-                  <th className="px-4 py-3 text-center">Credit Hours</th>
-                  <th className="px-4 py-3 text-center">Degree</th>
-                  <th className="px-4 py-3 text-center">Degree Details</th>
-                  <th className="px-4 py-3 text-center">Grade</th>
+                  <th className="p-3 text-left">Code</th>
+                  <th className="p-3 text-left">Name</th>
+                  <th className="p-3 text-center">Hours</th>
+                  <th className="p-3 text-center">Degree</th>
+                  <th className="p-3 text-center">Details</th>
+                  <th className="p-3 text-center">Grade</th>
                 </tr>
               </thead>
 
               <tbody>
-                {(semester.courses || []).map((course: any, i: number) => (
-                  <tr
-                    key={i}
-                    className="border-t border-gray-200 hover:bg-gray-50 transition"
-                  >
-                    <td className="px-4 py-3">{course.courseCode}</td>
-                    <td className="px-4 py-3">{course.courseName}</td>
-                    <td className="px-4 py-3 text-center">
-                      {course.creditHours}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {course.totalDegree}
-                    </td>
+                {semester.courses?.map((course: any, i: number) => (
+                  <tr key={i} className="border-t hover:bg-gray-50">
+                    <td className="p-3">{course.courseCode}</td>
+                    <td className="p-3">{course.courseName}</td>
+                    <td className="p-3 text-center">{course.creditHours}</td>
+                    <td className="p-3 text-center">{course.totalDegree}</td>
 
-                    <td className="px-4 py-3 text-center">
+                    <td className="p-3 text-center">
                       <button
                         onClick={() => handleOpenDetails(course)}
-                        className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 hover:bg-gray-100"
+                        className="p-2 rounded-lg border hover:bg-gray-100"
                       >
-                        <FcViewDetails size={20} />
+                        <FcViewDetails size={18} />
                       </button>
                     </td>
 
-                    <td className="px-4 py-3 text-center">
+                    <td className="p-3 text-center">
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getGradeColor(
+                        className={`px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1 ${getGradeColor(
                           course.letterGrade
                         )}`}
                       >
@@ -200,57 +182,64 @@ export default function AcademicHistory() {
       {isDetailsOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
-          onClick={handleCloseDetails} // 👈 click outside closes
+          onClick={handleCloseDetails}
         >
           <div
-            className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()} // 👈 prevent inside click close
+            className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="px-6 py-4 border-b flex justify-between items-center">
+            {/* HEADER */}
+            <div className="p-4 border-b flex justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Degree Details</h3>
-                <p className="text-sm text-gray-500">{selectedCourseName}</p>
+                <h3 className="font-semibold">Degree Details</h3>
+                <p className="text-sm text-gray-500">
+                  {selectedCourseName}
+                </p>
               </div>
 
-              <button
-                onClick={handleCloseDetails}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100"
-              >
-                ✕
-              </button>
+              <button onClick={handleCloseDetails}>✕</button>
             </div>
 
-            {/* Body */}
+            {/* BODY */}
             <div className="p-5 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-2 bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-500 font-medium">
+
+              <div className="grid grid-cols-2 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
                 <span>Name</span>
-                <span className="text-right">Your Degree</span>
+                <span className="text-right">Score</span>
               </div>
 
               <div className="mt-3 space-y-3">
-                {detailsLoading ? (
-                  <p>Loading...</p>
-                ) : detailsError ? (
-                  <p className="text-red-600">{detailsError}</p>
-                ) : assessmentDetails.length === 0 ? (
-                  <p>No degree details found.</p>
-                ) : (
+
+                {/* LOADING */}
+                {detailsLoading && (
+                  <div className="text-center py-6 text-gray-500">
+                    Loading...
+                  </div>
+                )}
+
+                {/* EMPTY / ERROR */}
+                {!detailsLoading && emptyMessage && (
+                  <div className="flex flex-col items-center py-10 text-gray-500">
+                    <FiInbox size={30} className="mb-2" />
+                    <p>{emptyMessage}</p>
+                  </div>
+                )}
+
+                {/* DATA */}
+                {!detailsLoading &&
+                  !emptyMessage &&
                   assessmentDetails.map((item: any, index: number) => (
                     <div
                       key={index}
-                      className="grid grid-cols-2 bg-white border rounded-xl px-4 py-4"
+                      className="grid grid-cols-2 p-4 border rounded-xl"
                     >
                       <span>{item.assessmentName}</span>
                       <span className="text-right font-semibold text-blue-600">
-                        {item.studentScore}
-                        <span className="text-gray-400">
-                          /{item.maxScore}
-                        </span>
+                        {item.studentScore}/{item.maxScore}
                       </span>
                     </div>
-                  ))
-                )}
+                  ))}
+
               </div>
             </div>
           </div>

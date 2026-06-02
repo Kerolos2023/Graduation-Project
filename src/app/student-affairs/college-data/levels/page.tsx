@@ -25,6 +25,7 @@ export default function ControlStatus() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
 
   const [isResultAnnounced, setIsResultAnnounced] = useState(false);
@@ -34,6 +35,33 @@ export default function ControlStatus() {
   const { selectedProgramId, selectedSemesterId } = useAcademicContext();
 
   const isReady = !!selectedProgramId && !!selectedSemesterId;
+
+  // =========================
+  // API ONLY ERROR PARSER (NO AXIOS MESSAGE)
+  // =========================
+  const getApiError = (err: any) => {
+    const data = err?.response?.data;
+
+    if (!data) return "";
+
+    if (Array.isArray(data.errors) && data.errors.length > 0) {
+      return data.errors[0];
+    }
+
+    if (typeof data.errors === "string") {
+      return data.errors;
+    }
+
+    if (data.message) return data.message;
+
+    if (data.title && Array.isArray(data.errors)) {
+      return data.errors[0];
+    }
+
+    if (typeof data === "string") return data;
+
+    return "";
+  };
 
   const wordToNumber = (name: string) => {
     const map: Record<string, number> = {
@@ -56,17 +84,6 @@ export default function ControlStatus() {
     }
 
     return Number.MAX_SAFE_INTEGER;
-  };
-
-  const getErrorMessage = (err: any, fallback: string) => {
-    const responseData = err?.response?.data;
-
-    if (!responseData) return err?.message || fallback;
-    if (typeof responseData === "string") return responseData;
-    if (responseData?.message) return responseData.message;
-    if (responseData?.error) return responseData.error;
-
-    return err?.message || fallback;
   };
 
   // =========================
@@ -101,7 +118,7 @@ export default function ControlStatus() {
       } catch (err) {
         if (!ignore) {
           setLevels([]);
-          setError(getErrorMessage(err, "Failed to load data"));
+          setError(getApiError(err));
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -116,7 +133,7 @@ export default function ControlStatus() {
   }, [selectedProgramId, selectedSemesterId, isReady]);
 
   // =========================
-  // FETCH RESULT STATUS
+  // STATUS CHECK
   // =========================
   useEffect(() => {
     if (!selectedSemesterId) return;
@@ -128,15 +145,13 @@ export default function ControlStatus() {
         const res = await axiosInstance.get(
           "/control/result-announce-status",
           {
-            params: {
-              semesterId: selectedSemesterId,
-            },
+            params: { semesterId: selectedSemesterId },
           }
         );
 
         setIsResultAnnounced(res.data.isResultAnnounced);
       } catch (err) {
-        console.error(err);
+        setActionError(getApiError(err));
       } finally {
         setStatusLoading(false);
       }
@@ -178,9 +193,8 @@ export default function ControlStatus() {
         }))
       );
     } catch (err) {
-      setActionError(
-        getErrorMessage(err, "Failed to update control status")
-      );
+      const msg = getApiError(err);
+      if (msg) setActionError(msg);
     }
   };
 
@@ -192,6 +206,7 @@ export default function ControlStatus() {
 
     try {
       setToggleLoading(true);
+      setActionError("");
 
       await axiosInstance.patch(
         "/control/toggle-announce-result",
@@ -206,9 +221,8 @@ export default function ControlStatus() {
 
       setIsResultAnnounced((prev) => !prev);
     } catch (err) {
-      setActionError(
-        getErrorMessage(err, "Failed to toggle announce result")
-      );
+      const msg = getApiError(err);
+      if (msg) setActionError(msg);
     } finally {
       setToggleLoading(false);
     }
@@ -217,139 +231,91 @@ export default function ControlStatus() {
   // =========================
   // UI STATES
   // =========================
-  if (!isReady) return <p className="p-4">Select program and semester...</p>;
-  if (loading) return <p className="p-4">Loading...</p>;
-  if (error) return <p className="p-4">{error}</p>;
-  if (!levels.length) return <p className="p-4">No data found</p>;
+  if (!isReady) return null;
+  if (loading) return null;
+  if (error) return <p className="p-4 text-red-600">{error}</p>;
+  if (!levels.length) return null;
 
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen rounded-xl">
 
-      {/* HEADER (UNCHANGED STYLE) */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 inline me-2">
-            Levels
-          </h1>
-          <span className="inline-flex items-center mt-1 text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
-            {levels.length} Levels
-          </span>
-        </div>
-
-        <div className="flex gap-3 w-full sm:w-auto">
-
-          {/* ANNOUNCE BUTTON */}
-          <button
-            onClick={handleToggleAnnounce}
-            disabled={statusLoading || toggleLoading}
-            className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-medium shadow-sm hover:${
-              isResultAnnounced
-                ? "bg-green-700"
-                : "bg-blue-700"
-            } transition-all ${
-              isResultAnnounced
-                ? "bg-green-600"
-                : "bg-blue-600"
-            }`}
-          >
-            {statusLoading
-              ? "Loading..."
-              : toggleLoading
-              ? "Updating..."
-              : isResultAnnounced
-              ? "Result Announced"
-              : "Announce Result"}
-          </button>
-
-
-        </div>
-      </div>
-
-      {/* ERROR */}
+      {/* ONLY API ERROR */}
       {actionError && (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {actionError}
         </div>
       )}
 
+      {/* HEADER */}
+      <div className="flex justify-between mb-6">
+        <h1 className="text-xl font-bold">Levels</h1>
+
+        <button
+          onClick={handleToggleAnnounce}
+          disabled={statusLoading || toggleLoading}
+          className={`px-5 py-2.5 rounded-xl text-white ${
+            isResultAnnounced ? "bg-green-600" : "bg-blue-600"
+          }`}
+        >
+          {isResultAnnounced ? "Result Announced" : "Announce Result"}
+        </button>
+      </div>
+
       {/* LEVELS */}
       <div className="space-y-4">
         {levels.map((level) => (
           <div
             key={level.levelId}
-            className="bg-white border rounded-2xl p-4 shadow-sm"
+            className="bg-white border rounded-2xl p-4"
           >
             <div
               onClick={() => toggleLevel(level.levelId)}
-              className="flex justify-between items-center cursor-pointer"
+              className="flex justify-between cursor-pointer"
             >
-              <div className="flex items-center gap-2">
-                <h2 className="font-medium">{level.levelName}</h2>
-                <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
-                  {level.offerings.length} Course
-                </span>
-              </div>
-
-              <ChevronDown
-                className={`transition ${
-                  expandedLevels.includes(level.levelId)
-                    ? "rotate-180"
-                    : ""
-                }`}
-              />
+              <h2>{level.levelName}</h2>
+              <ChevronDown />
             </div>
 
             {expandedLevels.includes(level.levelId) && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
 
-                <div className="grid grid-cols-5 text-sm text-gray-500 bg-gray-100 border p-3 rounded-lg mb-2">
-                  <p>Name</p>
-                  <p>Code</p>
-                  <p>Total Students</p>
-                  <p>Missing Grades</p>
-                  <p></p>
-                </div>
+                {level.offerings.map((course) => (
+                  <div
+                    key={course.courseOfferingId}
+                    className="grid grid-cols-5 p-3 border rounded-xl"
+                  >
+                    <p>{course.courseName}</p>
+                    <p>{course.courseCode}</p>
+                    <p>{course.numberOfRegisteredStudents}</p>
+                    <p>{course.numberOfStudentsWithMissDegrees}</p>
 
-                <div className="space-y-2">
-                  {level.offerings.map((course) => (
-                    <div
-                      key={course.courseOfferingId}
-                      className="grid grid-cols-5 items-center bg-white border p-3 rounded-xl"
-                    >
-                      <p>{course.courseName}</p>
-                      <p>{course.courseCode}</p>
-                      <p>{course.numberOfRegisteredStudents}</p>
-                      <p>{course.numberOfStudentsWithMissDegrees}</p>
+                    <div className="flex justify-end gap-2">
 
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleToggle(course.courseOfferingId)}
-                          className={`px-4 py-2 text-xs rounded-lg text-white transition hover:scale-105 ${
-                            course.isOpenForControl
-                              ? "bg-blue-600"
-                              : "bg-gray-300 text-gray-700"
-                          }`}
-                        >
-                          Open
-                        </button>
+                      <button
+                        onClick={() =>
+                          handleToggle(course.courseOfferingId)
+                        }
+                        className="px-3 py-1 text-xs bg-blue-600 text-white rounded-lg"
+                      >
+                        Open
+                      </button>
 
-                        <button
-                          onClick={() => handleToggle(course.courseOfferingId)}
-                          className={`px-3 py-1 text-xs rounded-lg text-white transition hover:scale-105 ${
-                            !course.isOpenForControl
-                              ? "bg-red-600"
-                              : "bg-gray-300 text-gray-700"
-                          }`}
-                        >
-                          Close
-                        </button>
-                      </div>
+                      <button
+                        onClick={() =>
+                          handleToggle(course.courseOfferingId)
+                        }
+                        className="px-3 py-1 text-xs bg-red-600 text-white rounded-lg"
+                      >
+                        Close
+                      </button>
+
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
 
               </div>
             )}
+
           </div>
         ))}
       </div>
