@@ -378,7 +378,7 @@ export default function RoomsPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by room name or number"
+                placeholder="Search by name or number"
                 value={searchValue}
                 onChange={handleSearchChange}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-[12px] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium h-auto"
