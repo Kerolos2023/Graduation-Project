@@ -14,6 +14,7 @@ export default function CoursesPage() {
     const [pageSize] = useState(10);
     const [searchValue, setSearchValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const formRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -77,10 +78,12 @@ export default function CoursesPage() {
     const resetForm = () => {
         setEditingId(null);
         setFormData({ name: '', code: '', description: '', preRequisiteIds: [] });
+        setErrorMsg("");
     };
 
     const handleAddOrSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMsg("");
         try {
             if (editingId) {
                 await collegeCoursesService.update(editingId, formData);
@@ -93,7 +96,12 @@ export default function CoursesPage() {
             fetchDropdownData();
         } catch (err: any) {
             console.error("Error saving course:", err);
-            alert("Error occurred while saving.");
+            setErrorMsg(
+                err?.response?.data?.message || 
+                err?.response?.data?.title || 
+                err?.message || 
+                "An error occurred while saving."
+            );
         }
     };
 
@@ -126,6 +134,8 @@ export default function CoursesPage() {
             const prereqs: any[] =
                 (courseData as any).preRequisites ??
                 (courseData as any).PreRequisites ??
+                (courseData as any).prerequisites ??
+                (courseData as any).Prerequisites ??
                 (courseData as any).preRequisiteIds ??
                 (courseData as any).PreRequisiteIds ?? [];
 
@@ -143,9 +153,14 @@ export default function CoursesPage() {
                 return match ? match.value : id;
             });
 
-            setFormData(prev => ({ ...prev, preRequisiteIds: ids }));
+            setFormData(prev => ({ 
+                ...prev, 
+                description: courseData.description ?? (courseData as any).Description ?? prev.description,
+                preRequisiteIds: ids 
+            }));
         } catch (err) {
             console.error("Error fetching course details:", err);
+            setErrorMsg("Error fetching course details.");
         }
     };
 
@@ -197,6 +212,12 @@ export default function CoursesPage() {
                         </button>
                     )}
                 </div>
+
+                {errorMsg && (
+                    <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-600">
+                        <span className="text-sm font-medium">{errorMsg}</span>
+                    </div>
+                )}
 
                 <form onSubmit={handleAddOrSave}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
