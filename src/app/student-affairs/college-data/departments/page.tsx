@@ -33,6 +33,7 @@ export default function DepartmentsPage() {
     const [pageSize] = useState(10);
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     // ── Search State with Debounce ──────────────────────────────────────────
     const [searchTerm, setSearchTerm] = useState('');
@@ -96,11 +97,13 @@ export default function DepartmentsPage() {
     const resetForm = () => {
         setEditingId(null);
         setFormData(EMPTY_FORM);
+        setErrorMsg("");
     };
 
     const handleAddOrSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setErrorMsg("");
         try {
             if (editingId) {
                 await departmentsService.update(editingId, formData);
@@ -114,28 +117,30 @@ export default function DepartmentsPage() {
             const axErr = err as { response?: { data?: { errors?: string[]; message?: string; title?: string } }; message?: string };
             const d = axErr.response?.data;
             const msg = (d?.errors?.length ? d.errors.join('\n') : null) ?? d?.message ?? d?.title ?? axErr.message ?? 'An error occurred.';
-            alert(msg);
+            setErrorMsg(msg);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleEditClick = async (dept: Department) => {
+        setErrorMsg("");
         try {
             const detail = await departmentsService.getById(dept.id);
             setEditingId(dept.id);
             setFormData({
-                Name: detail.name ?? '',
-                Code: detail.code ?? '',
-                Description: detail.description ?? '',
-                RequiredCreditHours: detail.requiredCreditHours ?? null,
-                AcademicDegree: detail.academicDegree ?? null,
-                AcademicLoad: detail.academicLoad ?? null,
-                CertificateTitle: detail.certificateTitle ?? '',
+                Name: detail.name ?? (detail as any).Name ?? '',
+                Code: detail.code ?? (detail as any).Code ?? '',
+                Description: detail.description ?? (detail as any).Description ?? '',
+                RequiredCreditHours: detail.requiredCreditHours ?? (detail as any).RequiredCreditHours ?? null,
+                AcademicDegree: detail.academicDegree ?? (detail as any).AcademicDegree ?? null,
+                AcademicLoad: detail.academicLoad ?? (detail as any).AcademicLoad ?? null,
+                CertificateTitle: detail.certificateTitle ?? (detail as any).CertificateTitle ?? '',
             });
             formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (err) {
             console.error('Error fetching department details:', err);
+            setErrorMsg('Error fetching department details.');
         }
     };
 
@@ -154,9 +159,7 @@ export default function DepartmentsPage() {
     const inputCls = 'w-full px-4 py-2.5 rounded-[12px] border border-gray-200 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm font-medium h-auto';
     const labelCls = 'text-[13px] font-bold text-gray-900 ml-1';
 
-    const Field = ({ label, name, placeholder = 'Placeholder', type = 'text' }: {
-        label: string; name: keyof DepartmentPayload; placeholder?: string; type?: string;
-    }) => (
+    const renderField = (label: string, name: keyof DepartmentPayload, placeholder = 'Placeholder', type = 'text') => (
         <div className="flex flex-col gap-1.5 w-full">
             <label className={labelCls}>{label}</label>
             <input
@@ -170,11 +173,7 @@ export default function DepartmentsPage() {
         </div>
     );
 
-    const SelectField = ({ label, name, options }: {
-        label: string;
-        name: keyof DepartmentPayload;
-        options: { value: string; label: string }[];
-    }) => (
+    const renderSelectField = (label: string, name: keyof DepartmentPayload, options: { value: string; label: string }[]) => (
         <div className="flex flex-col gap-1.5 w-full">
             <label className={labelCls}>{label}</label>
             <select
@@ -210,14 +209,20 @@ export default function DepartmentsPage() {
                     )}
                 </div>
 
+                {errorMsg && (
+                    <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 text-red-600">
+                        <span className="text-sm font-medium">{errorMsg}</span>
+                    </div>
+                )}
+
                 <form onSubmit={handleAddOrSave}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <Field label="Name" name="Name" placeholder="Ex: Computer Science" />
-                        <Field label="Code (Shortcut)" name="Code" placeholder="Ex: CS" />
-                        <Field label="Require Credit Hours" name="RequiredCreditHours" placeholder="Ex: 138" type="number" />
-                        <SelectField label="Academic Degree" name="AcademicDegree" options={DEGREE_OPTIONS} />
-                        <Field label="Certificate Title" name="CertificateTitle" placeholder="Ex: Bachelor of Computer Science" />
-                        <SelectField label="Academic Load" name="AcademicLoad" options={LOAD_OPTIONS} />
+                        {renderField("Name", "Name", "Ex: Computer Science")}
+                        {renderField("Code (Shortcut)", "Code", "Ex: CS")}
+                        {renderField("Require Credit Hours", "RequiredCreditHours", "Ex: 138", "number")}
+                        {renderSelectField("Academic Degree", "AcademicDegree", DEGREE_OPTIONS)}
+                        {renderField("Certificate Title", "CertificateTitle", "Ex: Bachelor of Computer Science")}
+                        {renderSelectField("Academic Load", "AcademicLoad", LOAD_OPTIONS)}
                     </div>
 
                     {/* Description — full width */}

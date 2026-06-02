@@ -27,6 +27,10 @@ export default function ControlStatus() {
   const [actionError, setActionError] = useState("");
   const [expandedLevels, setExpandedLevels] = useState<string[]>([]);
 
+  const [isResultAnnounced, setIsResultAnnounced] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
   const { selectedProgramId, selectedSemesterId } = useAcademicContext();
 
   const isReady = !!selectedProgramId && !!selectedSemesterId;
@@ -54,46 +58,30 @@ export default function ControlStatus() {
     return Number.MAX_SAFE_INTEGER;
   };
 
-  const getErrorMessage = (err: unknown, fallback: string) => {
-    const axiosErr = err as {
-      message?: string;
-      response?: {
-        data?: any;
-      };
-    };
+  const getErrorMessage = (err: any, fallback: string) => {
+    const responseData = err?.response?.data;
 
-    const responseData = axiosErr.response?.data;
-    if (!responseData) return axiosErr.message || fallback;
-
+    if (!responseData) return err?.message || fallback;
     if (typeof responseData === "string") return responseData;
-    if (responseData.message) return responseData.message;
-    if (responseData.error) return responseData.error;
-    if (Array.isArray(responseData.errors)) {
-      return responseData.errors.join(" ");
-    }
-    if (typeof responseData === "object") {
-      return Object.values(responseData)
-        .flatMap((value) =>
-          Array.isArray(value) ? value : [value]
-        )
-        .filter(Boolean)
-        .join(" ") || axiosErr.message || fallback;
-    }
+    if (responseData?.message) return responseData.message;
+    if (responseData?.error) return responseData.error;
 
-    return axiosErr.message || fallback;
+    return err?.message || fallback;
   };
 
+  // =========================
+  // FETCH LEVELS
+  // =========================
   useEffect(() => {
     if (!isReady) return;
 
     let ignore = false;
 
     const fetchData = async () => {
-      setLoading(true);
-      setError("");
-      setActionError("");
-
       try {
+        setLoading(true);
+        setError("");
+
         const res = await axiosInstance.get("/control/control-status", {
           params: {
             programId: selectedProgramId,
@@ -127,6 +115,36 @@ export default function ControlStatus() {
     };
   }, [selectedProgramId, selectedSemesterId, isReady]);
 
+  // =========================
+  // FETCH RESULT STATUS
+  // =========================
+  useEffect(() => {
+    if (!selectedSemesterId) return;
+
+    const fetchStatus = async () => {
+      try {
+        setStatusLoading(true);
+
+        const res = await axiosInstance.get(
+          "/control/result-announce-status",
+          {
+            params: {
+              semesterId: selectedSemesterId,
+            },
+          }
+        );
+
+        setIsResultAnnounced(res.data.isResultAnnounced);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+
+    fetchStatus();
+  }, [selectedSemesterId]);
+
   const toggleLevel = (levelId: string) => {
     setExpandedLevels((prev) =>
       prev.includes(levelId)
@@ -135,16 +153,13 @@ export default function ControlStatus() {
     );
   };
 
-  const handleToggle = async (
-    courseOfferingId: string,
-    currentState: boolean,
-    targetState: boolean
-  ) => {
-    if (currentState === targetState) return;
-
-    setActionError("");
-
+  // =========================
+  // TOGGLE CONTROL
+  // =========================
+  const handleToggle = async (courseOfferingId: string) => {
     try {
+      setActionError("");
+
       await axiosInstance.patch(
         `/control/${courseOfferingId}/toggle-control`
       );
@@ -154,45 +169,55 @@ export default function ControlStatus() {
           ...level,
           offerings: level.offerings.map((off) =>
             off.courseOfferingId === courseOfferingId
-              ? { ...off, isOpenForControl: targetState }
+              ? {
+                  ...off,
+                  isOpenForControl: !off.isOpenForControl,
+                }
               : off
           ),
         }))
       );
     } catch (err) {
       setActionError(
-        getErrorMessage(err, "Failed to update control status. Please try again.")
+        getErrorMessage(err, "Failed to update control status")
       );
     }
   };
 
-  const handleAdvertise = async () => {
+  // =========================
+  // TOGGLE ANNOUNCE RESULT
+  // =========================
+  const handleToggleAnnounce = async () => {
     if (!selectedProgramId || !selectedSemesterId) return;
 
-    setActionError("");
-
     try {
+      setToggleLoading(true);
+
       await axiosInstance.patch(
         "/control/toggle-announce-result",
         null,
         {
           params: {
-            programId: selectedProgramId,
             semesterId: selectedSemesterId,
+            programId: selectedProgramId,
           },
         }
       );
+
+      setIsResultAnnounced((prev) => !prev);
     } catch (err) {
       setActionError(
-        getErrorMessage(err, "Failed to advertise result. Please try again.")
+        getErrorMessage(err, "Failed to toggle announce result")
       );
+    } finally {
+      setToggleLoading(false);
     }
   };
 
-  if (!isReady) {
-    return <p className="p-4">Select program and semester...</p>;
-  }
-
+  // =========================
+  // UI STATES
+  // =========================
+  if (!isReady) return <p className="p-4">Select program and semester...</p>;
   if (loading) return <p className="p-4">Loading...</p>;
   if (error) return <p className="p-4">{error}</p>;
   if (!levels.length) return <p className="p-4">No data found</p>;
@@ -200,14 +225,47 @@ export default function ControlStatus() {
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen rounded-xl">
 
-      {/* HEADER */}
-      <div className="flex items-center gap-2 mb-4">
-        <h1 className="text-lg md:text-xl font-semibold">Levels</h1>
-        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
-          {levels.length} Levels
-        </span>
+      {/* HEADER (UNCHANGED STYLE) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 inline me-2">
+            Levels
+          </h1>
+          <span className="inline-flex items-center mt-1 text-xs font-medium bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">
+            {levels.length} Levels
+          </span>
+        </div>
+
+        <div className="flex gap-3 w-full sm:w-auto">
+
+          {/* ANNOUNCE BUTTON */}
+          <button
+            onClick={handleToggleAnnounce}
+            disabled={statusLoading || toggleLoading}
+            className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-white font-medium shadow-sm hover:${
+              isResultAnnounced
+                ? "bg-green-700"
+                : "bg-blue-700"
+            } transition-all ${
+              isResultAnnounced
+                ? "bg-green-600"
+                : "bg-blue-600"
+            }`}
+          >
+            {statusLoading
+              ? "Loading..."
+              : toggleLoading
+              ? "Updating..."
+              : isResultAnnounced
+              ? "Result Announced"
+              : "Announce Result"}
+          </button>
+
+
+        </div>
       </div>
 
+      {/* ERROR */}
       {actionError && (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {actionError}
@@ -265,13 +323,7 @@ export default function ControlStatus() {
 
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() =>
-                            handleToggle(
-                              course.courseOfferingId,
-                              course.isOpenForControl,
-                              true
-                            )
-                          }
+                          onClick={() => handleToggle(course.courseOfferingId)}
                           className={`px-4 py-2 text-xs rounded-lg text-white transition hover:scale-105 ${
                             course.isOpenForControl
                               ? "bg-blue-600"
@@ -282,13 +334,7 @@ export default function ControlStatus() {
                         </button>
 
                         <button
-                          onClick={() =>
-                            handleToggle(
-                              course.courseOfferingId,
-                              course.isOpenForControl,
-                              false
-                            )
-                          }
+                          onClick={() => handleToggle(course.courseOfferingId)}
                           className={`px-3 py-1 text-xs rounded-lg text-white transition hover:scale-105 ${
                             !course.isOpenForControl
                               ? "bg-red-600"
@@ -307,15 +353,6 @@ export default function ControlStatus() {
           </div>
         ))}
       </div>
-
-      {/* FOOTER */}
-      <div
-        onClick={handleAdvertise}
-        className="mt-6 border rounded-xl text-center py-3 text-blue-600 bg-white hover:bg-blue-50 cursor-pointer"
-      >
-        Advertise
-      </div>
-
     </div>
   );
 }

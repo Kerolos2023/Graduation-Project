@@ -970,7 +970,7 @@ export default function DepartmentCoursesPage() {
                   <SelectTrigger className={inputCls}>
                     <SelectValue placeholder={loadingCourses ? "Loading courses..." : "Select course"} />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-xl max-h-[300px] overflow-y-auto" position="popper">
                     {sortedCourses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.name}
