@@ -45,8 +45,7 @@ src/
 
 ## 🌐 Live Demo
 
-[heartfelt-lolly-d30443.netlify.app
-](https://heartfelt-lolly-d30443.netlify.app/)
+https://univers-nine.vercel.app
 ---
 
 ## 🔑 Demo Admin Account
@@ -55,7 +54,7 @@ src/
 Username: Admin
 Password: P@ssword123
 ```
-## 🔑 Demo User Account
+## 🔑 Demo Student Account
 
 ```txt
 Username: OsamaSabry
@@ -104,8 +103,6 @@ The application integrates with external REST APIs for handling authentication, 
 ## 👨‍💻 Authors
 
 * Kerolos Saleh
-* Mohamed Osama
-
 ---
 
 ## ⭐ Project Note
