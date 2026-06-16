@@ -103,6 +103,7 @@ The application integrates with external REST APIs for handling authentication, 
 ## 👨‍💻 Authors
 
 * Kerolos Saleh
+* Mohamed Osama
 ---
 
 ## ⭐ Project Note
